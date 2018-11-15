@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.eclipse.andworx.sdkuilib.feature"
-      label="Andmore Android UI SDK LIbrary"
+      label="Andworx Android UI SDK LIbrary"
       version="0.0.1.qualifier"
       provider-name="Eclipse Andmore"
-      plugin="org.eclipse.andworx.sdkstats"
+      plugin="org.eclipse.andworx.sdkuilib"
       license-feature="org.eclipse.license"
       license-feature-version="0.0.0">
 
