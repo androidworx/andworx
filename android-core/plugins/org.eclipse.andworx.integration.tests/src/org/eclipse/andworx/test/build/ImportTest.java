@@ -77,7 +77,9 @@ public class ImportTest {
 
 	@Before 
 	public void setUp() throws InterruptedException {
-		sdkHolder = new SdkHolder();
+		// Switch when no SDK configured
+		//sdkHolder = new SdkHolder(true);
+		sdkHolder = new SdkHolder(false);
 		sdk = sdkHolder.getCurrentSdk();
 		// Allow time for initial views to be rendered
 		Thread.sleep(2000);

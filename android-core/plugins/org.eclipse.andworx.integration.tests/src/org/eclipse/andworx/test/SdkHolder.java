@@ -3,8 +3,9 @@ package org.eclipse.andworx.test;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.SdkTracker;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -22,46 +23,32 @@ import org.osgi.service.event.EventHandler;
 
 public class SdkHolder {
 
+	static int TIMEOUT_SECS = 30;
+	
 	private static class TestSdkListener implements SdkListener {
 		
-		volatile SdkProfile sdkProfile;
-		volatile boolean isSdkAvailable = true;
-		
-		public SdkProfile getCurrentSdk() {
-			return sdkProfile;
+		volatile SdkProfile sdk;
+
+		public SdkProfile getSdk() {
+			return sdk;
 		}
 
 		public boolean isSdkAvailable() {
-			return isSdkAvailable;
-		}
-
-		public void setSdkAvailable(boolean isSdkAvailable) {
-			this.isSdkAvailable = isSdkAvailable;
-			signal();
+			return sdk != null;
 		}
 
 		@Override
-		public void onLoadSdk(SdkProfile sdkProfile) {
+		public void onLoadSdk(SdkProfile sdk) {
 			//System.out.println("SDK arrived! " + (sdkProfile != null));
-			this.sdkProfile = sdkProfile;
-			signal();
+			this.sdk = sdk;
 		}
 
-		private void signal() {
-			synchronized (this) {
-				notifyAll();
-			}
-		}
 	}
 	
     private volatile SdkProfile sdkProfile;
     private TestSdkListener sdkListener;
     private IEventBroker eventBroker;
 
-    public SdkHolder() {
-    	this(true);
-    }
-    
     public SdkHolder(boolean useAndroidHome) {
 
     	sdkListener = new TestSdkListener();
@@ -117,12 +104,9 @@ public class SdkHolder {
 								}};
 							AndroidSdkValidator validator = new AndroidSdkValidator(prefs);
 							if (validator.checkSdkLocationAndId(sdkLocation, new QuietSdkValidator())) {
-								Sdk.loadSdk(sdkLocation.getAbsolutePath());
+								sdkListener.onLoadSdk(tracker.setCurrentSdk(sdkLocation.getAbsolutePath()));
 							}
 			   			}
-					   	if (tracker.getSdkProfile() == null) {
-					   		sdkListener.setSdkAvailable(false);
-					   	}
 			   		}
 			   	}
 		        eventBroker.unsubscribe(this);
@@ -133,35 +117,33 @@ public class SdkHolder {
     
     public SdkProfile getCurrentSdk() throws InterruptedException {
         if (sdkProfile == null) {
-            synchronized(this) {
-                if (sdkProfile == null) {
-        			//System.out.println("Load CurrentSdk");
-                	sdkProfile = doLoadCurrentSdk();
-                }
+        	SdkTracker tracker = AndworxFactory.instance().getSdkTracker();
+        	tracker.addSdkListener(sdkListener);
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+            	long duration = 30000L;
+            	public void run() {
+            		if (sdkListener.isSdkAvailable())
+            			signal();
+            		else if ((duration -= 1000L) <= 0)
+            			signal();
+            	}
+            	private void signal() {
+            		synchronized (this) {
+            			notifyAll();
+            		}
+            	}
+            }; 
+            timer.scheduleAtFixedRate(task, 1000L, 1000L);
+            synchronized (task) {
+            	task.wait();
             }
         }
+		if (sdkListener.isSdkAvailable())
+			sdkProfile = sdkListener.getSdk();
+		else
+			fail(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
         return sdkProfile;
     }
-
-	/**
-	 * Gets the current SDK from ADT, waiting if necessary.
-	 * @throws InterruptedException 
-	 */
-	private SdkProfile doLoadCurrentSdk() throws InterruptedException {
-    	SdkTracker tracker = AndworxFactory.instance().getSdkTracker();
-    	tracker.addSdkListener(sdkListener);
-		SdkProfile sdk = sdkListener.getCurrentSdk();
-		if (sdk == null)
-			while (sdk == null) {
-				synchronized(sdkListener) {
-					sdkListener.wait(2000);
-				}
-				if (!sdkListener.isSdkAvailable())
-					fail(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
-				sdk = sdkListener.getCurrentSdk();
-			}
-		System.out.println("Load CurrentSdk complete");
-		return sdkListener.getCurrentSdk();	
-	}
 
 }
