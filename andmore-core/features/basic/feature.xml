@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.andworx.android.basic.feature"
+      label="%feature.label"
+      version="0.0.1.qualifier"
+      provider-name="%feature.provider.name"
+      plugin="org.eclipse.andworx.android.common"
+      os="linux,macosx,win32"
+      ws="carbon,cocoa,gtk,win32"
+      arch="ppc,x86,x86_64"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
+
+   <description>
+      %feature.description
+   </description>
+
+   <copyright>
+      %feature.copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <url>
+      <discovery label="Classy Data V2.1.1" url="https://dl.bintray.com/cybersearch2/plugins/Classy_Data/V2.3.0"/>
+      <discovery label="Groovy e4.8" url="http://dist.springsource.org/release/GRECLIPSE/e4.8"/>
+   </url>
+
+   <includes
+         id="org.eclipse.andworx.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="au.com.cybersearch2.classy_data.feature"
+         version="2.3.0.201811142009"
+         name="Classy Data"
+         search-location="self"/>
+
+   <includes
+         id="org.codehaus.groovy24.feature"
+         version="3.1.0.xx-201810221859-e48-RELEASE"
+         name="Groovy Compiler 2.4"
+         search-location="self"/>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.browser"/>
+      <import plugin="org.eclipse.text"/>
+      <import plugin="org.eclipse.core.net"/>
+      <import plugin="org.eclipse.ui.net"/>
+      <import plugin="org.apache.xerces"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.apache.commons.httpclient"/>
+      <import plugin="org.eclipse.andworx" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.gef"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.wst.common.snippets"/>
+      <import plugin="org.eclipse.andworx.build" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.swt" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.andworx.ddms" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.core.expressions"/>
+      <import plugin="org.apache.commons.net" version="1.4.1" match="greaterOrEqual"/>
+      <import plugin="org.apache.oro" version="2.0.8" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.ddmuilib" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.sdkuilib" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.equinox.security"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.equinox.p2.artifact.repository"/>
+      <import plugin="org.eclipse.equinox.p2.core"/>
+      <import plugin="org.eclipse.equinox.p2.engine"/>
+      <import plugin="org.eclipse.equinox.p2.metadata"/>
+      <import plugin="org.eclipse.equinox.p2.metadata.repository"/>
+      <import plugin="org.eclipse.equinox.p2.ui"/>
+      <import plugin="org.eclipse.equinox.p2.repository"/>
+      <import plugin="org.eclipse.equinox.p2.operations"/>
+      <import plugin="org.eclipse.equinox.p2.touchpoint.natives"/>
+      <import plugin="org.eclipse.equinox.p2.ui.sdk"/>
+      <import feature="org.eclipse.datatools.enablement.sqlite.feature" version="1.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.osgi.services"/>
+      <import plugin="org.apache.commons.logging"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.andworx.android.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.codesnippets"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.logger"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.andworx.android"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.launch"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.installer"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.logger.collector"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

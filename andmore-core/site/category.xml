@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description>
+	Andworx for Android
+   </description>
+   <feature id="org.eclipse.andworx.android.basic.feature" version="0.0.0" patch="false">
+      <category name="Andworx"/>
+   </feature>
+   
+   <feature id="org.eclipse.andworx.android.basic.feature.source" version="0.0.0">
+       <category name="Andworx Core SDK"/>
+   </feature>
+   <category-def name="Andworx" label="Andworx">
+       <description>
+           Android Development Tools
+       </description>
+   </category-def>
+      
+   <category-def name="Andworx Core SDK" label="Andworx Core SDK">
+       <description>
+           Andworx Tools SDK
+       </description>
+   </category-def>
+
+</site>

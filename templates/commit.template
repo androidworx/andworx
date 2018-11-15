@@ -1,0 +1,6 @@
+[bugnumber] Summary Description
+    
+Detail Description here about the commit.
+    
+Bug: https://bugs.eclipse.org/bugs/show_bug.cgi?id=bugnumber
+Signed-off-by: Joe Somebody <somebody@someplace.net>

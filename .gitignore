@@ -1,0 +1,5 @@
+target
+*~
+.DS_*
+bin
+/m2e-android/

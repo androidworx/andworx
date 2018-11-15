@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+      <groupId>org.eclipse.andworx</groupId>
+      <artifactId>andworx-parent</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.eclipse.andworx</groupId>
+  <artifactId>andmore-core-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+    
+  <!-- Common properties used in all modules -->
+  <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  <modules>    
+    <module>plugins/logger</module>
+    <module>plugins/common</module>
+    <module>plugins/android</module>
+    <module>plugins/logger.collector</module>
+    <module>plugins/installer</module>
+    <module>plugins/launch</module>
+    <module>plugins/snippets</module>
+
+    <module>features/basic</module>
+    <module>features/feature</module>
+    <module>site</module>
+
+  </modules>
+  
+  
+  <build>
+  	<sourceDirectory>src</sourceDirectory>
+  </build>
+</project>

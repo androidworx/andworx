@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>org.eclipse.andworx.integration.tests</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+	<name>tests</name>
+
+	<parent>
+		<relativePath>../../pom.xml</relativePath>
+		<groupId>org.eclipse.andworx</groupId>
+		<artifactId>android-core-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<os-jvm-flags>-Xms256m -Xmx1024m</os-jvm-flags>
+	</properties>
+	<build>
+		<plugins>
+            <plugin>
+               <groupId>org.eclipse.tycho</groupId>
+               <artifactId>target-platform-configuration</artifactId>
+               <configuration>
+                  <dependency-resolution>
+                     <extraRequirements>
+                        <requirement>
+                           <type>eclipse-feature</type>
+							<id>org.eclipse.andworx.feature</id>
+							<versionRange>0.0.0</versionRange>
+                        </requirement>
+                     </extraRequirements>
+                  </dependency-resolution>
+               </configuration>
+            </plugin>			
+            <plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+ 					<skipTests>false</skipTests>
+					<testFailureIgnore>true</testFailureIgnore>
+                    <includes>
+                      <include>**/*Test.*</include>
+                    </includes>
+					<excludes>
+					  <exclude>org/eclipse/andworx/test/UserSessionTest.*</exclude>
+					</excludes>
+					<useUIHarness>true</useUIHarness>
+                    <useUIThread>false</useUIThread>
+                    <product>org.eclipse.platform.ide</product>
+					<appArgLine>-debug -console</appArgLine>
+					<argLine>${os-jvm-flags}</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.jacoco</groupId>
+										<artifactId>
+											jacoco-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.7.2.201409121644,)
+										</versionRange>
+										<goals>
+											<goal>prepare-agent</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<profiles>
+	    <!-- Conflicts with profile "java-9" 
+		<profile>
+			<id>macosx-jvm-flags</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<os-jvm-flags>-Xms256m -Xmx512m -XstartOnFirstThread</os-jvm-flags>
+			</properties>
+		</profile>
+		 -->
+		<profile>
+            <id>java-9</id>
+            <activation>
+                <property><name>java.execution.version</name><value>9</value></property>
+            </activation>
+			<properties>
+				<os-jvm-flags>-Xms256m -Xmx512m --add-modules=ALL-SYSTEM</os-jvm-flags>
+			</properties>
+		</profile>
+		<profile>
+			<id>skipTests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-surefire-plugin</artifactId>
+						<version>${tycho-version}</version>
+						<configuration>
+							<skipTests>true</skipTests>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+      <groupId>org.eclipse.andworx</groupId>
+      <artifactId>andworx-parent</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+	<artifactId>swt-droid-parent</artifactId>
+	<name>SWT Android Parent</name>
+	<packaging>pom</packaging>
+
+    <!-- Common properties used in all modules -->
+	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<modules>
+	    <module>org.eclipse.andmore.swt</module>
+		<module>org.eclipse.andmore.ddmuilib</module>
+		<module>org.eclipse.andmore.sdkuilib</module>
+		<module>org.eclipse.andmore.uiautomatorviewer</module>
+		<module>features/org.eclipse.andmore.swt</module>
+		<module>features/org.eclipse.andmore.ddmuilib</module>
+		<module>features/org.eclipse.andmore.sdkuilib</module>
+		<module>features/org.eclipse.andmore.uiautomatorviewer</module>
+	</modules>
+</project>

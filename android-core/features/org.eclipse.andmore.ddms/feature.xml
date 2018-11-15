@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.andworx.ddms.feature"
+      label="Andmore Android DDMS"
+      version="0.0.1.qualifier"
+      provider-name="Eclipse Andmore"
+      plugin="org.eclipse.andworx.ddms"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
+
+   <description>
+      Android Dalvik Debug Monitor Service
+   </description>
+
+   <copyright>
+      Copyright (C) 2007-2018 The Android Open Source Project
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.ui" version="0.0.0"/>
+      <import plugin="org.eclipse.core.runtime" version="0.0.0"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.andworx.ddms"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

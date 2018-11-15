@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.andworx.package.feature"
+      label="Andmore Package Feature (Incubating)"
+      version="0.0.1.qualifier"
+      provider-name="Eclipse Andmore"
+      plugin="org.eclipse.andworx.package"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
+
+   <description url="http://www.eclipse.org/andmore">
+      Android Developer Tools
+   </description>
+
+   <copyright>
+      Copyright (C) 2007-2018 The Android Open Source Project
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.equinox.app"/>
+      <import feature="org.eclipse.jdt" version="3.13.4.v20180330-0919"/>
+      <import feature="org.eclipse.rcp" version="4.7.3.v20180330-0640"/>
+      <import feature="org.eclipse.equinox.p2.user.ui" version="2.3.2.v20171108-1343"/>
+      <import feature="org.eclipse.platform" version="4.7.3.v20180330-0640"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.andworx.package"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+</feature>

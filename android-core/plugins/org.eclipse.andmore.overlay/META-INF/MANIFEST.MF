@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ADT XML Overlay
+Bundle-SymbolicName: org.eclipse.andworx.overlay;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Bundle-Vendor: Eclipse Andmore
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.ui,
+ org.eclipse.debug.core,
+ org.eclipse.debug.ui,
+ org.eclipse.wst.sse.core,
+ org.eclipse.wst.sse.ui,
+ org.eclipse.wst.xml.core,
+ org.eclipse.wst.xml.ui,
+ org.eclipse.andworx
+Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.jface.text.formatter
+Require-Capability: osgi.ee; filter:="(|(&(osgi.ee=JavaSE)(version=1.8))(&(osgi.ee=JavaSE)(version=9)))"
+Automatic-Module-Name: org.eclipse.andworx.overlay

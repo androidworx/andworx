@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.andworx.android.feature"
+      label="%feature.android.label"
+      version="0.0.1.qualifier"
+      provider-name="%feature.android.provider.name"
+      plugin="org.eclipse.andworx.android.product"
+      os="linux,macosx,win32"
+      ws="carbon,cocoa,gtk,win32"
+      arch="ppc,x86,x86_64"
+      license-feature="org.eclipse.license"
+      license-feature-version="0.0.0">
+
+   <description>
+      %feature.android.description
+   </description>
+
+   <copyright>
+      %feature.android.copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <includes
+         id="org.eclipse.andworx.android.basic.feature"
+         version="0.0.0"/>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.andworx" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.android.common"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.andworx.ddms" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.apache.xerces"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.core.expressions"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.apache.commons.net" version="1.4.1" match="greaterOrEqual"/>
+      <import plugin="org.apache.oro" version="2.0.8" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.swt" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.ddmuilib" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.sdkuilib" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.andworx.build" version="0.0.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.equinox.security"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.forms"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.equinox.p2.artifact.repository"/>
+      <import plugin="org.eclipse.equinox.p2.core"/>
+      <import plugin="org.eclipse.equinox.p2.engine"/>
+      <import plugin="org.eclipse.equinox.p2.metadata"/>
+      <import plugin="org.eclipse.equinox.p2.metadata.repository"/>
+      <import plugin="org.eclipse.equinox.p2.ui"/>
+      <import plugin="org.eclipse.equinox.p2.repository"/>
+      <import plugin="org.eclipse.equinox.p2.operations"/>
+      <import plugin="org.eclipse.equinox.p2.touchpoint.natives"/>
+      <import plugin="org.apache.commons.httpclient"/>
+      <import plugin="org.eclipse.ui.browser"/>
+      <import plugin="org.eclipse.equinox.p2.ui.sdk"/>
+      <import plugin="org.eclipse.core.net"/>
+      <import plugin="org.eclipse.ui.net"/>
+      <import plugin="org.eclipse.andworx.android.logger"/>
+      <import feature="org.eclipse.datatools.enablement.sqlite.feature" version="1.8.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.gef" version="3.6.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.common.fproj" version="3.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.jsdt.feature" version="1.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.web_ui.feature" version="3.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.xml_core.feature" version="3.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.xml_ui.feature" version="3.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.wst.xsl.feature" version="1.1.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.platform" version="3.6.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.andworx.android"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.launch"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.installer"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.andworx.android.logger.collector"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

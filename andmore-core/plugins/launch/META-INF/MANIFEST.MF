@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.eclipse.andworx.android.launch;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Bundle-Activator: org.eclipse.andmore.android.launch.LaunchPlugin
+Bundle-Vendor: %providerName
+Require-Bundle: org.eclipse.andworx.android,
+ org.eclipse.andworx.android.common,
+ org.eclipse.debug.ui,
+ org.eclipse.jdt.launching,
+ org.eclipse.jdt.core,
+ org.eclipse.andworx.ddms;bundle-version="0.0.1",
+ org.eclipse.andworx;bundle-version="0.0.1",
+ org.eclipse.core.runtime,
+ org.eclipse.ui.console,
+ org.eclipse.ui,
+ org.eclipse.andworx.swt;bundle-version="0.0.1",
+ org.eclipse.andworx.build;bundle-version="0.0.1",
+ org.eclipse.andworx.sdkuilib
+Require-Capability: osgi.ee; filter:="(|(&(osgi.ee=JavaSE)(version=1.8))(&(osgi.ee=JavaSE)(version=9)))"
+Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.andmore.android.launch,
+ org.eclipse.andmore.android.launch.i18n
+Automatic-Module-Name: org.eclipse.andworx.android.launch
