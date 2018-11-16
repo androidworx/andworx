@@ -77,16 +77,13 @@ public class ImportTest {
 
 	@Before 
 	public void setUp() throws InterruptedException {
-        try {
-			for (SWTBotShell shell: swtbot.shells()) {
-				if (shell.getText().contains("crashed")) {
-					SWTBot eclipseBot = shell.bot();
-					eclipseBot.button("No").click();
-					break;
-				}
+		// Dismiss desktop error dialog, if presenst
+		for (SWTBotShell shell: swtbot.shells()) {
+	        try {
+				shell.bot().button("No").click();
+			} catch (WidgetNotFoundException e) {
+				// Ignore
 			}
-		} catch (WidgetNotFoundException e) {
-			// Ignore
 		}
 		// Switch when no SDK configured
 		//sdkHolder = new SdkHolder(true);
