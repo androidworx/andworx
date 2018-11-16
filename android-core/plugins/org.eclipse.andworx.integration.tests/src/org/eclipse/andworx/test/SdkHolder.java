@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.SdkTracker;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -44,86 +45,32 @@ public class SdkHolder {
 		}
 
 	}
-	
+
+	private final AndworxFactory objectFactory;
     private volatile SdkProfile sdkProfile;
     private TestSdkListener sdkListener;
     private IEventBroker eventBroker;
 
-    public SdkHolder(boolean useAndroidHome) {
-
+    public SdkHolder() {
+    	objectFactory = AndworxFactory.instance();
     	sdkListener = new TestSdkListener();
-    	if (!useAndroidHome)
-    		return;
-    	IEclipseContext serviceContext = E4Workbench.getServiceContext();
-    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
-       	EventHandler eventHandler = new EventHandler() {
-			@Override
-			public void handleEvent(Event event) {
-			   	SdkTracker tracker = AndworxFactory.instance().getSdkTracker();
-			   	if (tracker.getSdkProfile() == null) {
-			   		// Use ANDROID_HOME if set in enviroment and exists
-			   		String androidHome = System.getenv("ANDROID_HOME");
-			   		File sdkPath = null;
-			   		if (androidHome != null) {
-			   			sdkPath = new File(androidHome);
-			   			if (sdkPath.exists() && sdkPath.isDirectory()) {
-			   				File sdkLocation = sdkPath;
-			   				AndroidSdkPreferences prefs = new AndroidSdkPreferences() {
-
-								@Override
-								public File getLastSdkPath() {
-									return null;
-								}
-
-								@Override
-								public File getSdkLocation() {
-									return sdkLocation;
-								}
-
-								@Override
-								public void setSdkLocation(File location) {
-								}
-
-								@Override
-								public boolean isSdkSpecified() {
-									return false;
-								}
-
-								@Override
-								public void addPropertyChangeListener(IPropertyChangeListener listener) {
-								}
-
-								@Override
-								public String getSdkLocationValue() {
-									return null;
-								}
-
-								@Override
-								public boolean save() {
-									return false;
-								}};
-							AndroidSdkValidator validator = new AndroidSdkValidator(prefs);
-							if (validator.checkSdkLocationAndId(sdkLocation, new QuietSdkValidator())) {
-								sdkListener.onLoadSdk(tracker.setCurrentSdk(sdkLocation.getAbsolutePath()));
-							}
-			   			}
-			   		}
-			   	}
-		        eventBroker.unsubscribe(this);
-			}};
-	    eventBroker.subscribe(AndworxEvents.ANDWORX_STARTED, eventHandler);
-	    eventBroker.subscribe(AndworxEvents.INSTALL_SDK_REQUEST, eventHandler);
     }
     
     public SdkProfile getCurrentSdk() throws InterruptedException {
         if (sdkProfile == null) {
-        	SdkTracker tracker = AndworxFactory.instance().getSdkTracker();
+        	SdkTracker tracker = objectFactory.getSdkTracker();
         	tracker.addSdkListener(sdkListener);
+            AndroidSdkPreferences sdkPrefs = objectFactory.getAndroidSdkPreferences();
             Timer timer = new Timer();
             TimerTask task = new TimerTask() {
             	long duration = 30000L;
             	public void run() {
             		if (sdkListener.isSdkAvailable())
+            			signal();
+            		else if (!sdkPrefs.isSdkSpecified() && 
+            				(sdkPrefs.getLastSdkPath() == null) && 
+            				AndworxBuildPlugin.instance().isStarted() &&
+            			    setAndroidHomeSdk())
             			signal();
             		else if ((duration -= 1000L) <= 0)
             			signal();
@@ -146,4 +93,59 @@ public class SdkHolder {
         return sdkProfile;
     }
 
+    private boolean setAndroidHomeSdk() {
+	   	SdkTracker tracker = objectFactory.getSdkTracker();
+	   	if (tracker.getSdkProfile() == null) {
+	   		// Use ANDROID_HOME if set in enviroment and exists
+	   		String androidHome = System.getenv("ANDROID_HOME");
+	   		File sdkPath = null;
+	   		if (androidHome != null) {
+	   			sdkPath = new File(androidHome);
+	   			if (sdkPath.exists() && sdkPath.isDirectory()) {
+	   				File sdkLocation = sdkPath;
+	   				AndroidSdkPreferences prefs = new AndroidSdkPreferences() {
+
+						@Override
+						public File getLastSdkPath() {
+							return null;
+						}
+
+						@Override
+						public File getSdkLocation() {
+							return sdkLocation;
+						}
+
+						@Override
+						public void setSdkLocation(File location) {
+						}
+
+						@Override
+						public boolean isSdkSpecified() {
+							return false;
+						}
+
+						@Override
+						public void addPropertyChangeListener(IPropertyChangeListener listener) {
+						}
+
+						@Override
+						public String getSdkLocationValue() {
+							return null;
+						}
+
+						@Override
+						public boolean save() {
+							return false;
+						}};
+					AndroidSdkValidator validator = new AndroidSdkValidator(prefs);
+					if (validator.checkSdkLocationAndId(sdkLocation, new QuietSdkValidator())) {
+						sdkListener.onLoadSdk(tracker.setCurrentSdk(sdkLocation.getAbsolutePath()));
+						return true;
+					}
+	   			}
+	   		}
+	   		return false;
+	   	}
+		return true;
+    }
 }

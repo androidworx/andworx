@@ -25,7 +25,7 @@ public class AndworxEvents {
     public static final String  ANDWORX_STARTED = TOPIC_BASE + "/andworx-started";
     /** ADB Started */
     public static final String  ADB_STARTED = TOPIC_BASE + "/adb-started";
-    /** Andworx started */
+    /** Andworx started with no SDK configured */
     public static final String  INSTALL_SDK_REQUEST = TOPIC_BASE + "/install-sdk";
     /** SDK loaded */
     public static final String  SDK_LOADED = TOPIC_BASE + "/sdk-loaded";

@@ -127,6 +127,8 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
     /** SDK validator */
     private AndroidSdkValidator androidSdkValidator;
     private AndroidSdkHelper androidSdkHelper;
+    /** Flag set true if ANDWORX_STARTED has been broadcast */
+    private volatile boolean isStarted;
     /** A cache for already-created files/directories */  
 	private FileCache userFileCache;
 	/** Simple file logging <tt>Handler</tt> */
@@ -172,6 +174,14 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
 		androidSdkValidator = new AndroidSdkValidator(androidSdkHelper);
 	}
 
+	/**
+	 * Returns flag set true if ANDWORX_STARTED has been broadcast
+	 * @return boolean
+	 */
+	public boolean isStarted() {
+		return isStarted;
+	}
+	
 	/**
 	 * Schedule job to run after startup has completed
 	 * @param job Job to run
@@ -501,6 +511,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
 				public void propertyChange(PropertyChangeEvent event) {
 			        eventBroker.post(AndworxEvents.ANDWORX_STARTED, new Object());
 				}});
+			isStarted = true;
 			eventBroker.post(AndworxEvents.INSTALL_SDK_REQUEST, prefs);
 		}
      }

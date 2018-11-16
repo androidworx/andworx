@@ -14,7 +14,7 @@ public class UserSessionTest {
 	@Before 
 	public void setUp() throws InterruptedException {
 		//sdkHolder = new SdkHolder(false); // Use when no SDK configured
-		sdkHolder = new SdkHolder(true);
+		sdkHolder = new SdkHolder();
 		sdk = sdkHolder.getCurrentSdk();
 		// Wait for targets to be loaded
 		sdk.getAndroidTargets();

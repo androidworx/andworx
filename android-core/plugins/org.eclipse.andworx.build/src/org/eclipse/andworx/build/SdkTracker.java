@@ -63,7 +63,7 @@ public class SdkTracker {
 		SdkProfile trialSdk = new SdkProfile(sdkLocation);
 		if (trialSdk.isValid()) {
 			if (targetLoadStatusMonitor != null)
-				sdkProfile.setTargetLoadStatusMonitor(targetLoadStatusMonitor);
+				trialSdk.setTargetLoadStatusMonitor(targetLoadStatusMonitor);
 	    	//System.out.println("Notifying " + sdkListeners.size() + " SDK listeners");
 			objectFactory.setAndroidEnvironment(trialSdk);
 			sdkProfile = trialSdk;
