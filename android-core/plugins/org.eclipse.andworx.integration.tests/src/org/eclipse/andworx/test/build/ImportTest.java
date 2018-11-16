@@ -77,6 +77,17 @@ public class ImportTest {
 
 	@Before 
 	public void setUp() throws InterruptedException {
+        try {
+			for (SWTBotShell shell: swtbot.shells()) {
+				if (shell.getText().contains("crashed")) {
+					SWTBot eclipseBot = shell.bot();
+					eclipseBot.button("No").click();
+					break;
+				}
+			}
+		} catch (WidgetNotFoundException e) {
+			// Ignore
+		}
 		// Switch when no SDK configured
 		//sdkHolder = new SdkHolder(true);
 		sdkHolder = new SdkHolder();
@@ -130,18 +141,8 @@ public class ImportTest {
 		}
 		*/
 		assertNotNull(sdk);
-		SWTBotShell eclipseShell = null;
-		for (SWTBotShell shell: swtbot.shells()) {
-			if (shell.getText().contains("Eclipse")) {
-				eclipseShell = shell;
-				break;
-			}
-		}
-		if (eclipseShell == null)
-			fail("Eclipse shell not found");
-		SWTBot eclipseBot = eclipseShell.bot();
 		//AdtStartupService adtStartupService = AdtStartupService.instance();
-		eclipseBot.menu("File").menu("Import...").click();
+		swtbot.menu("File").menu("Import...").click();
 		swtbot.tree().getTreeItem("Android").expand();
 		swtbot.tree().getTreeItem("Android").getNode("Import Android project").select();
 		swtbot.button("Next >").click();
