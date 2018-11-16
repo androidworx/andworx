@@ -32,14 +32,11 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchListener;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,6 +50,8 @@ public class ImportTest {
 	private static final String APK_NAME = "com.example.android.system.runtimepermissions.Application.apk";
 	
 	private static SWTWorkbenchBot swtbot;
+	
+	private SWTBot eclipseShell;
 
 	private SdkHolder sdkHolder;
 	private SdkProfile sdk;
@@ -78,29 +77,34 @@ public class ImportTest {
 
 	@Before 
 	public void setUp() throws InterruptedException {
+	    closeWelcomePage();
 		// Dismiss desktop error dialog, if presenst
 		for (SWTBotShell shell: swtbot.shells()) {
 	        try {
-				if (!shell.getText().contains("Eclipse")) {
+				if (shell.getText().contains("Eclipse")) 
+					eclipseShell = shell.bot();
+				else
 					shell.close();
-				}
 			} catch (WidgetNotFoundException | TimeoutException e) {
 				// Ignore
 			}
 		}
+		assert(eclipseShell != null);
 		// Switch when no SDK configured
 		//sdkHolder = new SdkHolder(true);
 		sdkHolder = new SdkHolder();
 		sdk = sdkHolder.getCurrentSdk();
 		// Allow time for initial views to be rendered
-		Thread.sleep(2000);
+		/*
+		Thread.sleep(200);
 		try {
 			SWTBotShell sdkInstallShell = swtbot.shell("Select Android SDK installation");
 			sdkInstallShell.bot().button("Cancel").click();
-			swtbot.sleep(500);
+			swtbot.sleep(200);
 		} catch (WidgetNotFoundException e) {
 			// Ignore
 		}
+		*/
 		// Wait for targets to be loaded
 		sdk.getAndroidTargets();
 		projectLocation =  com.google.common.io.Files.createTempDir();
@@ -116,8 +120,7 @@ public class ImportTest {
         };
         unArchiver.setDestDirectory(projectLocation);
         unArchiver.extract();
-        closeWelcomePage();
-	}
+ 	}
 	
 	@Test public void testImportPermissionsProject() throws InterruptedException {
 		/*
@@ -142,7 +145,7 @@ public class ImportTest {
 		*/
 		assertNotNull(sdk);
 		//AdtStartupService adtStartupService = AdtStartupService.instance();
-		swtbot.menu("File").menu("Import...").click();
+		eclipseShell.menu("File").menu("Import...").click();
 		swtbot.tree().getTreeItem("Android").expand();
 		swtbot.tree().getTreeItem("Android").getNode("Import Android project").select();
 		swtbot.button("Next >").click();
