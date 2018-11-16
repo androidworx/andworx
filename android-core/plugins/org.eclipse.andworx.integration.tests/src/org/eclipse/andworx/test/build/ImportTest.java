@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
+import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
@@ -80,8 +81,10 @@ public class ImportTest {
 		// Dismiss desktop error dialog, if presenst
 		for (SWTBotShell shell: swtbot.shells()) {
 	        try {
-				shell.bot().button("No").click();
-			} catch (WidgetNotFoundException e) {
+				if (!shell.getText().contains("Eclipse")) {
+					shell.close();
+				}
+			} catch (WidgetNotFoundException | TimeoutException e) {
 				// Ignore
 			}
 		}
