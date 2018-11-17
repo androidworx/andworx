@@ -95,8 +95,7 @@ public class ImportTest {
 		sdkHolder = new SdkHolder();
 		sdk = sdkHolder.getCurrentSdk();
 		// Allow time for initial views to be rendered
-		/*
-		Thread.sleep(200);
+		Thread.sleep(2000);
 		try {
 			SWTBotShell sdkInstallShell = swtbot.shell("Select Android SDK installation");
 			sdkInstallShell.bot().button("Cancel").click();
@@ -104,7 +103,6 @@ public class ImportTest {
 		} catch (WidgetNotFoundException e) {
 			// Ignore
 		}
-		*/
 		// Wait for targets to be loaded
 		sdk.getAndroidTargets();
 		projectLocation =  com.google.common.io.Files.createTempDir();
