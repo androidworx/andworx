@@ -64,6 +64,7 @@ import com.android.annotations.Nullable;
 import com.android.ide.common.build.ApkData;
 import com.android.ide.common.process.JavaProcessInfo;
 import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
 import com.android.utils.FileUtils;
 
 /**
@@ -94,8 +95,11 @@ public class BuildHelper {
     		return;
     	if (!directory.exists())
     		FileUtils.mkdirs(directory);
-    	else { // FileUtils unreliable at deleting directory contenets
-    		MoreFiles.deleteDirectoryContents(directory.toPath());
+    	else { // FileUtils unreliable at deleting directory contents
+    		// Allow insecure deletes is required as Windows supports this feaure and Linux does not.
+    		// RecursiveDeleteOption.ALLOW_INSECURE makes behavior consistent. The feature also can
+    		// result in exceptions being thrown for very obscure reasons.
+    		MoreFiles.deleteDirectoryContents(directory.toPath(), RecursiveDeleteOption.ALLOW_INSECURE);
     	}
     }
 

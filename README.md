@@ -45,13 +45,34 @@ Refer [Guide to Using Toolchains](https://maven.apache.org/guides/mini/guide-usi
 You should also ensure your Git [username](https://help.github.com/articles/setting-your-username-in-git/) and 
 [commit email address](https://help.github.com/articles/setting-your-commit-email-address-in-git/) are configured.
 
-### Steps
+### Maven Build Steps
 
-1. Clone this repository to your workspace and go to the newly created "andworx" project sub directory. 
-1. From a command terminal, launch a Maven build using appropriate tool chain parameters  eg `mvn clean verify -Djava.execution.vendor=oracle -Djava.execution.version=1.8`
+1. Clone [this repository](https://github.com/androidworx/andworx.git). The project will be placed is a directory named "andworx". 
+1. From a command terminal, use Maven to build Andworx. Note that tool chain vendor and version parameters need to be included eg `mvn clean verify -Djava.execution.vendor=oracle -Djava.execution.version=1.8`
 1. If a first time build, you will potentially observe a large number of files being downloaded to be cached on the local Maven repository. If so, it may be time for a coffee break.
 
 The build, when successful, creates a P2 repository in project sub directory andmore-core/site/target/repository.
+
+## Eclipse Development
+
+Once the build succeeds, Andworx can be imported to Eclipse IDE for RCP and RAP Developers. The first step is to set the Eclipse active platform to the Andworx target which is in a file named andworx.target.target
+located in project directory andworx.target. To do this, open the file with the Target Editor. It will take a while for the repository indexes to be loaded but then you will be able to click on a link at
+the top of the window to set this target as the current active platform.
+
+Andworx is imported as a Maven project. Note that only the root POM and plugins need be imported initally. Note that on the initial import, Maven will request to install life-cycle components for Tycho which
+you should accept. Once this installation is complete, there will be a lot of errors and you will need to use the Maven option to update all Maven projects.
+
+### Photon Quirks
+
+Eclipse Photon has quirks around when to clean projects:
+
+* Some bug in Photon causes some projects to suddenly needing to be clean. This can be triggered by an automated build or cleaning a single project. The symptom is clean one project leads to several projects needing cleaning. The symptom Description is
+"API analysis aborted for 'org.eclipse.andworx.android' since its build path is incomplete". To get out of this state requires you to clean each of the other projects in error, one by one, until the problem clears.
+If you are lucky, only one additional clean is needed.
+
+* The project org.eclipse.andworx.build uses Dagger annotation processing for dependency injection. Sometimes a prject clean is required to regenerate Dagger sources. A Maven build can trigger this situation.
+The symptom is the project has just over 40 compile errors for missing Dagger-generated files. You will need to manually clean the project. Note this usally triggers the preceeding bug.
+
 
 ### SWTBot
 
