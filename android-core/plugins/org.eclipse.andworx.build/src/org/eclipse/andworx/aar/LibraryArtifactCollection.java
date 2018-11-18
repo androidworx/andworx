@@ -149,8 +149,10 @@ public class LibraryArtifactCollection extends ArtifactCollection {
 		});
         if (metafiles.manifest != null) {
     		String artifactPath = name + "/" + SYMBOL_LIST_WITH_PACKAGE_NAME + "/" + getArtifactId(explodedAar, true);
-        	Path artifactDir = fileManager.prepareTargetPath(artifactPath);
-         	metaFilesMap.put(getPackageAwareR(artifactDir), metafiles);
+    		if (!fileManager.containsFile(artifactPath)) {
+    			Path artifactDir = fileManager.prepareTargetPath(artifactPath);
+    			metaFilesMap.put(getPackageAwareR(artifactDir), metafiles);
+    		}
         }
         return resourceSet;
     }
