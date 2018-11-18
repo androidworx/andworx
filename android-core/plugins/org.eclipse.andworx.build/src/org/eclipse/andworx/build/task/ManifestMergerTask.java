@@ -214,7 +214,6 @@ public class ManifestMergerTask extends StandardBuildTask {
                     		manifestOutputDirectory,
                             apkData.getDirName(),
                             SdkConstants.ANDROID_MANIFEST_XML);
-                buildHelper.prepareDir(manifestOutputFile.getParentFile());
                 File instantRunManifestOutputFile =
                     FileUtils.join(
                             instantRunManifestOutputDirectory,
