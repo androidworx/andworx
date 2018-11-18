@@ -142,8 +142,8 @@ public class PackageApplicationTask extends StandardBuildTask {
      * Packages the application incrementally. In case of instant run packaging, this is not a
      * perfectly incremental task as some files are always rewritten even if no change has occurred.
      *
-     * @param apkData the split being built
-     * @param outputFile expected output package file
+     * @param incrementalDirForSplit
+     * @param manifestOutputs
      * @param changedDex incremental dex packaging data
      * @param changedJavaResources incremental java resources
      * @param changedAssets incremental assets
@@ -193,7 +193,6 @@ public class PackageApplicationTask extends StandardBuildTask {
                             + manifestType
                             + " associated manifest file");
         }
-        buildHelper.prepareDir(outputFile.getParentFile());
         buildHelper.prepareDir(incrementalDirForSplit);
 
         try (IncrementalPackager packager =
