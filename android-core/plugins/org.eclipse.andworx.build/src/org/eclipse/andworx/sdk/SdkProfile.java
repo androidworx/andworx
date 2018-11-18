@@ -220,7 +220,7 @@ public class SdkProfile extends AndroidEnvironment implements ILogger {
 		    {
 		    	String message;
 		    	if (e != null)
-		    		message = s + "\n" + Throwables.getStackTraceAsString(e);
+		    		message = s + "\n" + Throwables.getStackTraceAsString(Throwables.getRootCause(e));
 		    	else
 		    		message = s;
 		    	warning(message);

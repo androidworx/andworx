@@ -63,7 +63,7 @@ import com.android.SdkConstants;
 import com.android.annotations.Nullable;
 import com.android.ide.common.build.ApkData;
 import com.android.ide.common.process.JavaProcessInfo;
-import com.android.tools.r8.com.google.common.io.MoreFiles;
+import com.google.common.io.MoreFiles;
 import com.android.utils.FileUtils;
 
 /**

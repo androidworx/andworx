@@ -33,7 +33,6 @@ import org.eclipse.andworx.helper.BuildHelper;
 import org.eclipse.andworx.log.SdkLogger;
 
 import com.android.builder.utils.FileCache;
-import com.android.utils.PathUtils;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharSink;
@@ -55,8 +54,6 @@ public class FileManager {
 	private String pluginVersion;
 	/** Maps cached file to file name */
 	private Map<String, CachedFile> cachedFileMap;
-	/** Temporary path for data area backup. Used as fallback if data area not set */
-	private Path tempPath;
 	// Utility to facilitate project builds
 	private BuildHelper buildHelper;
 	
@@ -65,7 +62,8 @@ public class FileManager {
 	 * @param pluginVersion Input parameter required when using {@link FileCache}
 	 */
     public FileManager(File dataArea, FileCache userFileCache, String pluginVersion) {
-    	this.dataArea = dataArea;
+    	assert(dataArea != null);
+    	this.dataArea = new File(dataArea, FILES_ROOT);
     	this.userFileCache = userFileCache;
 		this.pluginVersion = pluginVersion;
 		cachedFileMap = new HashMap<>();
@@ -88,21 +86,6 @@ public class FileManager {
 		return pluginVersion;
 	}
 
-    /**
-     * Set data area where files are to saved
-     * @param dataArea File object
-     */
-	public void setDataArea(File dataArea) {
-		this.dataArea = new File(dataArea, FILES_ROOT);
-    	if (tempPath != null) { // Copy temporary files to data area
-    		File[] files = tempPath.toFile().listFiles();
-    		if (files.length > 0) {
-    			for (File file: files)
-    				saveFile(file);
-    		}
-    	}
-	}
-
 	/**
 	 * Returns flag set true if given file is saved to data area
 	 * @param filePath File path
@@ -117,26 +100,10 @@ public class FileManager {
      * Save given file to data area
      * @param toSave File
      */
-    public boolean saveFile(File toSave) {
+    public void saveFile(File toSave) {
     	Path targetPath;
-    	if (dataArea != null) {
-    		targetPath = getTargetPath(toSave.getName());
-    		copy(toSave, targetPath);
-    		return true;
-    	}
-    	if (tempPath == null) {
-        	try {
-    			tempPath = PathUtils.createTmpDirToRemoveOnShutdown(FileManager.class.getName());
-    		} catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			logger.error(e,"Error creating temporary path");
-    		}
-    	}
-    	if (tempPath != null) {
-    		copy(toSave, tempPath.resolve(toSave.getName()));
-    		return true;
-    	}
-    	return false;
+		targetPath = getTargetPath(toSave.getName());
+		copy(toSave, targetPath);
     }
 
     /**
@@ -146,17 +113,9 @@ public class FileManager {
      */
     public File saveFile(String filePath, InputStream inputStream) throws IOException {
     	Path targetPath;
-    	if (dataArea != null) {
-    		targetPath = getTargetPath(filePath);
-    		copy(inputStream, targetPath);
-    		return targetPath.toFile();
-    	}
-    	if (tempPath != null) {
-    		targetPath = tempPath.resolve(filePath);
-    		copy(inputStream, targetPath);
-    		return targetPath.toFile();
-    	}
-    	throw new IOException("Cannot extract bundle file: " + filePath);
+		targetPath = getTargetPath(filePath);
+		copy(inputStream, targetPath);
+		return targetPath.toFile();
     }
  
     /**

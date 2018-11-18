@@ -107,7 +107,7 @@ public class AndroidProjectOpener {
 	        	ProjectProfile profile = objectFactory.createProject(projectName, projectProfile, androidConfigurationBuilder);
 				projectId = profile.getProjectId();
 	        } catch (Exception e) {
-	        	String message = "Error creating project " + projectName + ": " + Throwables.getStackTraceAsString(e);
+	        	String message = "Error creating project " + projectName + ": " + Throwables.getStackTraceAsString(Throwables.getRootCause(e));
 	        	androidWizardListener.onError(message);
 	        	AndworxBuildPlugin.instance().logAndPrintError(e, projectName, message);
 	        }
@@ -147,7 +147,7 @@ public class AndroidProjectOpener {
     	        	return Status.CANCEL_STATUS;
 				}
 	        } catch (Exception e) {
-	        	String message = "Error " + getName() + ": " + Throwables.getStackTraceAsString(e);
+	        	String message = "Error " + getName() + ": " + Throwables.getStackTraceAsString(Throwables.getRootCause(e));
 	        	androidWizardListener.onError(message);
 	        	AndworxBuildPlugin.instance().logAndPrintError(e, getName(), message);
 	        	return Status.CANCEL_STATUS;
@@ -163,7 +163,7 @@ public class AndroidProjectOpener {
 	                ManifestData manifestData = AndroidManifestParser.parse(path);
 	                androidWizardListener.onManifestParsed(manifestData);
 		        } catch (Exception e) {
-		        	String message = "Error " + getName() + ": " + Throwables.getStackTraceAsString(e);
+		        	String message = "Error " + getName() + ": " + Throwables.getStackTraceAsString(Throwables.getRootCause(e));
 		        	androidWizardListener.onError(message);
 		        	AndworxBuildPlugin.instance().logAndPrintError(e, getName(), message);
 		        	return Status.CANCEL_STATUS;
@@ -321,7 +321,7 @@ public class AndroidProjectOpener {
 		        	AndroidConfiguration androidConfig = objectFactory.getAndroidConfiguration();
 		        	androidConfig.createProjectIdFile(projectId, location);
 		        } catch (Exception e) {
-		        	String message = "Error creating project " + projectName + ": " + Throwables.getStackTraceAsString(e);
+		        	String message = "Error creating project " + projectName + ": " + Throwables.getStackTraceAsString(Throwables.getRootCause(e));
 		        	androidWizardListener.onError(message);
 		        	AndworxBuildPlugin.instance().logAndPrintError(e, projectName, message);
 		        }

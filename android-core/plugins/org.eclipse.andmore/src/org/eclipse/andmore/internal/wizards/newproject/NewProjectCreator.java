@@ -637,9 +637,9 @@ public class NewProjectCreator  {
                 // Some other kind of exception
             	String message;
             	if (t != null)
-            		message = Throwables.getStackTraceAsString(t);
+            		message = Throwables.getStackTraceAsString(Throwables.getRootCause(t));
             	else
-            		message = Throwables.getStackTraceAsString(e);
+            		message = Throwables.getStackTraceAsString(Throwables.getRootCause(e));
                 MessageDialog.openError(AndmoreAndroidPlugin.getShell(), "Error while creating project", message);
             }
             e.printStackTrace();

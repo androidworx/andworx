@@ -29,26 +29,19 @@ import org.eclipse.andmore.internal.editors.IconFactory;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
-import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andworx.build.AndworxBuildPlugin;
-import org.eclipse.andworx.task.AndroidBuildJob;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -63,11 +56,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
@@ -329,7 +319,7 @@ public class ExportAndroidPage extends WizardPage implements SelectionListener, 
 	}
 
 	private void reportError(Throwable e) {
-    	String message = "Error creating project " + projectName + ": " + Throwables.getStackTraceAsString(e);
+    	String message = "Error creating project " + projectName + ": " + Throwables.getRootCause(e).getMessage();
     	onError(message);
     	AndworxBuildPlugin.instance().logAndPrintError(e, projectName, message);
 	}

@@ -240,7 +240,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
         Status status = new Status(IStatus.ERROR, PLUGIN_ID, message, exception);
         getLog().log(status);
         if (exception != null)
-        	message += "\n" + Throwables.getStackTraceAsString(exception);
+        	message += "\n" + Throwables.getStackTraceAsString(Throwables.getRootCause(exception));
         doPrintError(tag, message);
         showBuildConsole();
      }
@@ -273,19 +273,6 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
 		dataArea = pluginDataPath.makeAbsolute().toFile();
 		File cacheDirectory = null;
 		File logDirectory = null;
-		File filesDirectory = null;
-		filesDirectory = new File(pluginDataPath.makeAbsolute().toFile(), FileManager.FILES_ROOT);
-		if (!filesDirectory.exists() && !filesDirectory.mkdirs())
-			filesDirectory = null;
-		if (filesDirectory == null)
-			try {
-				filesDirectory = PathUtils.createTmpDirToRemoveOnShutdown(PLUGIN_ID + "." + FileManager.FILES_ROOT).toFile();
-				dataArea = filesDirectory;
-			} catch (IOException e) {
-		    }
-		if (filesDirectory == null) {
-			throw new AndworxException("File manager has no data area");
-		}
 		cacheDirectory = new File(pluginDataPath.makeAbsolute().toFile(), "cache");
 		if (!cacheDirectory.exists() && !cacheDirectory.mkdirs())
 			cacheDirectory = null;

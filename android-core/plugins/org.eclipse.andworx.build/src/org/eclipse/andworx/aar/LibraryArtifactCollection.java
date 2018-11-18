@@ -148,7 +148,7 @@ public class LibraryArtifactCollection extends ArtifactCollection {
 			}
 		});
         if (metafiles.manifest != null) {
-    		String artifactPath = name + "/" + SYMBOL_LIST_WITH_PACKAGE_NAME + "/" + getArtifactId(explodedAar);
+    		String artifactPath = name + "/" + SYMBOL_LIST_WITH_PACKAGE_NAME + "/" + getArtifactId(explodedAar, true);
         	Path artifactDir = fileManager.prepareTargetPath(artifactPath);
          	metaFilesMap.put(getPackageAwareR(artifactDir), metafiles);
         }
@@ -158,23 +158,35 @@ public class LibraryArtifactCollection extends ArtifactCollection {
 	/**
 	 * Returns artifact ID of library contained in given repository location
 	 * @param explodedAar Expanded AAR location
+	 * @param includeGroupId Flag set true if groud id to be included
 	 * @return artifact ID
 	 * @throws IOException
 	 */
-	private String getArtifactId(File explodedAar) throws IOException {
+	private String getArtifactId(File explodedAar, boolean includeGroupId) throws IOException {
+		Properties props = getArtifactPropeerties(explodedAar);
+		String artifactId = props.getProperty(ProjectRepository.ARTFACT_KEY);
+		if (artifactId == null) // This is not expected
+			throw new IOException(EXT_AAR + "-local missing artifact property (key = " + ProjectRepository.ARTFACT_KEY + ")");
+		if (includeGroupId) {
+			String groupId = props.getProperty(ProjectRepository.GROUP_ID_KEY);
+			if (groupId == null)
+				throw new IOException(EXT_AAR + "-local missing artiface property (key = " + ProjectRepository.GROUP_ID_KEY + ")");
+			artifactId = groupId + "." + artifactId;
+		}
+		return artifactId;
+	}
+
+	private Properties getArtifactPropeerties(File explodedAar) throws IOException  {
 		File repoMetaFile = new File(explodedAar, EXT_AAR + "-local");
 		if (!repoMetaFile.exists())
 			throw new FileNotFoundException(repoMetaFile.getAbsolutePath());
 		Properties props = new Properties();
 		try (InputStream inStream = new FileInputStream(repoMetaFile)) {
 		    props.loadFromXML(inStream);
+		    return props;
 		}
-		String artifactId = props.getProperty(ProjectRepository.ARTFACT_KEY);
-		if (artifactId == null)
-			throw new IOException(repoMetaFile.getName() + " missing artifact property (key = " + ProjectRepository.ARTFACT_KEY + ")");
-		return artifactId;
 	}
-
+	
 	/**
      * Returns the resolved artifacts, performing the resolution if required.
      * This will resolve the artifact metadata and download the artifact files as required.
