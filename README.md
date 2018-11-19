@@ -1,18 +1,22 @@
 # Andworx returns Android Development back to Eclipse
 
 Deprecated by Google in 2015, the Eclipse Android Development Toolkit (ADT) has lost the support needed to keep it up to date
-against the relentless evolution of Android technology. By the end of 2017 we had ADT successor [Andmore](https://www.eclipse.org/andmore), 
-which has a blend of MOTODEV Studio and ADT, at version 0.5.1 and no sign of another release, ever.
+against the relentless evolution of Android technology. By the end of 2017 the original ADT had been succeeded by  [Andmore](https://www.eclipse.org/andmore), 
+which has a blend of MOTODEV Studio and ADT. Andmore is sitting at version 0.5.1 and there is no sign of another release, ever.
 
 The Andworx project commenced in April 2018. The aim was to focus on Android application development, creating, importing, building, launching, 
-debugging and finally releasing applications. This not-so-revolutionary aim meant taking Andmore back to it's ADT roots to make it more manageable, 
-and adding a new Eclipse plug-in equivalent to the Android Gradle Plugin for performing all build operations. The degree of change mandated creation
-of new project and hence Andworx. 
+debugging and finally releasing applications. This focus could only be achieved with the available resources by reversing out most of the changes made to the ADT by Andmore.
+So Andworx goes back to the original ADT in it's scope. It also adds a new build plug-in, equivalent to the Android Gradle Plugin.
 
 Andworx has been under wraps while it's design was being establish but has now matured to the point where it is on a steady course and and developers
-can engage constructively to advance it's progress.  In order to access Andworx, a sample project has been set up to to demonstrate
-importing an Android project into Eclipse, launching it on a device and being able to debug it, and exporting a realease version ready to be
-installed on a suitable device. This is done using contemporary API level 27 build tools. Many milestones lay ahead including:
+are now invited to contribute to the project.  In order to access Andworx, a [sample project](http://cybersearch2.com.au/andworx/downloads/Permissions.zip) has been set up to to demonstrate Andworx in action:
+
+* import an Android project into Eclipse, 
+* launch the project application on a device
+* debug
+* export a realease version ready to be installed on a suitable device. 
+
+Thie sample project is configured to use contemporary API level 27 build tools. Many milestones lay ahead including:
 
 * Create and configure a new project
 * Add Tests 
@@ -24,7 +28,7 @@ Once Andworx is generally available, then there is plenty of opportunity for inn
 
 ## Getting Started
 
-Andworx is a Maven/Tycho project which creates a P2 update site from which Andworx can be installed using the Eclipse Platform "Install new software..." memu option.
+Andworx is a Maven/Tycho project which creates a P2 update site from which Andworx can be installed using the Eclipse Platform "Install new software..." menu option.
 The build process downloads a large number of dependent jars to be included with the Andworx components. There are also a large number of Maven, Tycho and Eclipse
 dependencies that take a while to download on first build. 
 
@@ -55,23 +59,39 @@ The build, when successful, creates a P2 repository in project sub directory and
 
 ## Eclipse Development
 
-Once the build succeeds, Andworx can be imported to Eclipse IDE for RCP and RAP Developers. The first step is to set the Eclipse active platform to the Andworx target which is in a file named andworx.target.target
+Once the build succeeds, Andworx can be imported to Eclipse IDE for RCP and RAP Developers. If you have not already done so, it is highly recommended to configure log4j before proceeding. One reason is
+that Andworx uses m2e to resolve dependencies and m2e uses log4j for logging. You will therefore be able to diagnose any m2e issues that may arise.
+
+As a minimum, log4j should be configured to have a console appender and a root log level higher than "debug". The console appender stops m2e writing error messages about no console appender
+configured for log4j. The log level advice prevents verbose logging to disk by m2e. You can get a sample log4j configuration in XML format from [Log4j XML Configuration Primer](https://wiki.apache.org/logging-log4j/Log4jXmlFormat).
+To get Eclipse to read this file, you need to add a line to the eclipse.ini file after `-vmargs` eg.
+
+`-Dlog4j.configuration=file:/home/andworx/eclipse/log4j.xml`
+
+
+One good suggestion when setting up Eclipse is to clear all errors and warnings that appear in the error log at start up. This is achievable and makes anything new coming up more obvious. 
+Hence beware of another potential Photon issue. That is the egit version may need updating. The clue is the warning in the error log "Builtin LFS support not present/detected". LFS stands for Large File Support.
+To update egit, add the following update site in the Eclipse preferences: http://download.eclipse.org/egit/updates and then go to the Help menu "Check for Updates" to perform an update.
+
+## Andworx
+
+The first Andworx install step is to set the Eclipse active platform to the Andworx target which is in a file named andworx.target.target
 located in project directory andworx.target. To do this, open the file with the Target Editor. It will take a while for the repository indexes to be loaded but then you will be able to click on a link at
 the top of the window to set this target as the current active platform.
 
-Andworx is imported as a Maven project. Note that only the root POM and plugins need be imported initally. Note that on the initial import, Maven will request to install life-cycle components for Tycho which
-you should accept. Once this installation is complete, there will be a lot of errors and you will need to use the Maven option to update all Maven projects.
+Andworx is imported as a Maven project. Note that only the root POM and plugins need be imported initally. Also, on the initial import, Maven will request to install life-cycle components for Tycho which
+you should accept. Once this installation is complete it is possible there will be errors, in which case you should try to update all Maven projects. This is a Maven option selectable by right clicking on any of the Maven projects.
 
 ### Photon Quirks
 
 Eclipse Photon has quirks around when to clean projects:
 
-* Some bug in Photon causes some projects to suddenly needing to be clean. This can be triggered by an automated build or cleaning a single project. The symptom is clean one project leads to several projects needing cleaning. The symptom Description is
+* Some bug in Photon causes some projects to unexpectedly needing to be cleaned. This can be triggered by an automated build or cleaning a single project. The symptom is clean one project leads to several projects needing cleaning. The symptom Description is
 "API analysis aborted for 'org.eclipse.andworx.android' since its build path is incomplete". To get out of this state requires you to clean each of the other projects in error, one by one, until the problem clears.
 If you are lucky, only one additional clean is needed.
 
 * The project org.eclipse.andworx.build uses Dagger annotation processing for dependency injection. Sometimes a prject clean is required to regenerate Dagger sources. A Maven build can trigger this situation.
-The symptom is the project has just over 40 compile errors for missing Dagger-generated files. You will need to manually clean the project. Note this usally triggers the preceeding bug.
+The symptom is the project has just over 40 compile errors for missing Dagger-generated files. You will need to manually clean the project. Note this usally triggers the preceding bug.
 
 
 ### SWTBot
