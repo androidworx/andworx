@@ -5,12 +5,12 @@
   <parent>
       <groupId>org.eclipse.andworx</groupId>
       <artifactId>andworx-parent</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.2-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.andworx</groupId>
   <artifactId>andmore-core-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
     
   <!-- Common properties used in all modules -->

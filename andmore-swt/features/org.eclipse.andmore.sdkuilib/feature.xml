@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.andworx.sdkuilib.feature"
       label="Andworx Android UI SDK LIbrary"
-      version="0.0.1.qualifier"
+      version="0.0.2.qualifier"
       provider-name="Eclipse Andmore"
       plugin="org.eclipse.andworx.sdkuilib"
       license-feature="org.eclipse.license"

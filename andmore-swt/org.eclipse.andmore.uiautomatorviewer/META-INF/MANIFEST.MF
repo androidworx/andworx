@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Localization: plugin
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.andworx.uiautomatorviewer;singleton:=true
-Bundle-Version: 0.0.1.qualifier
+Bundle-Version: 0.0.2.qualifier
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.commands;bundle-version="3.8.1",
  org.eclipse.equinox.common;bundle-version="3.8.0",

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.eclipse.andworx</groupId>
 		<artifactId>andmore-core-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<artifactId>org.eclipse.andworx.android.basic.feature</artifactId>

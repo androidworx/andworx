@@ -10,13 +10,13 @@
 	<parent>
 		<groupId>org.eclipse.andworx</groupId>
 		<artifactId>andmore-core-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.eclipse.andworx.repository</artifactId>
 	<packaging>eclipse-repository</packaging>
 
 	<name>Andworx Repository</name>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 </project>

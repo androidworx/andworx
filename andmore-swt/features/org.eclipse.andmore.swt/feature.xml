@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.andworx.swt.feature"
       label="Andmore Android UI Base"
-      version="0.0.1.qualifier"
+      version="0.0.2.qualifier"
       provider-name="Eclipse Andmore"
       plugin="org.eclipse.andworx.swt"
       license-feature="org.eclipse.license"
