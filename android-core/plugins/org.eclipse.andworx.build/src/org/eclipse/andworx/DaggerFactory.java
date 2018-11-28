@@ -30,6 +30,7 @@ import org.eclipse.andworx.build.task.NonNamespacedLinkResourcesTask;
 import org.eclipse.andworx.build.task.PackageApplicationTask;
 import org.eclipse.andworx.build.task.PreManifestMergeTask;
 import org.eclipse.andworx.build.task.RenderscriptCompileTask;
+import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.file.FileManager;
@@ -51,13 +52,6 @@ import org.eclipse.andworx.task.ManifestMergeHandler;
 import org.eclipse.andworx.task.TaskFactory;
 import org.eclipse.andworx.transform.Pipeline;
 import org.eclipse.andworx.transform.TransformAgent;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.IJobChangeListener;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.IJavaProject;
 
 import com.android.builder.core.AndroidBuilder;
@@ -87,6 +81,7 @@ public class DaggerFactory implements BuildFactory {
         PersistenceService persistenceService();
 		/** Returns the AndroidConfiguration singleton */
 		AndroidConfiguration androidConfiguration();
+		SecurityController securityController();
 		/** Returns the MavenServices singleton */
 		MavenServices mavenServices();
 		FileManager fileManager();
@@ -370,6 +365,11 @@ public class DaggerFactory implements BuildFactory {
         return component.androidConfiguration();
     }
 
+	@Override
+	public SecurityController getSecurityController() {
+		return component.securityController();
+	}
+    
     /* (non-Javadoc)
 	 * @see org.eclipse.andworx.BuildFactory#getMavenServices()
 	 */
@@ -481,5 +481,6 @@ public class DaggerFactory implements BuildFactory {
     	ProjectBuilderModule projectBuilderModule = new ProjectBuilderModule(javaProject, profile);
     	return component.plus(projectBuilderModule).projectBuilder();
     }
+
     
 }

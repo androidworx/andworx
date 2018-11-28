@@ -42,7 +42,7 @@ import org.eclipse.andmore.android.model.manifest.dom.AndroidManifestNode;
 import org.eclipse.andmore.android.model.manifest.dom.UsesSDKNode;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
-import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.sdk.SdkProfile;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.exception.AndworxException;
@@ -79,10 +79,10 @@ public class SdkUtils {
 
 	public static final String EMU_CONFIG_SKIN_NAME_PROPERTY = "skin.name"; //$NON-NLS-1$
 
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
 	private final AndmoreAndroidPlugin plugin;
 	
-	public SdkUtils(AndworxFactory objectFactory, AndmoreAndroidPlugin plugin) {
+	public SdkUtils(AndworxContext objectFactory, AndmoreAndroidPlugin plugin) {
 		this.objectFactory = objectFactory;
 		this.plugin = plugin;
 	}
@@ -100,7 +100,7 @@ public class SdkUtils {
 	 * @return
 	 */
 	public  String getSdkToolsPath() {
-    	AndroidEnvironment androidEnv = AndworxFactory.instance().getAndroidEnvironment();
+    	AndroidEnvironment androidEnv = objectFactory.getAndroidEnvironment();
     	if (!androidEnv.isValid())
     		throw new AndworxException(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
     	File sdkToolsLocation = new File(androidEnv.getAndroidSdkHandler().getLocation(), SdkConstants.OS_SDK_TOOLS_FOLDER);

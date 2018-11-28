@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.andmore.io.IFolderWrapper;
 import org.eclipse.andworx.model.CodeSource;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.registry.ProjectState;
 import org.eclipse.core.resources.IFolder;
@@ -75,7 +76,7 @@ public class ProjectResources extends ResourceRepository {
     }
 
 	public static ProjectResources create(IProject project) {
-        AndworxFactory projectRegistry = AndworxFactory.instance();
+        AndworxContext projectRegistry = AndworxFactory.instance();
 		return create(projectRegistry.getProjectState(project));
 	}
 	

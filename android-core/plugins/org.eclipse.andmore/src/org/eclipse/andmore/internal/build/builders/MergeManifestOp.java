@@ -26,6 +26,7 @@ import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andworx.api.attributes.ArtifactCollection;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.task.ManifestMergerTask;
 import org.eclipse.andworx.context.VariantContext;
@@ -55,7 +56,7 @@ import com.google.common.collect.ImmutableList;
 
 public class MergeManifestOp implements BuildOp<PreCompilerContext> {
 
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
 	
 	public MergeManifestOp() {
 		objectFactory = AndworxFactory.instance();

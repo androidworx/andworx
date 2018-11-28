@@ -27,6 +27,7 @@ import org.eclipse.andmore.internal.launch.AndroidLaunch;
 import org.eclipse.andmore.internal.launch.LaunchConfigDelegate;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
 import org.eclipse.andworx.AndworxConstants;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.ddms.devices.DeviceProfile;
 import org.eclipse.andworx.ddms.devices.Devices;
@@ -74,7 +75,7 @@ public class StudioAndroidConfigurationDelegate extends LaunchConfigDelegate {
 	public List<Client> waitingDebugger = new ArrayList<Client>();
 
 	public StudioAndroidConfigurationDelegate() {
-        AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         deviceManager = objectFactory.getDevices();
 	}
 

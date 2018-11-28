@@ -47,6 +47,7 @@ import org.eclipse.andmore.internal.editors.uimodel.UiAttributeNode;
 import org.eclipse.andmore.internal.editors.uimodel.UiElementNode;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IProject;
@@ -126,7 +127,7 @@ public class UiElementPullParser extends BasePullParser {
         mExplodeNodes = explodeNodes;
         mDensity = density;
         if (mExplodedRendering) {
-        	AndworxFactory objectFactory = AndworxFactory.instance();
+        	AndworxContext objectFactory = AndworxFactory.instance();
             // get the layout descriptor
             AndroidEnvironment env = objectFactory.getAndroidEnvironment();
             if (env.isValid()) {

@@ -45,6 +45,7 @@ import org.eclipse.andmore.internal.resources.ResourceNameValidator;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andmore.internal.sdk.Sdk.TargetChangeListener;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IFile;
@@ -97,7 +98,7 @@ import com.android.utils.SdkUtils;
  */
 class NewXmlFileCreationPage extends WizardPage {
 
-   private final AndworxFactory objectFactory;
+   private final AndworxContext objectFactory;
 
     @Override
     public void setVisible(boolean visible) {
@@ -278,7 +279,7 @@ class NewXmlFileCreationPage extends WizardPage {
                 // project
                 @Override
                 String getDefaultAttrs(IProject project, String root) {
-                	AndworxFactory objectFactory = AndworxFactory.instance();
+                	AndworxContext objectFactory = AndworxFactory.instance();
                     AndroidEnvironment env = objectFactory.getAndroidEnvironment();
                     String fill = VALUE_FILL_PARENT;
                     if (env.isValid()) {

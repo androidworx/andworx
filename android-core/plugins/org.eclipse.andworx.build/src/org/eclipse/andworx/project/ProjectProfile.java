@@ -18,6 +18,7 @@ package org.eclipse.andworx.project;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.entity.ProjectBean;
 import org.eclipse.andworx.entity.ProjectProfileBean;
@@ -123,7 +124,7 @@ public class ProjectProfile {
 	 */
 	public IAndroidTarget getTarget() {
 		if (target == null) {
-        	AndworxFactory objectFactory = AndworxFactory.instance();
+        	AndworxContext objectFactory = AndworxFactory.instance();
 			target = objectFactory.getAndroidEnvironment().getAvailableTarget(profileBean.getTargetHash());
 		}
 		return target;

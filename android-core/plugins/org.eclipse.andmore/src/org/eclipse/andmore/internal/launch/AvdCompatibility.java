@@ -16,6 +16,7 @@
 
 package org.eclipse.andmore.internal.launch;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 
@@ -43,7 +44,7 @@ public class AvdCompatibility {
         if (avd == null) {
             return Compatibility.UNKNOWN;
         }
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         AndroidEnvironment env = objectFactory.getAndroidEnvironment();
         IAndroidTarget avdTarget = null;
         if (env.isValid()) 

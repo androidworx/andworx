@@ -21,6 +21,7 @@ import java.util.Properties;
 import javax.inject.Singleton;
 
 import org.eclipse.andworx.build.AndworxIssueReport;
+import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -152,6 +153,11 @@ public class AndworxModule {
     	return new AndroidConfiguration(persistenceService);
     }
 
+    @Provides @Singleton
+    SecurityController provideSecurityController() {
+    	return new SecurityController();
+    }
+    
     @Provides @Singleton 
     MavenServices provideMavenServices() {
     	return new MavenServicesProvider(MavenPlugin.getMaven());

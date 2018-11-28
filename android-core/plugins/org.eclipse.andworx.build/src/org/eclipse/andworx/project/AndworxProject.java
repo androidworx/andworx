@@ -16,6 +16,7 @@
 package org.eclipse.andworx.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,9 +28,12 @@ import java.util.TreeSet;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.config.AndroidConfig;
 import org.eclipse.andworx.context.VariantContext;
+import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.model.ProjectSourceProvider;
 import org.eclipse.andworx.options.ProjectOptions;
 import org.eclipse.andworx.sdk.SdkProfile;
+import org.eclipse.core.resources.IFile;
+import org.xml.sax.SAXException;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -52,6 +56,9 @@ import com.android.builder.model.SyncIssue;
 import com.android.builder.model.Variant;
 //import com.android.builder.model.VectorDrawablesOptions;
 import com.android.builder.model.Version;
+import com.android.ide.common.xml.AndroidManifestParser;
+import com.android.ide.common.xml.ManifestData;
+import com.android.io.FileWrapper;
 import com.android.repository.Revision;
 import com.android.repository.api.ProgressIndicator;
 import com.android.sdklib.BuildToolInfo;
@@ -146,6 +153,7 @@ public class AndworxProject implements AndroidProject {
 
     @NonNull
     private Collection<String> flavorDimensions;
+    private AndroidManifestData manifestData;
 
     /**
      * Construct AndworxProject object
@@ -190,8 +198,8 @@ public class AndworxProject implements AndroidProject {
       	contexts = AndworxFactory.instance().createVariantContextMap(this, projectConfiguration);
     }
 
-    public Map<String, VariantContext> getContexts() {
-		return contexts;
+    public VariantContext getContext(String name) {
+		return contexts.get(name);
 	}
 
 	public ProjectSourceProvider getProjectSourceProvider() {
@@ -223,6 +231,25 @@ public class AndworxProject implements AndroidProject {
 		for (File file: fileList)
 			fileSet.add(absoluteFile(file.getPath()));
 		return fileSet;
+	}
+
+	@Nullable
+	public AndroidManifestData getManifestData() {
+		if (manifestData == null) {
+			manifestData = parseManifest();
+		}
+		return manifestData;
+	}
+
+	@Nullable
+	public AndroidManifestData parseManifest() {
+		File manifestFile = defaultConfig.getSourceProvider().getManifestFile();
+		if (manifestFile.exists()) {
+			ManifestData parsed = parse(manifestFile);
+			if (parsed != null)
+				return new AndroidManifestData(parsed);
+		}
+		return null;
 	}
 	
     @Override
@@ -408,4 +435,17 @@ public class AndworxProject implements AndroidProject {
         return false;
     }
 
+    /**
+     * Parses the Android Manifest, and returns an object containing the result of the parsing.
+     * @param manifestFile the {@link IFile} representing the manifest file.
+     * @return an {@link ManifestData}
+     * @throws AndworxException
+     */
+    private ManifestData parse(File manifestFile) { 
+        try { 
+			return AndroidManifestParser.parse(new FileWrapper(manifestFile), true, null);
+		} catch (IOException | SAXException e) { // Not expected after project successfully opened
+			throw new AndworxException(manifestFile.toString(), e);
+		}
+    }
 }

@@ -53,6 +53,7 @@ import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andmore.io.IFolderWrapper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IFile;
@@ -408,7 +409,7 @@ public class ManifestInfo {
                 apiLevel = Integer.valueOf(valueString);
             } catch (NumberFormatException e) {
                 // Handle codename
-            	AndworxFactory objectFactory = AndworxFactory.instance();
+            	AndworxContext objectFactory = AndworxFactory.instance();
                 AndroidEnvironment env = objectFactory.getAndroidEnvironment();
                 if (env.isValid()) {
                     IAndroidTarget target = objectFactory.getAvailableTarget(
@@ -926,7 +927,7 @@ public class ManifestInfo {
 	                	mMinSdkVersion = minSdkVersion;
 	                else {
 	                    // handle codename, only if we can resolve it.
-	                	AndworxFactory objectFactory = AndworxFactory.instance();
+	                	AndworxContext objectFactory = AndworxFactory.instance();
 	                    AndroidEnvironment env = objectFactory.getAndroidEnvironment();
 	                    if (env.isValid()) {
 	                        IAndroidTarget target = objectFactory.getAvailableTarget(

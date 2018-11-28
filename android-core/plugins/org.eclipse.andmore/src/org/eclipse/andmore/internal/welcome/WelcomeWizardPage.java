@@ -18,6 +18,7 @@ package org.eclipse.andmore.internal.welcome;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.sdk.AndroidSdkValidator;
 import org.eclipse.andworx.sdk.CheckSdkErrorHandler;
@@ -38,7 +39,7 @@ import org.eclipse.swt.widgets.Text;
 
 /** Main page shown in the {@link WelcomeWizard} */
 public class WelcomeWizardPage extends WizardPage implements ModifyListener, SelectionListener {
-	private AndworxFactory objectFactory;
+	private AndworxContext objectFactory;
     private Text mExistingDirText;
     private Button mExistingDirButton;
     private Button mInstallLatestCheckbox;

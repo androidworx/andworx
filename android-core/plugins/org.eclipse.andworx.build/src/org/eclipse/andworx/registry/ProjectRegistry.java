@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.project.AndroidConfiguration;
@@ -50,7 +51,7 @@ public class ProjectRegistry {
 	public static final String META_FILENAME_TEMPLATE = "%s-local";
 	public static final String AAR_METAFILENAME = String.format(META_FILENAME_TEMPLATE, SdkConstants.EXT_AAR);
 	
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
 	/** Projects mapped to project states */
 	private final Map<IProject, ProjectState> projectStateMap;
     /** Listeners for registration of new Projects */
@@ -161,7 +162,7 @@ public class ProjectRegistry {
 		if (state == null) {
 			String projectName = javaProject.getElementName();
 			File projectLocation = javaProject.getProject().getLocation().makeAbsolute().toFile();
-			AndworxFactory objectFactory = AndworxFactory.instance();
+			AndworxContext objectFactory = AndworxFactory.instance();
 			ProjectConfiguration projectConfig = objectFactory.getProjectConfig(profile, projectName, projectLocation);
 			projectProfileMap.put(javaProject.getProject(), projectConfig.getProfile());
 			state = setProjectState(javaProject, projectConfig);

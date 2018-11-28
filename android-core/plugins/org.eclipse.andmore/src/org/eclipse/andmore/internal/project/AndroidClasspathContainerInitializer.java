@@ -33,6 +33,7 @@ import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andworx.project.ProjectProfile;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.log.SdkLogger;
@@ -109,7 +110,7 @@ public class AndroidClasspathContainerInitializer extends BaseClasspathContainer
     
     private SdkLogger logger = SdkLogger.getLogger(AndroidClasspathContainerInitializer.class.getName());
 
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
     
     public AndroidClasspathContainerInitializer() {
     	objectFactory = AndworxFactory.instance();

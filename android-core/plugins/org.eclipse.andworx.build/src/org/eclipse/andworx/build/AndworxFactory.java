@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andworx.BuildFactory;
 import org.eclipse.andworx.DaggerFactory;
 import org.eclipse.andworx.build.task.AidlCompileTask;
@@ -32,6 +33,7 @@ import org.eclipse.andworx.build.task.NonNamespacedLinkResourcesTask;
 import org.eclipse.andworx.build.task.PackageApplicationTask;
 import org.eclipse.andworx.build.task.PreManifestMergeTask;
 import org.eclipse.andworx.build.task.RenderscriptCompileTask;
+import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.ddms.devices.Devices;
@@ -77,42 +79,10 @@ import au.com.cybersearch2.classyjpa.entity.PersistenceWork;
 import au.com.cybersearch2.classyjpa.persist.PersistenceContext;
 import au.com.cybersearch2.classytask.Executable;
 
-public class AndworxFactory implements BuildFactory {
+public class AndworxFactory implements BuildFactory, AndworxContext {
 	
-    /** AndworxFactory instance retrieval blocks until singleton is completed */
-    private static class AndworxFactoryHolder {
-        private AndworxFactory staticFactory;
-    	private volatile AndworxFactory dynamicFactory;
-
-    	public void setObjectFactory(AndworxFactory staticFactory) {
-			synchronized(this) {
-				this.staticFactory = staticFactory;
-				if (staticFactory == null)
-					dynamicFactory = null;
-			}
-    	}
-    	
-    	@SuppressWarnings("unused")
-		public AndworxFactory getObjectFactory() {
-    		while (dynamicFactory == null) {
-    			synchronized(this) {
-    	    		if ((dynamicFactory == null) && (staticFactory != null)) {
-    	    			dynamicFactory = staticFactory;
-                        return dynamicFactory;
-    	    		}
-    			}
-    			try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					break;
-				}
-    		}
-    		// Will return null if thread is interrupted before pluin start() is called
-    		return dynamicFactory;
-    	}
-    }
-
-	//private static AndworxFactoryHolder singletonHolder = new AndworxFactoryHolder();
+	/** External AndworxContext object - only for unit testing */
+	private static AndworxContext externalAndworxContext;
 
 	private DaggerFactory daggerFactory;
     /** Android environment - never null */
@@ -171,11 +141,10 @@ public class AndworxFactory implements BuildFactory {
         deviceMonitor = new DeviceMonitor(devices);
 	}
 
-    /**
-     * Loads an SDK and returns flag to indicate success.
-     * <p/>If the SDK failed to load, it displays an error to the user.
-     * @param sdkLocation the OS path to the SDK.
-     */
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#loadSdk(java.io.File)
+	 */
+	@Override
 	public boolean loadSdk(File sdkLocation) {
     	// AndworxBuildPlugin validates the SDK location and stores details
     	// Note the following call may block at start up if the plugin has not completed initialization
@@ -183,23 +152,43 @@ public class AndworxFactory implements BuildFactory {
         return sdkProfile.isValid();
     }
 
-    public void put(Class<?> clazz, Object object) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#put(java.lang.Class, java.lang.Object)
+	 */
+    @Override
+	public void put(Class<?> clazz, Object object) {
 		objectMap.put(clazz, object);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#get(java.lang.Class)
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T get(Class<T> clazz) {
 		return (T) objectMap.get(clazz);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidEnvironment()
+	 */
+	@Override
 	public AndroidEnvironment getAndroidEnvironment() {
 		return androidEnvironment;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getSdkTracker()
+	 */
+	@Override
 	public SdkTracker getSdkTracker() {
 		return sdkTracker;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAvdManager()
+	 */
+	@Override
 	public AvdManager getAvdManager() {
 		checkSdkAvailable();
 		return sdkTracker.getSdkProfile().getAvdManager();
@@ -210,38 +199,61 @@ public class AndworxFactory implements BuildFactory {
 			throw new AndworxException(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getDeviceManager()
+	 */
+	@Override
 	public DeviceManager getDeviceManager() {
 		checkSdkAvailable();
 		return sdkTracker.getSdkProfile().getDeviceManager();
 	}
 
-	/**
-	 * Returns closest match Target Platform to given version
-	 * @param targetHash Target platform version specified as a hash string
-	 * @return IAndroidTarget object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAvailableTarget(java.lang.String)
 	 */
+	@Override
 	public IAndroidTarget getAvailableTarget(String targetHash) {
 		checkSdkAvailable();
 		return sdkTracker.getSdkProfile().getAvailableTarget(targetHash);
 	}
 
-    public IAndroidTarget getAndroidTargetFor(AvdInfo avdInfo) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidTargetFor(com.android.sdklib.internal.avd.AvdInfo)
+	 */
+    @Override
+	public IAndroidTarget getAndroidTargetFor(AvdInfo avdInfo) {
 		checkSdkAvailable();
 		return sdkTracker.getSdkProfile().getAndroidTargetFor(avdInfo);
     }
 
-    public AndroidSdkPreferences getAndroidSdkPreferences() {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidSdkPreferences()
+	 */
+    @Override
+	public AndroidSdkPreferences getAndroidSdkPreferences() {
     	return androidSdkPreferences;
     }
     
-    public Devices getDevices() {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getDevices()
+	 */
+    @Override
+	public Devices getDevices() {
 		return devices;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getDeviceMonitor()
+	 */
+	@Override
 	public DeviceMonitor getDeviceMonitor() {
 		return deviceMonitor;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#createProject(java.lang.String, org.eclipse.andworx.project.ProjectProfile, org.eclipse.andworx.polyglot.AndroidConfigurationBuilder)
+	 */
+	@Override
 	public ProjectProfile createProject(
     		String projectName, 
 			ProjectProfile projectProfile, 
@@ -249,65 +261,78 @@ public class AndworxFactory implements BuildFactory {
     	return daggerFactory.createProject(projectName, projectProfile, androidConfigurationBuilder);
     }
     
-	/**
-	 * Returns Project profile read from database
-	 * @param projectName Eclipse project name
-	 * @param projectLocation Project location on file system
-	 * @return ProjectFile object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectProfile(java.lang.String, java.io.File)
 	 */
+	@Override
 	public ProjectProfile getProjectProfile(String projectName, File projectLocation) {
 		return  daggerFactory.getProjectProfile(projectName, projectLocation, androidEnvironment);
 	}
 
-	/**
-	 * Returns Project configuration read from database
-	 * @param projectName Eclipse project name
-	 * @param projectLocation Project location on file system
-	 * @return ProjectConfiguration object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectConfig(java.lang.String, java.io.File)
 	 */
+	@Override
 	public ProjectConfiguration getProjectConfig(String projectName, File projectLocation) {
 		ProjectProfile profile =  daggerFactory.getProjectProfile(projectName, projectLocation, androidEnvironment);
 		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, androidEnvironment);
 		return projectConfiguration;
 	}
 
-	/**
-	 * Returns Project configuration read from database for given profile
-	 * @param projectName Eclipse project name
-	 * @param projectLocation Project location on file system
-	 * @return ProjectProfile object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectConfig(org.eclipse.andworx.project.ProjectProfile, java.lang.String, java.io.File)
 	 */
+	@Override
 	public ProjectConfiguration getProjectConfig(ProjectProfile profile, String projectName, File projectLocation) {
 		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, androidEnvironment);
 		return projectConfiguration;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#createVariantContextMap(org.eclipse.andworx.project.AndworxProject, org.eclipse.andworx.project.ProjectConfiguration)
+	 */
+	@Override
 	public Map<String, VariantContext> createVariantContextMap(AndworxProject andworxProject, ProjectConfiguration projectConfig) {
 		return daggerFactory.createVariantContextMap(andworxProject, projectConfig, androidEnvironment);
 	}
 
-	/**
-	 * Returns Android configuration read from specified Gradle build file
-	 * @param gradleBuildFile Inpt file 
-	 * @return AndroidConfigurationBuilder object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidConfigBuilder(java.io.File)
 	 */
-    public AndroidConfigurationBuilder getAndroidConfigBuilder(File gradleBuildFile) {
+    @Override
+	public AndroidConfigurationBuilder getAndroidConfigBuilder(File gradleBuildFile) {
     	return daggerFactory.getAndroidConfigBuilder(gradleBuildFile, androidEnvironment);
     }
 
-    public RenderscriptCompileTask getRenderscriptCompileTask(VariantContext variantScope) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getRenderscriptCompileTask(org.eclipse.andworx.context.VariantContext)
+	 */
+    @Override
+	public RenderscriptCompileTask getRenderscriptCompileTask(VariantContext variantScope) {
     	return daggerFactory.getRenderscriptCompileTask(variantScope, androidEnvironment);
     }
 
-    public AidlCompileTask getAidlCompileTask(VariantContext variantScope) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAidlCompileTask(org.eclipse.andworx.context.VariantContext)
+	 */
+    @Override
+	public AidlCompileTask getAidlCompileTask(VariantContext variantScope) {
     	return daggerFactory.getAidlCompileTask(variantScope, androidEnvironment);
     }
     
-    public AndroidBuilder getAndroidBuilder(VariantContext variantScope) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidBuilder(org.eclipse.andworx.context.VariantContext)
+	 */
+    @Override
+	public AndroidBuilder getAndroidBuilder(VariantContext variantScope) {
      	return daggerFactory.getAndroidBuilder(variantScope, androidEnvironment);
     }
 
-    public BuildToolInfo getBuildToolInfo(String buildToolVersion) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getBuildToolInfo(java.lang.String)
+	 */
+    @Override
+	public BuildToolInfo getBuildToolInfo(String buildToolVersion) {
     	AndroidSdkHandler androidSdkHandler = androidEnvironment.getAndroidSdkHandler();
     	BuildToolInfo buildToolInfo = androidSdkHandler.getBuildToolInfo(Revision.parseRevision(buildToolVersion), new FakeProgressIndicator());;
     	if (buildToolInfo == null)
@@ -316,101 +341,142 @@ public class AndworxFactory implements BuildFactory {
  
     }
     
-    public ProjectState getProjectState(IProject project) {
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectState(org.eclipse.core.resources.IProject)
+	 */
+    @Override
+	public ProjectState getProjectState(IProject project) {
     	return getProjectRegistry().getProjectState(project);
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getTarget(org.eclipse.core.resources.IProject)
+	 */
+	@Override
 	public IAndroidTarget getTarget(IProject project) {
 		return getProjectRegistry().getTarget(project);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getMainProjectsFor(org.eclipse.core.resources.IProject)
+	 */
+	@Override
 	public Set<ProjectState> getMainProjectsFor(IProject project) {
 		return getProjectRegistry().getMainProjectsFor(project);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectRegistry()
+	 */
 	@Override
 	public ProjectRegistry getProjectRegistry() {
 		return daggerFactory.getProjectRegistry();
 	}
 	
-    /**
-	 * Returns persistence service
-	 * @return PersistenceService object
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getPersistenceContext()
 	 */
 	@Override
 	public PersistenceContext getPersistenceContext() {
 		return daggerFactory.getPersistenceContext();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getPersistenceService()
+	 */
 	@Override
 	public PersistenceService getPersistenceService() {
 		return daggerFactory.getPersistenceService();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidConfiguration()
+	 */
 	@Override
 	public AndroidConfiguration getAndroidConfiguration() {
 		return daggerFactory.getAndroidConfiguration();
 	}
 
-	/**
-	 * Returns m2e Maven services provider
-	 * @return MavenServices object
+	@Override
+	public SecurityController getSecurityController() {
+		return daggerFactory.getSecurityController();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getMavenServices()
 	 */
 	@Override
 	public MavenServices getMavenServices() {
 		return daggerFactory.getMavenServices();
 	}
 
-	/**
-	 * Returns file manager
-	 * @return FileManager object
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getFileManager()
 	 */
 	@Override
 	public FileManager getFileManager() {
 		return daggerFactory.getFileManager();
 	}
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getBuildElementFactory()
+	 */
     @Override
     public BuildElementFactory getBuildElementFactory() {
     	return daggerFactory.getBuildElementFactory();
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getBuildHelper()
+	 */
     @Override
     public BuildHelper getBuildHelper() {
     	return daggerFactory.getBuildHelper();
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getProjectBuilder(org.eclipse.jdt.core.IJavaProject, org.eclipse.andworx.project.ProjectProfile)
+	 */
     @Override
     public ProjectBuilder getProjectBuilder(IJavaProject javaProject, ProjectProfile profile) {
     	return daggerFactory.getProjectBuilder(javaProject, profile);
     }
     
-   @Override
+   /* (non-Javadoc)
+ * @see org.eclipse.andworx.build.AndworxContext#getJavaQueuedProcessor()
+ */
+@Override
     public JavaQueuedProcessor getJavaQueuedProcessor() {
     	return daggerFactory.getJavaQueuedProcessor();
     }
     
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getTaskFactory()
+	 */
     @Override
     public TaskFactory getTaskFactory() {
     	return daggerFactory.getTaskFactory();
     }
     
-    /**
-     * Returns bundle file specified by path. 
-     * The file manager takes care of extracting the bundle file and caching it on the file system.
-     * @param filePath File path
-     * @return File object or null if an error occurs
-     */
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getBundleFile(java.lang.String)
+	 */
 	@Override
 	public File getBundleFile(String filePath) {
 		return daggerFactory.getBundleFile(filePath);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getExecutable(au.com.cybersearch2.classyjpa.entity.PersistenceWork)
+	 */
 	@Override
 	public Executable getExecutable(PersistenceWork persistenceWork) {
 		return daggerFactory.getExecutable(persistenceWork);
 	}
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getPreManifestMergeTask(org.eclipse.andworx.context.VariantContext, java.io.File)
+	 */
     @Override
     public PreManifestMergeTask getPreManifestMergeTask(
     		VariantContext variantScope,
@@ -418,36 +484,57 @@ public class AndworxFactory implements BuildFactory {
     	return daggerFactory.getPreManifestMergeTask(variantScope, manifestOutputDir);
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getBuildConfigTask(java.lang.String, org.eclipse.andworx.context.VariantContext)
+	 */
     @Override
     public BuildConfigTask getBuildConfigTask(String manifestPackage, VariantContext variantScope) {
     	return daggerFactory.getBuildConfigTask(manifestPackage, variantScope);
     }
  
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getManifestMergerTask(org.eclipse.andworx.task.ManifestMergeHandler)
+	 */
     @Override
     public ManifestMergerTask getManifestMergerTask(ManifestMergeHandler manifestMergeHandler) {
     	return daggerFactory.getManifestMergerTask(manifestMergeHandler);
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getMergeResourcesTask(org.eclipse.andworx.context.VariantContext)
+	 */
     @Override
     public MergeResourcesTask getMergeResourcesTask(VariantContext variantScope) {
     	return daggerFactory.getMergeResourcesTask(variantScope);
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getNonNamespacedLinkResourcesTask(org.eclipse.andworx.context.VariantContext)
+	 */
     @Override
     public NonNamespacedLinkResourcesTask getNonNamespacedLinkResourcesTask(VariantContext variantScope) {
     	return daggerFactory.getNonNamespacedLinkResourcesTask(variantScope);
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getDesugarTask(org.eclipse.andworx.transform.Pipeline, org.eclipse.andworx.helper.ProjectBuilder)
+	 */
     @Override
     public DesugarTask getDesugarTask(Pipeline pipeline, ProjectBuilder projectBuilder) {
     	return daggerFactory.getDesugarTask(pipeline, projectBuilder);
     }
 
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getD8Task(org.eclipse.andworx.transform.Pipeline, org.eclipse.andworx.context.VariantContext)
+	 */
     @Override
     public D8Task getD8Task(Pipeline pipeline, VariantContext variantScope) {
         return daggerFactory.getD8Task(pipeline, variantScope);
     }
      
+    /* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getPackageApplicationTask(org.eclipse.andworx.context.VariantContext)
+	 */
     @Override
     public PackageApplicationTask getPackageApplicationTask(VariantContext variantScope) {
     	return daggerFactory.getPackageApplicationTask(variantScope);
@@ -461,14 +548,23 @@ public class AndworxFactory implements BuildFactory {
 		daggerFactory.startPersistenceService();
 	}
 
-    public static AndworxFactory instance() {
-		//return singletonHolder.getObjectFactory();
-    	return E4Workbench.getServiceContext().get(AndworxFactory.class);
+    public static AndworxContext instance() {
+    	return getAndworxContext();
 	}
 
-
-
-
-
+    public static AndworxContext getAndworxContext() {
+		// Support unit testing for which Eclipse context is not available
+		if (BasePlugin.instance( )== null)
+			return externalAndworxContext;
+    	return E4Workbench.getServiceContext().get(AndworxContext.class);
+    }
+    
+    public static void setAndworxContext(AndworxContext andworxContext) {
+		// Support unit testing for which Eclipse context is not available
+		if (BasePlugin.instance() == null)
+			externalAndworxContext = andworxContext;
+		else
+			throw new UnsupportedOperationException("Context cannot be changed");
+    }
 	
 }

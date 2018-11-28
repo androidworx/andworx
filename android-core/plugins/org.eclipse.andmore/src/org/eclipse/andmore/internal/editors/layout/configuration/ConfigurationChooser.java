@@ -58,6 +58,7 @@ import org.eclipse.andmore.internal.resources.manager.ProjectResources;
 import org.eclipse.andmore.internal.resources.manager.ResourceManager;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IFile;
@@ -179,7 +180,7 @@ public class ConfigurationChooser extends Composite
     /** Whether the SDK has changed since the last model reload; if so we must reload targets */
     private boolean mSdkChanged = true;
 
-    private  AndworxFactory objectFactory;
+    private  AndworxContext objectFactory;
 
     /**
      * Creates a new {@linkplain ConfigurationChooser} and adds it to the

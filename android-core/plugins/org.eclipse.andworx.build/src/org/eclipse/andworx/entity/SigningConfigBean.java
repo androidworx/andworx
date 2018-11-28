@@ -17,6 +17,7 @@ package org.eclipse.andworx.entity;
 
 import java.io.File;
 import java.security.KeyStore;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -86,7 +87,10 @@ public class SigningConfigBean implements SigningConfig {
     public SigningConfigBean(SigningConfig defaultConfig) {
     	name = defaultConfig.getName();
     	storeType = defaultConfig.getStoreType();
-    	storeFile = defaultConfig.getStoreFile().getAbsolutePath();
+    	if (defaultConfig instanceof SigningConfigBean)
+    		storeFile = ((SigningConfigBean)defaultConfig).getStoreFileValue();
+    	else
+    		storeFile = defaultConfig.getStoreFile().getAbsolutePath();
     	storePassword = defaultConfig.getStorePassword();
     	keyAlias = defaultConfig.getKeyAlias();
     	keyPassword = defaultConfig.getKeyPassword();
@@ -100,6 +104,10 @@ public class SigningConfigBean implements SigningConfig {
 
 	public int getId() {
 		return id;
+	}
+
+	public String getStoreFileValue() {
+		return storeFile;
 	}
 	
     public void setName(String name) {
@@ -185,6 +193,26 @@ public class SigningConfigBean implements SigningConfig {
 	@Override
 	public boolean isSigningReady() {
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, storeFile, storePassword, keyAlias, keyPassword, storeType, v1SigningEnabled, v2SigningEnabled);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ((obj == null) || !(obj instanceof SigningConfigBean))
+			return false;
+		SigningConfigBean other = (SigningConfigBean)obj;
+		return name.equals(other.name) &&
+				storeFile.equals(other.storeFile) &&
+				storePassword.equals(other.storePassword) &&
+				keyAlias.equals(other.keyAlias) &&
+				keyPassword.equals(other.keyPassword) &&
+				storeType.equals(other.storeType) &&
+				v1SigningEnabled == other.v1SigningEnabled && 
+				v2SigningEnabled == other.v2SigningEnabled;
 	}
 
 

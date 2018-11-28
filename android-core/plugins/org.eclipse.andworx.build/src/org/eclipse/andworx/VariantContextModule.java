@@ -16,7 +16,9 @@
 package org.eclipse.andworx;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
@@ -90,6 +92,7 @@ public class VariantContextModule {
 			}
         }
         Map<String, VariantContext> variantContextMap = new HashMap<>();
+        List<AndworxVariantConfiguration> variantConfigs = new ArrayList<>();
  		for (BuildTypeContainer container: projectConfig.getBuildTypes()) {
 	 		BuildTypeImpl buildType = (BuildTypeImpl)container.getBuildType();
 	 		String variantName = buildType.getName();
@@ -101,11 +104,16 @@ public class VariantContextModule {
 							buildType, 
 							null, 
 							VariantType.DEFAULT);
+			variantConfigs.add(variantConfiguration);
+ 		}
+ 		for (AndworxVariantConfiguration variantConfig: variantConfigs) {
 			VariantContext context = 
 					new VariantContext(
 					        andworxProject, 
+					        variantConfigs,
 							new SdkProfile(androidEnvironment));
-			context.putVariantConfiguration(variantName, variantConfiguration);
+			String variantName = variantConfig.getBuildType().getName();
+			context.setBuildType(variantName);
 			context.setDependencies(dependencies);
 			variantContextMap.put(variantName, context);
 		}

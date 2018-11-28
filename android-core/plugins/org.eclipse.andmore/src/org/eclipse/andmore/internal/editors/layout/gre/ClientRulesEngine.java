@@ -63,6 +63,7 @@ import org.eclipse.andmore.internal.ui.MarginChooser;
 import org.eclipse.andmore.internal.ui.ReferenceChooserDialog;
 import org.eclipse.andmore.internal.ui.ResourceChooser;
 import org.eclipse.andmore.internal.ui.ResourcePreviewHelper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.registry.ProjectState;
@@ -126,7 +127,7 @@ class ClientRulesEngine implements IClientRulesEngine {
 
     private final RulesEngine mRulesEngine;
     private final String mFqcn;
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
 
     public ClientRulesEngine(RulesEngine rulesEngine, String fqcn) {
         mRulesEngine = rulesEngine;

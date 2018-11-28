@@ -36,8 +36,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.internal.workbench.E4Workbench;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
+import org.eclipse.andworx.event.AndworxEvents;
+
 import org.eclipse.andworx.AndworxConstants;
 import org.eclipse.andworx.build.DefaultAndroidSourceSet;
+import org.eclipse.andworx.config.ConfigContext;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.entity.AndroidBean;
 import org.eclipse.andworx.entity.AndroidSourceBean;
@@ -66,6 +74,10 @@ import org.eclipse.andworx.model.ProjectSourceProvider;
 import org.eclipse.andworx.model.SourceSet;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
 import org.eclipse.andworx.repo.DependencyArtifact;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 
 import com.android.builder.core.BuilderConstants;
 import com.android.builder.model.BuildType;
@@ -94,11 +106,13 @@ public class AndroidConfiguration {
 	private static final String ENTITY_BY_ID = "org.eclipse.andworx.project.EntityById";
     /** Prefix for name of query to fetch entity by project ID */
 	private static final String ENTITY_BY_PROJECT_ID = "org.eclipse.andworx.project.EntityByProjectId";
+    /** Prefix for name of query to fetch entity by project ID */
+	private static final String ITEM_BY_DUAL_KEY = "org.eclipse.andworx.project.ItemByDualKey";
     /** Name of query to fetch project by primary key */
 	private static final String PROJECT_BY_ID = ENTITY_BY_ID + "0";
 	/** Name of query to fetch Signing Config by ID */
 	private static final String SIGNING_CONFIG_BY_ID = ENTITY_BY_ID + "1";
-   /** Name of query to fetch project by name */
+    /** Name of query to fetch project by name */
 	private static final String PROJECT_BY_NAME = "org.eclipse.andworx.project.ProjectByName";
     /** Name of query to fetch project profile by project ID */
 	private static final String PROJECT_PROFILE_BY_ID = ENTITY_BY_PROJECT_ID + "0";
@@ -127,6 +141,14 @@ public class AndroidConfiguration {
 	private final EntityOperation entityOp;
 	/** Generates transaction id for logging purposes */
 	private final AtomicInteger transactionCount;
+	protected EventHandler updateEventHandler = new EventHandler() {
+
+		@Override
+		public void handleEvent(Event event) {
+			Object eventData = event.getProperty(IEventBroker.DATA);
+			if ((eventData != null) && (eventData instanceof ConfigContext))
+				handleUpdate((ConfigContext)eventData);
+		}};
 
 	/**
 	 * Construct AndroidConfiguration object
@@ -156,6 +178,10 @@ public class AndroidConfiguration {
 			        projectPersistence.addNamedQuery(BuildTypeBean.class, BUILDTYPE_BY_ID, entityByProjectIdGenerator);
 			        projectPersistence.addNamedQuery(BaseConfigBean.class, BASE_CONFIG_BY_ID, entityByProjectIdGenerator);
 			        projectPersistence.addNamedQuery(AndroidSourceBean.class, ANDROID_SOURCE_BY_ID, entityByProjectIdGenerator);
+			        
+			        IEclipseContext serviceContext = E4Workbench.getServiceContext(); 
+			        IEventBroker eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+			        eventBroker.subscribe(AndworxEvents.UPDATE_ENTITY_BEAN, updateEventHandler );
 				}
 
 				@Override
@@ -383,7 +409,7 @@ public class AndroidConfiguration {
 			BaseConfigBean baseConfigBean = baseConfigMap.get(bean.getName());
 			if (baseConfigBean == null)
 				throw new AndworxException("Base config named \"" + bean.getName() + "\" not found");
-			setSiginingConfig(bean);
+			setSigningConfig(bean);
 			BuildTypeImpl buildType = new BuildTypeImpl(bean, baseConfigBean);
 			buildTypes.add(buildType);
 		}
@@ -432,12 +458,34 @@ public class AndroidConfiguration {
 				sourceProviders);
 	}
 
+	protected void handleUpdate(ConfigContext<?> configContext) {
+		Object entityObject = configContext.getBean();
+		if (entityObject instanceof SigningConfigBean) {
+			SigningConfigBean bean = (SigningConfigBean)entityObject;
+			Job job = new Job("Update " + bean.getName() + " Signing Config for project " + configContext.getProjectProfile().getIdentity().toString()) {
+
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					int projectId = configContext.getProjectProfile().getProjectId();
+					try {
+						doPersistenceTask(entityOp.update(entityObject));
+					} catch (Exception e) {
+						logger.error(e, "Error running job \"%\"", getName());
+						return Status.CANCEL_STATUS;
+					}
+					return Status.OK_STATUS;
+				}
+			};
+            job.schedule();
+		}
+	}
+
 	/**
 	 * Set signing config in given entity bean
 	 * @param bean BuildType entity bean
 	 * @throws InterruptedException
 	 */
-	private void setSiginingConfig(BuildTypeBean bean) throws InterruptedException {
+	private void setSigningConfig(BuildTypeBean bean) throws InterruptedException {
 		int id = bean.getSigningConfigId();
 		if (id == 0) 
 			return;

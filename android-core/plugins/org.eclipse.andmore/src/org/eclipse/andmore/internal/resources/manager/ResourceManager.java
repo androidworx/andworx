@@ -28,6 +28,7 @@ import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IProj
 import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IRawDeltaListener;
 import org.eclipse.andmore.io.IFileWrapper;
 import org.eclipse.andmore.io.IFolderWrapper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.model.CodeSource;
 import org.eclipse.andworx.registry.ProjectState;
@@ -83,7 +84,7 @@ public final class ResourceManager {
      * possible and <b>not call out to other classes</b>.
      */
     private final Map<IProject, ProjectResources> mMap =  new HashMap<IProject, ProjectResources>();
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
     
     /**
      * Interface to be notified of resource changes.

@@ -43,4 +43,6 @@ public class AndworxEvents {
     public static final String  CHANGE_DEBUGGER_STATUS = TOPIC_BASE + "/client-debug-change";
     /** Device client debug change event */
     public static final String  CHANGE_CLIENT_NAME = TOPIC_BASE + "/client-name-change";
+    /** Entity bean update request */
+    public static final String  UPDATE_ENTITY_BEAN = TOPIC_BASE + "/update-entity-bean";
 }

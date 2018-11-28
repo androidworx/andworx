@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
@@ -29,6 +30,7 @@ import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.build.builders.PostCompilerBuilder;
 import org.eclipse.andmore.internal.build.builders.PreCompilerBuilder;
 import org.eclipse.andmore.internal.preferences.AdtPrefs;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.exception.AndworxException;
@@ -587,7 +589,7 @@ public final class ProjectHelper {
         // Get the list of project for the current workspace
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IProject[] projects = workspace.getRoot().getProjects();
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         // look for a project that matches the packageName of the app
         // we're trying to debug
         for (IProject p : projects) {
@@ -611,7 +613,7 @@ public final class ProjectHelper {
                 } else {
                     // If the package and application name don't match,
                     // we look for other possible process names declared in the manifest.
-                    String[] processes = projectState.getProcessesFromManifest();
+                    Set<String> processes = projectState.getProcessesFromManifest();
                     for (String process : processes) {
                         if (process.equals(applicationName)) {
                             return p;
@@ -871,7 +873,7 @@ public final class ProjectHelper {
 
         if (JavaCore.VERSION_1_7.equals(optionValue) || (JavaCore.VERSION_1_7.compareToIgnoreCase(optionValue) < 0)) {
             // Requires API 19 and buildTools 19
-        	AndworxFactory objectFactory = AndworxFactory.instance();
+        	AndworxContext objectFactory = AndworxFactory.instance();
             AndroidEnvironment env = objectFactory.getAndroidEnvironment();
             if (env.isValid()) {
                 IProject p = project.getProject();

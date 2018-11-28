@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.ui.ide,
  org.apache.commons.httpclient,
- org.eclipse.andworx;bundle-version="0.0.1"
+ org.eclipse.andworx
 Require-Capability: osgi.ee; filter:="(|(&(osgi.ee=JavaSE)(version=1.8))(&(osgi.ee=JavaSE)(version=9)))"
 Export-Package: org.eclipse.andmore.android.common,
  org.eclipse.andmore.android.common.exception,

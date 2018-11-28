@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Locale;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.sdk.SdkProfile;
 import org.eclipse.andworx.context.AndroidEnvironment;
@@ -42,7 +43,7 @@ import com.android.sdkuilib.internal.widgets.AvdStartDialog;
 public class EmulatorLauncher {
 
 	public boolean launchEmulator(String avdName, Shell shell) {
-        AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         AvdManager avdManager = objectFactory.getAvdManager();
         // Only get valid AVDs
 		AvdInfo avdInfo = avdManager.getAvd(avdName, true);

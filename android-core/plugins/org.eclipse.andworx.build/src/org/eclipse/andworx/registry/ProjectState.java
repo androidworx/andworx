@@ -17,10 +17,8 @@
 package org.eclipse.andworx.registry;
 
 import static com.android.builder.core.BuilderConstants.DEBUG;
-//import static com.android.builder.core.BuilderConstants.RELEASE;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,29 +26,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.VariantContext;
-import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.file.AndroidSourceSet;
 import org.eclipse.andworx.helper.ProjectBuilder;
 import org.eclipse.andworx.model.CodeSource;
 import org.eclipse.andworx.model.ProjectSourceProvider;
 import org.eclipse.andworx.model.SourcePath;
+import org.eclipse.andworx.project.AndroidManifestData;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.Identity;
 import org.eclipse.andworx.project.ProjectProfile;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.IJavaProject;
-import org.xml.sax.SAXException;
 
 import com.android.annotations.Nullable;
 import com.android.builder.core.AndroidBuilder;
 import com.android.ide.common.blame.MessageReceiver;
-import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;
-import com.android.io.FileWrapper;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.google.common.collect.ImmutableList;
@@ -71,7 +66,7 @@ import com.google.common.collect.ImmutableList;
  * for {@link LibraryState#getProjectState()}.
  *
  */
-public final class ProjectState {
+public class ProjectState {
 	/** Library update status */
     public static class LibraryDifference {
         public boolean removed = false;
@@ -92,7 +87,7 @@ public final class ProjectState {
     /** Helper to assist with Android build tasks */
     private final ProjectBuilder projectBuilder;
     private final AndroidBuilder androidBuilder;
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
     /** Information required to locate build tools */
     private BuildToolInfo buildToolInfo;
     /** Status result of last attempt to open the project or null if not yet opened */
@@ -136,7 +131,7 @@ public final class ProjectState {
        	libraryProjects = Collections.emptyList();
        	parentProjects = new ArrayList<ProjectState>();
        	pendingProjects = new ArrayList<>();
-       	context = andworxProject.getContexts().get(DEBUG);
+       	context = andworxProject.getContext(DEBUG);
        	objectFactory = AndworxFactory.instance();
        	androidBuilder = objectFactory.getAndroidBuilder(context);
        	projectBuilder = objectFactory.getProjectBuilder(javaProject, profile);
@@ -319,15 +314,12 @@ public final class ProjectState {
 	 * Returns processes configured in main manifest
 	 * @return array of process identities
 	 */
-	public String[] getProcessesFromManifest() {
-		File manifestFile = getContext().getAndworxProject().getDefaultConfig().getSourceProvider().getManifestFile();
-		if (manifestFile.exists()) {
-           ManifestData data = parse(manifestFile);
-           if (data != null){
-               return data.getProcesses();
-           }
-		}
-        return new String[] {};
+	public Set<String> getProcessesFromManifest() {
+		AndroidManifestData data = getContext().getAndworxProject().getManifestData();
+        if (data != null){
+            return data.processes;
+        }
+        return Collections.emptySet();
 	}
 
     /**
@@ -698,21 +690,6 @@ public final class ProjectState {
                	}
             }
         }
-    }
-
-    
-    /**
-     * Parses the Android Manifest, and returns an object containing the result of the parsing.
-     * @param manifestFile the {@link IFile} representing the manifest file.
-     * @return an {@link ManifestData}
-     * @throws AndworxException
-     */
-    public ManifestData parse(File manifestFile) { 
-        try { 
-			return AndroidManifestParser.parse(new FileWrapper(manifestFile), true, null);
-		} catch (IOException | SAXException e) { // Not expected after project successfully opened
-			throw new AndworxException(manifestFile.toString(), e);
-		}
     }
 
 }

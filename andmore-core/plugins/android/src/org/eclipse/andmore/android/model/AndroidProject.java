@@ -30,6 +30,7 @@ import org.eclipse.andmore.android.common.IAndroidConstants;
 import org.eclipse.andmore.android.common.exception.AndroidException;
 import org.eclipse.andmore.android.common.utilities.EclipseUtils;
 import org.eclipse.andmore.android.i18n.AndroidNLS;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IProject;
@@ -265,7 +266,7 @@ public class AndroidProject implements IWizardModel {
 	 */
 	public AndroidProject() {
 		// initialize SDK Targets
-		AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         AndroidEnvironment env = objectFactory.getAndroidEnvironment();
         if (!env.isValid()) {
 			// this listener will be called when a SDK is configured

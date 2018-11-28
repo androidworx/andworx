@@ -46,6 +46,7 @@ import org.eclipse.andmore.internal.build.ProguardExecException;
 import org.eclipse.andmore.internal.build.ProguardResultException;
 import org.eclipse.andmore.internal.build.ToolChain;
 import org.eclipse.andmore.internal.preferences.AdtPrefs;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.registry.ProjectState;
@@ -127,7 +128,7 @@ public final class ExportHelper {
                     // do nothing
                 }
             });
-            AndworxFactory objectFactory = AndworxFactory.instance();
+            AndworxContext objectFactory = AndworxFactory.instance();
             AndroidEnvironment androidEnv = objectFactory.getAndroidEnvironment();
             if (!androidEnv.isValid())
                 throw new CoreException(new Status(IStatus.ERROR, AndmoreAndroidConstants.PLUGIN_ID, SdkProfile.SDK_NOT_AVAILABLE_ERROR));

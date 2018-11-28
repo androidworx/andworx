@@ -389,7 +389,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
         	colorRed.dispose();
         	colorRed = null;
         }
-        AndworxFactory andworxFactory = AndworxFactory.instance();
+        AndworxContext andworxFactory = AndworxFactory.instance();
         if (andworxFactory != null)
         	andworxFactory.getPersistenceService().stop();
         logger.info("AndworxBuildPlugin stopped");

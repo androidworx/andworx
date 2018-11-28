@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.eclipse.andmore.internal.sdk.SdkLocationListener;
 import org.eclipse.andmore.internal.sdk.SdkTargetControl;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.maven.Dependency;
@@ -172,7 +173,7 @@ public class AndroidPropertyPage extends PropertyPage {
     }
 
     private void fillUi() {
-    	AndworxFactory objectFactory = AndworxFactory.instance();
+    	AndworxContext objectFactory = AndworxFactory.instance();
         AndroidEnvironment env = objectFactory.getAndroidEnvironment();
         if (env.isValid() && mProject.isOpen()) {
             ProjectState state = objectFactory.getProjectState(mProject);

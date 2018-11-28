@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.context.AndroidEnvironment;
 
 import com.android.ide.common.sdk.LoadStatus;
@@ -36,13 +36,13 @@ public class TargetLoadStatus implements TargetLoadStatusMonitor {
 	/** Maps Target Data Load Status to target hashstring */
 	final private Map<String, LoadStatus> loadStatusMap;
 	/** Object factory to access the Android Environment */
-	final private AndworxFactory objectFactory;
+	final private AndworxContext objectFactory;
 
 	/**
 	 * Construct TargetLoadStatus object
 	 * @param objectFactory Object factory to access the Android Environment
 	 */
-	public TargetLoadStatus(AndworxFactory objectFactory) {
+	public TargetLoadStatus(AndworxContext objectFactory) {
 		this.objectFactory = objectFactory;
 		loadStatusMap = new HashMap<>();
 	}

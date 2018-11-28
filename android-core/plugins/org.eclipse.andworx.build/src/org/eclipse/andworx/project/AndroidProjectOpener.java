@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.andworx.build.AndworxBuildPlugin;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.config.AndroidConfig;
 import org.eclipse.andworx.context.AndroidEnvironment;
@@ -117,7 +118,7 @@ public class AndroidProjectOpener {
 	/** Interface to project import wizard page */
 	private final AndroidWizardListener androidWizardListener;
 	/** Object factory */
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
 
 	/**
 	 * Construct AndroidProjectOpener object

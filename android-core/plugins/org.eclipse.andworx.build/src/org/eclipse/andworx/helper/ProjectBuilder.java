@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.log.SdkLogger;
@@ -101,7 +102,7 @@ public class ProjectBuilder {
         Set<Dependency> dependencies = profile.getDependencies();
         if (!dependencies.isEmpty()) {
         	// The ImportEnvironment contains information to access the expanded AAR repository
-        	AndworxFactory objectFactory = AndworxFactory.instance();
+        	AndworxContext objectFactory = AndworxFactory.instance();
     	    File repositoryLocation = objectFactory.getAndroidEnvironment().getRepositoryLocation();
             try {
 				ProjectRepository projectRepository = new ProjectRepository(repositoryLocation);

@@ -42,6 +42,7 @@ import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor;
 import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IFileListener;
 import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IProjectListener;
 import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IResourceEventListener;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.SdkTracker;
 import org.eclipse.andworx.sdk.SdkProfile;
@@ -184,7 +185,7 @@ public final class Sdk  {
 
     private static Sdk sCurrentSdk = null;
 
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
     private final AndroidSdkHandler androidSdkHandler;
 
     private final RepoManager repoManager;

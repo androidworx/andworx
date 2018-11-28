@@ -129,6 +129,7 @@ public class VariantContext implements OutputScope {
      */
 	public VariantContext(
 			AndworxProject andworxProject, 
+			List<AndworxVariantConfiguration> variantConfigs,
 			SdkProfile sdkProfile) {
 		this.andworxProject = andworxProject;
 		this.sdkProfile = sdkProfile;
@@ -136,6 +137,10 @@ public class VariantContext implements OutputScope {
 		this.logger = sdkProfile;
 		buildType = BuilderConstants.DEBUG;
 		variantConfigMap = new HashMap<>();
+		for (AndworxVariantConfiguration variantConfig: variantConfigs) {
+			String name = variantConfig.getBuildType().getName();
+			variantConfigMap.put(name, variantConfig);
+		}
 		extraGeneratedResFolders = new ArrayList<>();
 		genBuildDir = new File(andworxProject.getBuildFolder(), FD_GENERATED);
 		intermediatesBuildDir = new File(andworxProject.getBuildFolder(), FD_INTERMEDIATES);
@@ -186,17 +191,6 @@ public class VariantContext implements OutputScope {
 		if (variantConfig == null)
 			throw new AndworxException("Build type \"" + buildType + "\" not found");
 		return variantConfig;
-	}
-
-	/**
-	 * Put variantConfiguration mapped to given buildType as key
-	 * @param buildType
-	 * @param variantConfiguration
-	 */
-	public void putVariantConfiguration(String buildType, AndworxVariantConfiguration variantConfiguration) {
-		variantConfigMap.put(buildType, variantConfiguration);
-		if (this.variantConfiguration == null)
-			this.variantConfiguration = variantConfiguration;
 	}
 
 	/**

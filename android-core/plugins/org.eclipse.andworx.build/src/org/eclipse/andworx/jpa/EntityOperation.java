@@ -55,6 +55,22 @@ public class EntityOperation {
         };
  	}
 
+	/**
+	 * Returns task to update given entity object
+	 * @param entity 
+	 * @return PersistenceTask object
+	 */
+	public <T> PersistenceTask update(T entity) throws InterruptedException {
+        return new PersistenceTask(){
+
+            @Override
+            public void doTask(EntityManagerLite entityManager)
+            {
+            	entityManager.merge(entity);
+            }
+        };
+ 	}
+
 }
 
 

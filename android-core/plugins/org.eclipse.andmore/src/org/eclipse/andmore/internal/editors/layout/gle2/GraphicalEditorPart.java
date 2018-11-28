@@ -87,6 +87,7 @@ import org.eclipse.andmore.internal.resources.manager.ResourceManager;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andmore.internal.sdk.Sdk.ITargetChangeListener;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IFile;
@@ -294,7 +295,7 @@ public class GraphicalEditorPart extends EditorPart
     private PropertyFactory mPropertyFactory;
     private boolean mRenderedOnce;
     private final Object mCredential = new Object();
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
 
     /**
      * Flags which tracks whether this editor is currently active which is set whenever

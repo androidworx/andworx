@@ -40,8 +40,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.andmore.base.BaseContext;
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.SdkSelectionListener;
 import org.eclipse.andmore.base.resources.PluginResourceProvider;
+import org.eclipse.andmore.base.resources.PluginResourceRegistry;
 import org.eclipse.andmore.internal.actions.SdkManagerAction;
 import org.eclipse.andmore.internal.editors.AndroidXmlEditor;
 import org.eclipse.andmore.internal.editors.IconFactory;
@@ -68,6 +71,7 @@ import org.eclipse.andmore.internal.welcome.AdtStartup;
 import org.eclipse.andmore.sdktool.SdkUserInterfacePlugin;
 import org.eclipse.andmore.sdktool.install.SdkInstaller;
 import org.eclipse.andworx.build.AndworxBuildPlugin;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -96,7 +100,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.internal.workbench.E4Workbench;
@@ -264,7 +267,7 @@ public class AndmoreAndroidPlugin extends AbstractUIPlugin implements ILogger {
             new ArrayList<ITargetChangeListener>();
     private ArrayList<MarkerListener> mMarkerListeners =
             new ArrayList<MarkerListener>();
-    private AndworxFactory objectFactory;
+    private AndworxContext objectFactory;
     /** Event broker service */
     private IEventBroker eventBroker;
     /**
@@ -310,8 +313,9 @@ public class AndmoreAndroidPlugin extends AbstractUIPlugin implements ILogger {
 		        	checkSdkLocationAndId())
 		        	parseSdkContent(0);
 			}};
-			sdkInstallJob.addJobChangeListener(listener );
-			sdkInstallJob.setPriority(Job.INTERACTIVE);
+		sdkInstallJob.addJobChangeListener(listener );
+		sdkInstallJob.setPriority(Job.INTERACTIVE);
+	    BaseContext baseContext = BasePlugin.getBaseContext();
     }
 
     /**

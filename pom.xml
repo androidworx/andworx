@@ -222,7 +222,6 @@
                   <encoding>${project.build.sourceEncoding}</encoding>
                   <fork>true</fork>
          		  <compilerArgs>
-        			<arg>--add-modules java.xml.bind</arg>
                     <arg>-Xlint:none</arg>
         		  </compilerArgs>
                   <testCompilerArgument>-Xlint:none</testCompilerArgument>
@@ -272,16 +271,19 @@
                     </target>   
                     <executionEnvironmentDefault>JavaSE-1.8</executionEnvironmentDefault>   
 					<environments>
+					    <!--
 						<environment>
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
 						</environment>
+						-->
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86_64</arch>
 						</environment>
+						<!--
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
@@ -297,6 +299,7 @@
 							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
+					-->
 					</environments>
           <dependency-resolution>
             <optionalDependencies>ignore</optionalDependencies>

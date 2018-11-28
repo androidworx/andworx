@@ -23,6 +23,7 @@ import org.eclipse.andmore.android.launch.LaunchPlugin;
 import org.eclipse.andmore.android.launch.i18n.LaunchNLS;
 import org.eclipse.andworx.ddms.devices.Devices;
 import org.eclipse.andworx.ddms.devices.DeviceProfile;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Shell;
@@ -56,7 +57,7 @@ public class DeviceSelectionDialog extends ElementListSelectionDialog {
 
 		this.setTitle(LaunchNLS.UI_LaunchComposite_SelectDeviceScreenTitle);
 		this.setMessage(description);
-        AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         Devices deviceManager = objectFactory.getDevices();
 		Collection<DeviceProfile> instances = deviceManager.getAllDevicesSorted();
 		if ((project != null) && (instances != null) && (instances.size() > 0)) {

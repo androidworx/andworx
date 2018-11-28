@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.build.builders.BaseBuilder.AbortBuildException;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.task.DesugarTask;
 import org.eclipse.andworx.context.VariantContext;
@@ -60,7 +61,7 @@ public class DesugarOp extends TransformAgent implements BuildOp<PostCompilerCon
         if (context.isDebugLog()) {
             AndmoreAndroidPlugin.log(IStatus.INFO, "%s %s", project.getName(), getName());
         }
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         ProjectState projectState = objectFactory.getProjectState(project);
         ProjectBuilder projectBuilder = projectState.getProjectBuilder();
         VariantContext variantScope = context.getVariantContext();

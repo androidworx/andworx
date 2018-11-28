@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.maven.Dependency;
@@ -561,7 +562,7 @@ public class NewProjectWizardState  {
         if (!targetModifiedByUser) {
             ProjectProperties p = ProjectProperties.load(projectPath,
                     PropertyType.PROJECT);
-            AndworxFactory objectFactory = AndworxFactory.instance();
+            AndworxContext objectFactory = AndworxFactory.instance();
             AndroidEnvironment env = objectFactory.getAndroidEnvironment();
             if ((p != null) && env.isValid()) {
                 String v = p.getProperty(ProjectProperties.PROPERTY_TARGET);

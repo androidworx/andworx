@@ -25,6 +25,7 @@ import org.eclipse.andworx.build.task.MergeResourcesTask;
 import org.eclipse.andworx.build.task.NonNamespacedLinkResourcesTask;
 import org.eclipse.andworx.build.task.PackageApplicationTask;
 import org.eclipse.andworx.build.task.PreManifestMergeTask;
+import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
@@ -67,6 +68,7 @@ public interface BuildFactory {
 	 */
 	AndroidConfiguration getAndroidConfiguration();
 
+	SecurityController getSecurityController();
 	/**
 	 * Returns m2e Maven services
 	 * @return MavenServices object

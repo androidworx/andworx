@@ -7,6 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.andworx.build.AndworxBuildPlugin;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.SdkTracker;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -46,7 +47,7 @@ public class SdkHolder {
 
 	}
 
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
     private volatile SdkProfile sdkProfile;
     private TestSdkListener sdkListener;
     private IEventBroker eventBroker;

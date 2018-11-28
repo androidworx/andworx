@@ -28,6 +28,7 @@ import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 
 import org.eclipse.andmore.internal.editors.layout.gle2.RenderPreviewMode;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.swt.SWT;
@@ -72,7 +73,7 @@ class DeviceMenuListener extends SelectionAdapter {
         Menu menu = new Menu(chooser.getShell(), SWT.POP_UP);
 
         Collection<Device> deviceCollection = chooser.getDevices();
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         AndroidEnvironment env = objectFactory.getAndroidEnvironment();
         if (env.isValid()) {
             AvdManager avdManager = objectFactory.getAvdManager();

@@ -41,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.andworx.build.AndworxBuildPlugin;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.exception.AndworxException;
@@ -173,7 +174,7 @@ public class DeviceMonitor implements IClientChangeListener, IDeviceChangeListen
 	private int POLL_DURATION = 2;
 	
 	/** Object factory */
-	private final AndworxFactory objectFactory;
+	private final AndworxContext objectFactory;
 	
 	/**
 	 * Map containing all connected devices. It is being kept for us not to

@@ -37,6 +37,7 @@ import org.eclipse.andmore.base.resources.JFaceImageLoader;
 import org.eclipse.andworx.ddms.devices.DeviceMonitor;
 import org.eclipse.andmore.ddms.i18n.Messages;
 import org.eclipse.andmore.ddms.preferences.PreferenceInitializer;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -167,7 +168,7 @@ public final class DdmsPlugin extends AbstractUIPlugin implements IDeviceChangeL
 
 		// get the eclipse store
 		final IPreferenceStore eclipseStore = getPreferenceStore();
-        AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         deviceMonitor = objectFactory.getDeviceMonitor();
 		DdmUiPreferences.setStore(eclipseStore);
 

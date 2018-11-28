@@ -23,6 +23,7 @@ import java.util.Set;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.android.common.IAndroidConstants;
 import org.eclipse.andmore.android.common.log.AndmoreLogger;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobManager;
@@ -99,7 +100,7 @@ public class AndroidPlugin extends AbstractUIPlugin {
 
 		super.start(context);
 		plugin = this;
-        AndworxFactory objectFactory = AndworxFactory.instance();
+		AndworxContext objectFactory = AndworxFactory.instance();
         objectFactory.put(SdkUtils.class, new SdkUtils(objectFactory, AndmoreAndroidPlugin.getDefault()));
 		getPreferenceStore().setDefault(AndroidPlugin.SHALL_UNEMBED_EMULATORS_PREF_KEY, true);
 

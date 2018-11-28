@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.sdk.SdkProfile;
 import org.eclipse.andworx.context.AndroidEnvironment;
@@ -111,7 +112,7 @@ public final class AvdStartDialog extends GridDialog {
         super(parentShell, 2, false);
         this.parentShell = parentShell;
         mAvd = avdAgent.getAvd();
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         androidEnv = objectFactory.getAndroidEnvironment();
 		if (!androidEnv.isValid())
 			throw new IllegalStateException(SdkProfile.SDK_NOT_AVAILABLE_ERROR);

@@ -18,7 +18,7 @@ package org.eclipse.andworx.sdk;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.event.AndworxEvents;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -58,7 +58,7 @@ public class SdkTargetDataMap<Data extends Disposeable> extends TargetLoadStatus
 	 * Construct SdkTargetDataMap object
 	 * @param objectFactory Object factory, required by super class to access Android environment
 	 */
-	public SdkTargetDataMap(AndworxFactory objectFactory) {
+	public SdkTargetDataMap(AndworxContext objectFactory) {
 		super(objectFactory);
 		targetDataMap = new HashMap<>();
 		// Retrieve Event Broker from Eclipse Context

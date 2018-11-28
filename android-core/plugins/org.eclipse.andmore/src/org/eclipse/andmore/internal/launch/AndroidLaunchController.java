@@ -44,7 +44,7 @@ import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.sdk.AdtConsoleSdkLog;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andmore.sdktool.SdkCallAgent;
-import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.ddms.devices.DeviceProfile;
 import org.eclipse.andworx.ddms.devices.Devices;
@@ -156,7 +156,7 @@ public final class AndroidLaunchController implements ILaunchController {
      */
     private final ArrayList<Client> mUnknownClientsWaitingForDebugger = new ArrayList<Client>();
 
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
 	private final Devices devices;
     private final EventHandler eventHandler1;
     private final EventHandler eventHandler2;
@@ -164,7 +164,7 @@ public final class AndroidLaunchController implements ILaunchController {
     private final EventHandler eventHandler4;
     private final EventHandler eventHandler5;
     
-    public AndroidLaunchController(AndworxFactory objectFactory, IEventBroker eventBroker) {
+    public AndroidLaunchController(AndworxContext objectFactory, IEventBroker eventBroker) {
         this.objectFactory = objectFactory;
         devices = objectFactory.getDevices();
         emulatorMap = new HashMap<>();

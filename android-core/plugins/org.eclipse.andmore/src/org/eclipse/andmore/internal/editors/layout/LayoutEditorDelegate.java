@@ -51,6 +51,7 @@ import org.eclipse.andmore.internal.lint.EclipseLintRunner;
 import org.eclipse.andmore.internal.preferences.AdtPrefs;
 import org.eclipse.andmore.internal.sdk.AndroidTargetData;
 import org.eclipse.andmore.internal.sdk.Sdk;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -868,7 +869,7 @@ public class LayoutEditorDelegate extends CommonXmlDelegate
                 // This is a layout after all, so every XML node should represent
                 // a view.
 
-                AndworxFactory objectFactory = AndworxFactory.instance();
+                AndworxContext objectFactory = AndworxFactory.instance();
                 if (objectFactory.getAndroidEnvironment().isValid()) {
                     IAndroidTarget target = objectFactory.getTarget(project);
                     AndroidTargetData data = Sdk.getCurrent().getTargetData(target);

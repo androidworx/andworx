@@ -25,6 +25,7 @@ import java.util.Set;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.build.builders.BaseBuilder.AbortBuildException;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.task.D8Task;
 import org.eclipse.andworx.context.VariantContext;
@@ -65,7 +66,7 @@ public class D8Op extends TransformAgent implements BuildOp<PostCompilerContext>
         }
         VariantContext variantScope = context.getVariantContext();
         File[] outputDirs = new File[] { getOutputRootDir("dexBuilder", variantScope),  getDexMergeDir(variantScope)};
-        AndworxFactory objectFactory = AndworxFactory.instance();
+        AndworxContext objectFactory = AndworxFactory.instance();
         D8Task d8Task = objectFactory.getD8Task(context, variantScope);
         ProjectState projectState = objectFactory.getProjectState(project);
         d8Task.configure (

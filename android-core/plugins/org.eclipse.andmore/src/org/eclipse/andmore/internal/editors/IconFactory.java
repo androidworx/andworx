@@ -16,12 +16,18 @@
 
 package org.eclipse.andmore.internal.editors;
 
+import static org.eclipse.andmore.AndmoreAndroidConstants.PROJECT_LOGO_LARGE;
+
 import java.net.URL;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
+import org.eclipse.andmore.base.BaseContext;
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.resources.IEditorIconFactory;
+import org.eclipse.andmore.base.resources.PluginResourceProvider;
+import org.eclipse.andmore.base.resources.PluginResourceRegistry;
 import org.eclipse.andmore.internal.editors.ui.ErrorImageComposite;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -222,9 +228,14 @@ public class IconFactory implements IEditorIconFactory {
         String key = Character.toString((char) shape) + Integer.toString(color) + osName;
         ImageDescriptor id = mImageDescMap.get(key);
         if (id == null && !mImageDescMap.containsKey(key)) {
-            id = AbstractUIPlugin.imageDescriptorFromPlugin(
-                    AndmoreAndroidConstants.PLUGIN_ID,
-                    String.format("/icons/%1$s.png", osName)); //$NON-NLS-1$
+    	    BaseContext baseContext = BasePlugin.getBaseContext();
+    	    PluginResourceRegistry resourceRegistry = baseContext.getPluginResourceRegistry();
+            PluginResourceProvider resourceProvider = resourceRegistry.getResourceProvider(AndmoreAndroidConstants.PLUGIN_ID);
+            id = resourceProvider.descriptorFromPath(String.format("/icons/%1$s.png", osName));
+
+            //id = AbstractUIPlugin.imageDescriptorFromPlugin(
+            //        AndmoreAndroidConstants.PLUGIN_ID,
+            //        String.format("/icons/%1$s.png", osName)); //$NON-NLS-1$
 
             if (id == null) {
                 id = new LetterImageDescriptor(osName.charAt(0), color, shape);

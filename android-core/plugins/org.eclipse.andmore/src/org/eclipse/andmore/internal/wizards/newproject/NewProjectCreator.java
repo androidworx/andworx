@@ -45,6 +45,7 @@ import org.eclipse.andmore.internal.project.AndroidNature;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.wizards.newproject.NewProjectWizardState.Mode;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.model.CodeSource;
@@ -919,7 +920,7 @@ public class NewProjectCreator  {
         }
 
         if (isAndroidProject) {
-        	AndworxFactory objectFactory = AndworxFactory.instance();
+        	AndworxContext objectFactory = AndworxFactory.instance();
             AndroidEnvironment env = objectFactory.getAndroidEnvironment();
             if (env.isValid()) {
         		ProjectProfile profile = (ProjectProfile) parameters.get(PARAM_PROJECT_PROFILE);

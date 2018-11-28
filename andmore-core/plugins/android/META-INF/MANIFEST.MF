@@ -7,13 +7,13 @@ Bundle-Activator: org.eclipse.andmore.android.AndroidPlugin
 Bundle-Vendor: %providerName
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
- org.eclipse.andworx;bundle-version="0.0.1",
+ org.eclipse.andworx,
  org.eclipse.andworx.android.common,
  org.eclipse.andworx.android.logger.collector,
  org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
- org.eclipse.andworx;bundle-version="0.0.1",
- org.eclipse.andworx.ddms;bundle-version="0.0.1",
+ org.eclipse.andworx,
+ org.eclipse.andworx.ddms,
  org.eclipse.jdt.core,
  org.eclipse.jface.text,
  org.apache.xerces,
@@ -23,10 +23,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.ui,
  org.apache.commons.net;bundle-version="1.4.1",
  org.apache.oro;bundle-version="2.0.8",
- org.eclipse.andworx.swt;bundle-version="0.0.1",
- org.eclipse.andworx.ddmuilib;bundle-version="0.0.1",
- org.eclipse.andworx.sdkuilib;bundle-version="0.0.1",
- org.eclipse.andworx.build;bundle-version="0.0.1"
+ org.eclipse.andworx.swt,
+ org.eclipse.andworx.ddmuilib,
+ org.eclipse.andworx.sdkuilib,
+ org.eclipse.andworx.build
 Require-Capability: osgi.ee; filter:="(|(&(osgi.ee=JavaSE)(version=1.8))(&(osgi.ee=JavaSE)(version=9)))"
 Bundle-Localization: plugin
 Export-Package: 

@@ -34,6 +34,7 @@ import org.eclipse.andmore.internal.preferences.AdtPrefs;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andmore.internal.sdk.AdtConsoleSdkLog;
 import org.eclipse.andmore.sdktool.SdkCallAgent;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IProject;
@@ -83,7 +84,7 @@ public class EmulatorConfigTab extends AbstractLaunchConfigurationTab {
         { "UMTS", "umts" }, //$NON-NLS-2$
     };
 
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
     private Button mAutoTargetButton;
     private Button mManualTargetButton;
     private AvdSelectorWindow mPreferredAvdSelector;

@@ -10,13 +10,13 @@ Require-Bundle: org.eclipse.andworx.android,
  org.eclipse.debug.ui,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.core,
- org.eclipse.andworx.ddms;bundle-version="0.0.1",
- org.eclipse.andworx;bundle-version="0.0.1",
+ org.eclipse.andworx.ddms,
+ org.eclipse.andworx,
  org.eclipse.core.runtime,
  org.eclipse.ui.console,
  org.eclipse.ui,
- org.eclipse.andworx.swt;bundle-version="0.0.1",
- org.eclipse.andworx.build;bundle-version="0.0.1",
+ org.eclipse.andworx.swt,
+ org.eclipse.andworx.build,
  org.eclipse.andworx.sdkuilib
 Require-Capability: osgi.ee; filter:="(|(&(osgi.ee=JavaSE)(version=1.8))(&(osgi.ee=JavaSE)(version=9)))"
 Bundle-Localization: plugin

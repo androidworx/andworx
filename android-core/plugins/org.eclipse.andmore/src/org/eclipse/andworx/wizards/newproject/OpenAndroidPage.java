@@ -423,7 +423,7 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
         manifestPackageText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         Display display = projectNameText.getDisplay();
         // Grey background to indicate field is non-editable
-        manifestPackageText.setBackground(display.getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
+        manifestPackageText.setBackground(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         
         Group groupDeps = new Group(container, SWT.NONE);
         GridDataBuilder.create(groupDeps).hFill().vCenter().hGrab().hSpan(2);

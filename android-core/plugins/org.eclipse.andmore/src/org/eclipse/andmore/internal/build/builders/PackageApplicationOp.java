@@ -28,6 +28,7 @@ import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.build.builders.BaseBuilder.AbortBuildException;
 import org.eclipse.andmore.internal.preferences.AdtPrefs.BuildVerbosity;
 import org.eclipse.andmore.internal.project.ApkInstallManager;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.OutputType;
 import org.eclipse.andworx.build.task.PackageApplicationTask;
@@ -82,7 +83,7 @@ public class PackageApplicationOp implements BuildOp<PostCompilerContext> {
         			input.getDirectoryInputs().iterator().next().getFile()));
         String taskName = variantScope.getTaskName("package", EXT_ANDROID_PACKAGE);
         File incrementalFolder = new File(variantScope.getIncrementalDir(taskName), "tmp");
-        AndworxFactory objectFactory = AndworxFactory.instance(); 
+        AndworxContext objectFactory = AndworxFactory.instance(); 
         PackageApplicationTask packageApkTask = objectFactory.getPackageApplicationTask(variantScope);
         ProjectState projectState = objectFactory.getProjectState(context.getProject());
         outputFile = packageApkTask.configure(

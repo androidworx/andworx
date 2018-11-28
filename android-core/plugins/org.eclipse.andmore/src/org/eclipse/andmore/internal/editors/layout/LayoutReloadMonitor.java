@@ -32,6 +32,7 @@ import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IFile
 import org.eclipse.andmore.internal.resources.manager.GlobalProjectMonitor.IResourceEventListener;
 import org.eclipse.andmore.internal.resources.manager.ResourceManager;
 import org.eclipse.andmore.internal.resources.manager.ResourceManager.IResourceListener;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.registry.ProjectState;
 import org.eclipse.core.resources.IFile;
@@ -285,7 +286,7 @@ public final class LayoutReloadMonitor {
 
                 // check if the project is a library, and if it is search for what other
                 // project depends on this one (directly or not)
-                AndworxFactory objectFactory = AndworxFactory.instance();
+                AndworxContext objectFactory = AndworxFactory.instance();
                 ProjectState state = objectFactory.getProjectState(project);
                 if (state != null && state.isLibrary()) {
                     Set<ProjectState> mainProjects = objectFactory.getMainProjectsFor(project);

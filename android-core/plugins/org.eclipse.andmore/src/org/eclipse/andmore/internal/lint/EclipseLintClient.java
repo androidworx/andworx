@@ -37,6 +37,7 @@ import org.eclipse.andmore.internal.editors.layout.gle2.GraphicalEditorPart;
 import org.eclipse.andmore.internal.editors.layout.gle2.LayoutActionBar;
 import org.eclipse.andmore.internal.editors.layout.uimodel.UiViewElementNode;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.core.resources.IFile;
@@ -106,7 +107,7 @@ public class EclipseLintClient extends LintCliClient {
     private final List<? extends IResource> mResources;
     /** Associated document, or null if the resource */
     private final IDocument mDocument;
-    private final AndworxFactory objectFactory;
+    private final AndworxContext objectFactory;
     /** Flag set true if only fatal issues should be reported (and therefore checked) */
     private boolean mFatalOnly;
     /** Flag set true if a fatal error was encountered */
