@@ -16,6 +16,8 @@
 package org.eclipse.andmore.base;
 
 import org.eclipse.andmore.base.resources.PluginResourceRegistry;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 
 public class BaseContextContainer {
 	private volatile BaseContext baseContext;
@@ -37,7 +39,11 @@ public class BaseContextContainer {
 						public JavaProjectHelper getJavaProjectHelper() {
 							return javaProjectHelper;
 						}
-					
+
+						@Override
+						public IEclipseContext getEclipseContext() {
+							return E4Workbench.getServiceContext();
+						}
 					};
 			}
 		}

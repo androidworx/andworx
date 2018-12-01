@@ -10,18 +10,12 @@ import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.build.SdkTracker;
-import org.eclipse.andworx.event.AndworxEvents;
 import org.eclipse.andworx.sdk.AndroidSdkPreferences;
 import org.eclipse.andworx.sdk.AndroidSdkValidator;
 import org.eclipse.andworx.sdk.QuietSdkValidator;
 import org.eclipse.andworx.sdk.SdkListener;
 import org.eclipse.andworx.sdk.SdkProfile;
-import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 
 public class SdkHolder {
 
@@ -50,7 +44,6 @@ public class SdkHolder {
 	private final AndworxContext objectFactory;
     private volatile SdkProfile sdkProfile;
     private TestSdkListener sdkListener;
-    private IEventBroker eventBroker;
 
     public SdkHolder() {
     	objectFactory = AndworxFactory.instance();

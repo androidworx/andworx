@@ -20,7 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.andmore.base.BaseContext;
 import org.eclipse.andmore.base.BasePlugin;
+import org.eclipse.andmore.base.JavaProjectHelper;
+import org.eclipse.andmore.base.resources.PluginResourceRegistry;
 import org.eclipse.andworx.BuildFactory;
 import org.eclipse.andworx.DaggerFactory;
 import org.eclipse.andworx.build.task.AidlCompileTask;
@@ -59,7 +62,8 @@ import org.eclipse.andworx.task.ManifestMergeHandler;
 import org.eclipse.andworx.task.TaskFactory;
 import org.eclipse.andworx.transform.Pipeline;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaProject;
 
 import com.android.builder.core.AndroidBuilder;
@@ -83,15 +87,21 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	
 	/** External AndworxContext object - only for unit testing */
 	private static AndworxContext externalAndworxContext;
+	private static BaseContext baseContext;
 
-	private DaggerFactory daggerFactory;
-    /** Android environment - never null */
-	private AndroidEnvironment androidEnvironment;
+	private final IEclipseContext eclipseContext;
 	private final SdkTracker sdkTracker;
 	private final Map<Class<?>, Object> objectMap;
 	private final AndroidSdkPreferences androidSdkPreferences;
 	private final Devices devices;
 	private final DeviceMonitor deviceMonitor;
+	private DaggerFactory daggerFactory;
+    /** Android environment - never null */
+	private AndroidEnvironment androidEnvironment;
+
+	static {
+		baseContext = BasePlugin.getBaseContext();
+	}
 	
 	AndworxFactory(
 			File databaseDirectory, 
@@ -101,7 +111,9 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 			AndroidSdkPreferences androidSdkPreferences) {
 		//singletonHolder.setObjectFactory(this);
 		this.androidSdkPreferences = androidSdkPreferences;
-		daggerFactory = new DaggerFactory(databaseDirectory, entityClassLoader, dataArea, userFileCache);
+		eclipseContext = baseContext.getEclipseContext();
+        IEventBroker eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
+		daggerFactory = new DaggerFactory(eventBroker, databaseDirectory, entityClassLoader, dataArea, userFileCache);
 		objectMap = new HashMap<>();
 		// Throw exception if any error is logged
 		ILogger errorLogger = new ILogger() {
@@ -141,6 +153,22 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
         deviceMonitor = new DeviceMonitor(devices);
 	}
 
+	@Override
+	public IEclipseContext getEclipseContext() {
+		return eclipseContext;
+	}
+
+	@Override
+	public PluginResourceRegistry getPluginResourceRegistry() {
+		return baseContext.getPluginResourceRegistry();
+	}
+
+	@Override
+	public JavaProjectHelper getJavaProjectHelper() {
+		// TODO Auto-generated method stub
+		return baseContext.getJavaProjectHelper();
+	}
+	
     /* (non-Javadoc)
 	 * @see org.eclipse.andworx.build.AndworxContext#loadSdk(java.io.File)
 	 */
@@ -194,11 +222,6 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 		return sdkTracker.getSdkProfile().getAvdManager();
 	}
 	
-	private void checkSdkAvailable() throws AndworxException {
-		if ((sdkTracker == null) || (sdkTracker.getSdkProfile() == null))
-			throw new AndworxException(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.eclipse.andworx.build.AndworxContext#getDeviceManager()
 	 */
@@ -443,9 +466,9 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
     }
     
    /* (non-Javadoc)
- * @see org.eclipse.andworx.build.AndworxContext#getJavaQueuedProcessor()
- */
-@Override
+    * @see org.eclipse.andworx.build.AndworxContext#getJavaQueuedProcessor()
+    */
+    @Override
     public JavaQueuedProcessor getJavaQueuedProcessor() {
     	return daggerFactory.getJavaQueuedProcessor();
     }
@@ -548,23 +571,37 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 		daggerFactory.startPersistenceService();
 	}
 
+	private void checkSdkAvailable() throws AndworxException {
+		if ((sdkTracker == null) || (sdkTracker.getSdkProfile() == null))
+			throw new AndworxException(SdkProfile.SDK_NOT_AVAILABLE_ERROR);
+	}
+
     public static AndworxContext instance() {
     	return getAndworxContext();
 	}
 
     public static AndworxContext getAndworxContext() {
+    	AndworxContext andworxContext;
 		// Support unit testing for which Eclipse context is not available
-		if (BasePlugin.instance( )== null)
-			return externalAndworxContext;
-    	return E4Workbench.getServiceContext().get(AndworxContext.class);
+		if (isOsgiPlatform()) {
+			IEclipseContext eclipseContext = baseContext.getEclipseContext();
+			andworxContext = eclipseContext.get(AndworxContext.class);
+		} else {
+			andworxContext = externalAndworxContext;
+		}
+		return andworxContext;
     }
     
     public static void setAndworxContext(AndworxContext andworxContext) {
 		// Support unit testing for which Eclipse context is not available
-		if (BasePlugin.instance() == null)
+		if (!isOsgiPlatform()) 
 			externalAndworxContext = andworxContext;
 		else
 			throw new UnsupportedOperationException("Context cannot be changed");
+    }
+
+    private static boolean isOsgiPlatform() {
+    	return (BasePlugin.instance() != null) || (AndworxBuildPlugin.instance() != null);
     }
 	
 }

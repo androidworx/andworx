@@ -18,12 +18,15 @@ package org.eclipse.andmore.internal.project;
 
 import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.JavaProjectHelper;
-import org.eclipse.andmore.internal.project.BaseProjectHelper.IProjectFilter;
+import org.eclipse.andworx.project.AndroidProjectCollection;
+import org.eclipse.andworx.project.AndroidProjectCollection.IProjectChooserFilter;
+import org.eclipse.andworx.project.AndroidProjectCollection.IProjectFilter;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.registry.ProjectState;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -39,29 +42,6 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
  * projects with the Android nature.
  */
 public class ProjectChooserHelper {
-
-    private final Shell mParentShell;
-    private final IProjectChooserFilter mFilter;
-    private final JavaProjectHelper javaProjectHelper;
-
-    /**
-     * List of current android projects. Since the dialog is modal, we'll just get
-     * the list once on-demand.
-     */
-    private IJavaProject[] mAndroidProjects;
-
-    /**
-     * Interface to filter out some project displayed by {@link ProjectChooserHelper}.
-     *
-     * @see IProjectFilter
-     */
-    public interface IProjectChooserFilter extends IProjectFilter {
-        /**
-         * Whether the Project Chooser can compute the project list once and cache the result.
-         * </p>If false the project list is recomputed every time the dialog is opened.
-         */
-        boolean useCache();
-    }
 
     /**
      * An implementation of {@link IProjectChooserFilter} that only displays non-library projects.
@@ -108,7 +88,7 @@ public class ProjectChooserHelper {
     public static class ProjectCombo extends Combo implements SelectionListener {
         /** Currently chosen project, or null when no project has been initialized or selected */
         private IProject mProject;
-        private IJavaProject[] mAvailableProjects;
+        private AndroidProjectCollection projectCollection;
 
         /**
          * Creates a new project selector combo
@@ -119,27 +99,25 @@ public class ProjectChooserHelper {
          * @param initialProject the initial project to select, or null (which
          *            will show a "Please Choose Project..." label instead.)
          */
-        public ProjectCombo(ProjectChooserHelper helper, Composite parent,
+        public ProjectCombo(AndroidProjectCollection projectCollection, Composite parent,
                 IProject initialProject) {
             super(parent, SWT.BORDER | SWT.FLAT | SWT.READ_ONLY);
+            this.projectCollection = projectCollection;
             mProject = initialProject;
-
-            mAvailableProjects = helper.getAndroidProjects(null);
-            String[] items = new String[mAvailableProjects.length + 1];
+            String[] items = new String[projectCollection.size() + 1];
             items[0] = "--- Choose Project ---";
-
-            ILabelProvider labelProvider = helper.getJavaElementLabelProvider();
             int selectionIndex = 0;
-            for (int i = 0, n = mAvailableProjects.length; i < n; i++) {
-                IProject project = mAvailableProjects[i].getProject();
-                items[i + 1] = labelProvider.getText(project);
+            int projectIndex = 0;
+            for (IJavaProject androidProject: projectCollection.getAndroidProjects()) {
+                IProject project = androidProject.getProject();
+                items[projectIndex + 1] = project.getName();
                 if (project == initialProject) {
-                    selectionIndex = i + 1;
+                    selectionIndex = projectIndex + 1;
                 }
+                ++projectIndex;
             }
             setItems(items);
             select(selectionIndex);
-
             addSelectionListener(this);
         }
 
@@ -162,8 +140,9 @@ public class ProjectChooserHelper {
             mProject = project;
 
             int selectionIndex = 0;
-            for (int i = 0, n = mAvailableProjects.length; i < n; i++) {
-                if (project == mAvailableProjects[i].getProject()) {
+            IJavaProject[] availableProjects = projectCollection.getAndroidProjects();
+            for (int i = 0, n = availableProjects.length; i < n; i++) {
+                if (project == availableProjects[i].getProject()) {
                     selectionIndex = i + 1; // +1: Slot 0 is reserved for "Choose Project"
                     select(selectionIndex);
                     break;
@@ -178,11 +157,12 @@ public class ProjectChooserHelper {
         @Override
         public void widgetSelected(SelectionEvent e) {
             int selectionIndex = getSelectionIndex();
-            if (selectionIndex > 0 && mAvailableProjects != null
-                    && selectionIndex <= mAvailableProjects.length) {
+            IJavaProject[] availableProjects = projectCollection.getAndroidProjects();
+            if (selectionIndex > 0
+                    && selectionIndex <= availableProjects.length) {
                 // selection index 0 is "Choose Project", all other projects are offset
                 // by 1 from the selection index
-                mProject = mAvailableProjects[selectionIndex - 1].getProject();
+                mProject = availableProjects[selectionIndex - 1].getProject();
             } else {
                 mProject = null;
             }
@@ -198,14 +178,19 @@ public class ProjectChooserHelper {
         }
     }
 
-    /**
+    private final Shell mParentShell;
+    private final JavaProjectHelper javaProjectHelper;
+    /** List of current android projects, never updated */
+    private final AndroidProjectCollection androidProjects;
+
+   /**
      * Creates a new project chooser.
      * @param parentShell the parent {@link Shell} for the dialog.
      * @param filter a filter to only accept certain projects. Can be null.
      */
-    public ProjectChooserHelper(Shell parentShell, IProjectChooserFilter filter) {
+    public ProjectChooserHelper(Shell parentShell, AndroidProjectCollection androidProjects) {
         mParentShell = parentShell;
-        mFilter = filter;
+        this.androidProjects = androidProjects;
         javaProjectHelper = BasePlugin.getBaseContext().getJavaProjectHelper();
     }
 
@@ -231,7 +216,7 @@ public class ProjectChooserHelper {
         IJavaModel javaModel = javaProjectHelper.getJavaModel();
 
         // set the elements in the dialog. These are opened android projects.
-        dialog.setElements(getAndroidProjects(javaModel));
+        dialog.setElements(androidProjects.getAndroidProjects());
 
         // look for the project matching the given project name
         IJavaProject javaProject = null;
@@ -249,46 +234,6 @@ public class ProjectChooserHelper {
             return (IJavaProject) dialog.getFirstResult();
         }
         return null;
-    }
-
-    /**
-     * Returns the list of Android projects.
-     * <p/>
-     * Because this list can be time consuming, this class caches the list of project.
-     * It is recommended to call this method instead of
-     * {@link BaseProjectHelper#getAndroidProjects()}.
-     *
-     * @param javaModel the java model. Can be null.
-     */
-    public IJavaProject[] getAndroidProjects(IJavaModel javaModel) {
-        // recompute only if we don't have the projects already or the filter is dynamic
-        // and prevent usage of a cache.
-        if (mAndroidProjects == null || (mFilter != null && mFilter.useCache() == false)) {
-            if (javaModel == null)
-            	javaModel = javaProjectHelper.getJavaModel();
-            mAndroidProjects = BaseProjectHelper.getAndroidProjects(javaModel, mFilter);
-         }
-         return mAndroidProjects;
-    }
-
-    /**
-     * Helper method to get the Android project with the given name
-     *
-     * @param projectName the name of the project to find
-     * @return the {@link IProject} for the Android project. <code>null</code> if not found.
-     */
-    public IProject getAndroidProject(String projectName) {
-        IProject iproject = null;
-        IJavaProject[] javaProjects = getAndroidProjects(null);
-        if (javaProjects != null) {
-            for (IJavaProject javaProject : javaProjects) {
-                if (javaProject.getElementName().equals(projectName)) {
-                    iproject = javaProject.getProject();
-                    break;
-                }
-            }
-        }
-        return iproject;
     }
 
 	public ILabelProvider getJavaElementLabelProvider() {

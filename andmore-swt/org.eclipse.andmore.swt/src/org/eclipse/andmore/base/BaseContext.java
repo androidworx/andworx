@@ -16,13 +16,23 @@
 package org.eclipse.andmore.base;
 
 import org.eclipse.andmore.base.resources.PluginResourceRegistry;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 
 /**
- * Context for sharing global utility classes
+ * Context for containing foundation classes available to all bundles
  */
 public interface BaseContext {
+	/**
+	 * Returns a context that can be used to lookup OSGi services
+	 * @return IEclipseContext object
+	 */
+	IEclipseContext getEclipseContext();
+
+	/** Container for plugin ImageDescriptor providers */
 	PluginResourceRegistry getPluginResourceRegistry();
+	/** Utility to support unit testing requiring JavaProject mocking */
 	JavaProjectHelper getJavaProjectHelper();
 
+	/** Singleton instance */
 	static final BaseContextContainer container = new BaseContextContainer();
 }

@@ -21,9 +21,7 @@ import org.eclipse.andmore.base.resources.ImageFactory;
 import org.eclipse.andworx.ddms.devices.DeviceProfile;
 import org.eclipse.andworx.ddms.devices.Devices;
 import org.eclipse.andworx.event.AndworxEvents;
-import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.TreePath;
@@ -111,15 +109,19 @@ public class DevicesPanel extends Panel {
      * @param advancedPortSupport if true the device panel will add support for selected client port and display the ports in the ui.
      * @param imageFactory Image loader 
      */
-	public DevicesPanel(Devices devices, boolean advancedPortSupport, ImageFactory imageFactory, IPreferenceStore prefs) {
+	public DevicesPanel(
+			Devices devices, 
+			boolean advancedPortSupport, 
+			ImageFactory imageFactory, 
+			IPreferenceStore prefs,
+			IEventBroker eventBroker) {
 		this.devices = devices;
         this.advancedPortSupport = advancedPortSupport;
         this.imageFactory = imageFactory;
         this.prefs = prefs;
+        this.eventBroker = eventBroker;
         devicesToExpand = new ArrayList<>();
         selectionListeners = new ArrayList<>();
-        IEclipseContext serviceContext = E4Workbench.getServiceContext();
-        eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
     	eventHandler1 = new EventHandler() {
 			@Override
 			public void handleEvent(org.osgi.service.event.Event event) {

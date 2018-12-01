@@ -17,7 +17,7 @@ package org.eclipse.andworx.config;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
+import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.event.AndworxEvents;
 import org.eclipse.andworx.project.ProjectProfile;
 
@@ -45,8 +45,8 @@ public abstract class ConfigContext<T> {
 
 	protected void post(T updateBean) {
 		if (eventBroker == null) {
-	        IEclipseContext serviceContext = E4Workbench.getServiceContext(); 
-	    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+	        IEclipseContext eclipseContext = AndworxFactory.instance().getEclipseContext(); 
+	    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
 		}
 		eventBroker.post(AndworxEvents.UPDATE_ENTITY_BEAN, updateBean);
 	}

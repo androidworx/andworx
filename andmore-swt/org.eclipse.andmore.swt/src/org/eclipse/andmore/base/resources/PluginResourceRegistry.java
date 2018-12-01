@@ -15,25 +15,43 @@
  */
 package org.eclipse.andmore.base.resources;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
 
+/**
+ * Container for plugin ImageDescriptor providers
+ */
 public class PluginResourceRegistry {
 
-	private HashMap<String, PluginResourceProvider> resouceProviderMap;
-	
+	/** Provider container */
+	private ConcurrentHashMap<String, PluginResourceProvider> resouceProviderMap;
+
+	/**
+	 * Construct PluginResourceRegistry object
+	 */
 	public PluginResourceRegistry() {
-		resouceProviderMap = new HashMap<>();
+		super();
+		resouceProviderMap = new ConcurrentHashMap<>();
 	}
-	
+
+	/**
+	 * Put custom provider in container. Note that plugin providers are created and inserted on demand.
+	 * @param key Unique name of custom provider
+	 * @param provider Plugin resource provider
+	 */
 	public void putResourceProvider(String key, PluginResourceProvider provider) {
 		resouceProviderMap.put(key, provider);
 	}
-	
-	public PluginResourceProvider getResourceProvider(String pluginId) {
-		PluginResourceProvider resourceProvider = resouceProviderMap.get(pluginId);
+
+	/**
+	 * Returns provider for plugin specified by symbolic name or custom provider by unique name
+	 * @param key Provider name
+	 * @return
+	 */
+	public PluginResourceProvider getResourceProvider(String key) {
+		PluginResourceProvider resourceProvider = resouceProviderMap.get(key);
 		if (resourceProvider == null) {
 			synchronized(resouceProviderMap) {
 				if (resourceProvider == null) {
@@ -41,9 +59,9 @@ public class PluginResourceRegistry {
 
 						@Override
 						public ImageDescriptor descriptorFromPath(String imageFilePath) {
-							return BasePlugin.imageDescriptorFromPlugin(pluginId, imageFilePath);
+							return BasePlugin.imageDescriptorFromPlugin(key, imageFilePath);
 						}};
-					resouceProviderMap.put(pluginId, resourceProvider)	;
+					resouceProviderMap.put(key, resourceProvider)	;
 				}
 			}
 		}

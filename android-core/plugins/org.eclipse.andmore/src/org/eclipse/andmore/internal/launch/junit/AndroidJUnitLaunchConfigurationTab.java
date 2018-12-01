@@ -26,6 +26,7 @@ import org.eclipse.andmore.internal.launch.LaunchMessages;
 import org.eclipse.andmore.internal.launch.MainLaunchConfigTab;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -132,6 +133,7 @@ public class AndroidJUnitLaunchConfigurationTab extends AbstractLaunchConfigurat
     private String[] mInstrumentations = null;
     private InstrumentationRunnerValidator mInstrValidator = null;
     private ProjectChooserHelper mProjectChooserHelper;
+    private AndroidProjectCollection androidProjects;
 
     public static final String SMALL_TEST_ANNOTATION = "@SmallTest";        //$NON-NLS-1$
     public static final String MEDIUM_TEST_ANNOTATION = "@MediumTest";      //$NON-NLS-1$
@@ -145,7 +147,8 @@ public class AndroidJUnitLaunchConfigurationTab extends AbstractLaunchConfigurat
 
     @Override
     public void createControl(Composite parent) {
-        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(), null /*filter*/);
+    	androidProjects = new AndroidProjectCollection(null);
+        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(), androidProjects);
 
         Composite comp = new Composite(parent, SWT.NONE);
         setControl(comp);
@@ -369,7 +372,7 @@ public class AndroidJUnitLaunchConfigurationTab extends AbstractLaunchConfigurat
             updateTestTypeFromConfig(config);
         }
 
-        IProject proj = mProjectChooserHelper.getAndroidProject(projectName);
+        IProject proj = androidProjects.getAndroidProject(projectName);
         loadInstrumentations(proj);
         updateInstrumentationFromConfig(config);
         updateTestSizeFromConfig(config);

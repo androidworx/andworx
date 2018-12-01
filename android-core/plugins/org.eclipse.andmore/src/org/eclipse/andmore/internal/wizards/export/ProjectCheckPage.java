@@ -26,6 +26,7 @@ import org.eclipse.andmore.internal.project.ProjectChooserHelper;
 import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
 import org.eclipse.andmore.internal.wizards.export.ExportWizard.ExportWizardPage;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -58,6 +59,7 @@ final class ProjectCheckPage extends ExportWizardPage {
     private Composite mErrorComposite;
     private Text mProjectText;
     private ProjectChooserHelper mProjectChooserHelper;
+    private AndroidProjectCollection androidProjects;
     private boolean mFirstOnShow = true;
 
     protected ProjectCheckPage(ExportWizard wizard, String pageName) {
@@ -70,8 +72,8 @@ final class ProjectCheckPage extends ExportWizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(),
-                new NonLibraryProjectOnlyFilter());
+    	androidProjects = new AndroidProjectCollection(new NonLibraryProjectOnlyFilter());
+        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(), androidProjects);
 
         GridLayout gl = null;
         GridData gd = null;
@@ -264,7 +266,7 @@ final class ProjectCheckPage extends ExportWizardPage {
         } else if (text.matches("[a-zA-Z0-9_ \\.-]+") == false) {
             setErrorMessage("Project name contains unsupported characters!");
         } else {
-            IJavaProject[] projects = mProjectChooserHelper.getAndroidProjects(null);
+            IJavaProject[] projects = androidProjects.getAndroidProjects();
             IProject found = null;
             for (IJavaProject javaProject : projects) {
                 if (javaProject.getProject().getName().equals(text)) {

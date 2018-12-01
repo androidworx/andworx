@@ -18,10 +18,9 @@ package org.eclipse.andworx.wizards.export;
 import static org.eclipse.andmore.AndmoreAndroidConstants.PROJECT_LOGO_LARGE;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
-import org.eclipse.andmore.base.BaseContext;
-import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.resources.PluginResourceProvider;
 import org.eclipse.andmore.base.resources.PluginResourceRegistry;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -37,14 +36,26 @@ import org.eclipse.ui.IWorkbench;
  */
 public class ExportAndroidWizard extends Wizard implements IExportWizard {
 
+	/** Container for plugin ImageDescriptor providers */
+    private final PluginResourceRegistry resourceRegistry ;
+	/** Andworx object factory */
+    private final AndworxContext objectFactory;
+    /** Images provider */
 	private PluginResourceProvider resourceProvider;
     /** Selected project or null if none selected */
     private IProject project;
     /** Single export page */
     private ExportAndroidPage exportAndroidPage;
-    private BaseContext baseContext = BasePlugin.getBaseContext();
 
-
+    /**
+     * Create ExportAndroidWizard object
+     */
+    public ExportAndroidWizard() {
+    	super();
+    	objectFactory = AndworxFactory.getAndworxContext();
+        resourceRegistry = objectFactory.getPluginResourceRegistry();
+    }
+    
     /**
      * Initializes this creation wizard using the passed workbench and object selection.
      * <p>
@@ -58,12 +69,11 @@ public class ExportAndroidWizard extends Wizard implements IExportWizard {
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
         setHelpAvailable(false); // TODO have help
-        // AndmoreAndroidPlugin.getImageDescriptor(PROJECT_LOGO_LARGE);
-        PluginResourceRegistry resourceRegistry = baseContext.getPluginResourceRegistry();
+        // Set header image
         resourceProvider = resourceRegistry.getResourceProvider(AndmoreAndroidConstants.PLUGIN_ID);
         ImageDescriptor desc = resourceProvider.descriptorFromPath(PROJECT_LOGO_LARGE);
         setDefaultPageImageDescriptor(desc);
-        // Get the project from the selection
+       // Get the project from the selection, if available
         Object selected = selection.getFirstElement();
 
         if (selected instanceof IProject) {
@@ -77,13 +87,13 @@ public class ExportAndroidWizard extends Wizard implements IExportWizard {
 	}
 
 	/**
-     * Add pages before the wizard opens
+     * Add export page before the wizard opens
      */
     @Override
     public void addPages() {
-    	exportAndroidPage = new ExportAndroidPage(baseContext, AndworxFactory.getAndworxContext(), resourceProvider);
+    	exportAndroidPage = new ExportAndroidPage(objectFactory);
     	if (project != null)
-    		exportAndroidPage.setProject(project);
+    		exportAndroidPage.posfConstruct(project);
     	addPage(exportAndroidPage);
     }
 

@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
@@ -62,8 +61,8 @@ public class SdkTargetDataMap<Data extends Disposeable> extends TargetLoadStatus
 		super(objectFactory);
 		targetDataMap = new HashMap<>();
 		// Retrieve Event Broker from Eclipse Context
-        IEclipseContext serviceContext = E4Workbench.getServiceContext();
-    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+        IEclipseContext eclipseContext = objectFactory.getEclipseContext();
+    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
     	// Subscribe to event SDK loaded
     	EventHandler eventHandler = new EventHandler() {
 			@Override

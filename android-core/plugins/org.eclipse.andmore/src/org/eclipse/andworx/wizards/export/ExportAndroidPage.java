@@ -25,13 +25,13 @@ import java.util.concurrent.Callable;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
-import org.eclipse.andmore.base.BaseContext;
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.JavaProjectHelper;
 import org.eclipse.andmore.base.resources.PluginResourceProvider;
+import org.eclipse.andmore.base.resources.PluginResourceRegistry;
 import org.eclipse.andmore.internal.build.builders.BaseBuilder;
 import org.eclipse.andmore.internal.build.builders.PostCompilerBuilder;
 import org.eclipse.andmore.internal.build.builders.PreCompilerBuilder;
-import org.eclipse.andmore.internal.editors.IconFactory;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
 import org.eclipse.andmore.internal.project.ProjectHelper;
@@ -41,9 +41,10 @@ import org.eclipse.andworx.config.ConfigContext;
 import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.config.SecurityController.ErrorHandler;
 import org.eclipse.andworx.config.SigningConfigField;
-import org.eclipse.andworx.control.StatusItemLayoutData;
+import org.eclipse.andworx.control.ErrorControl;
 import org.eclipse.andworx.entity.SigningConfigBean;
 import org.eclipse.andworx.project.AndroidManifestData;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.ProjectProfile;
 import org.eclipse.andworx.registry.ProjectRegistry;
@@ -57,22 +58,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -81,7 +73,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
@@ -91,82 +82,33 @@ import com.android.sdkuilib.ui.GridDataBuilder;
 import com.android.sdkuilib.ui.GridLayoutBuilder;
 import com.google.common.base.Throwables;
 
+/**
+ * Page to export a release APK from an Android project
+ */
 public class ExportAndroidPage extends WizardPage {
 	
-    private final static String IMG_MATCH = "match"; 
-    private final static String IMG_ERROR = "error"; 
-    private final static String IMG_WARNING = "warning"; 
 	private final static String EXPORT_TITLE = "Export Release APK";
+	/** Signing button id */
 	private final static int SIGNING_ID = 256;
-
-	private class ErrorControl {
-		private final Composite composite;
-		private final Color backColor;
-		
-		public ErrorControl(Composite parent) {
-			composite = new Composite(parent, SWT.NONE);
-	        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-	        backColor = parent.getBackground();
-	        GridLayout gl = new GridLayout(1, false);
-	        gl.marginHeight = gl.marginWidth = 0;
-	        gl.verticalSpacing *= 3; // more spacing than normal.
-	        composite.setLayout(gl);
-		}
-		
-		public void displyNoErrors() {
-            CLabel label = new CLabel(composite, SWT.NONE);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            label.setLayoutData(gd);
-            label.setText("No errors found - Click Finish.");
-	        label.setImage(okImage);
-            label.setBackground(backColor);
-		}
-		
-		public void setError(String message) {
-	        CLabel label = new CLabel(composite, SWT.NONE);
-	        label.setText(message);
-	        label.setImage(errorImage);
-            label.setBackground(backColor);
-            GridData gd = new GridData(SWT.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, true);
-            StatusItemLayoutData layoutData = new StatusItemLayoutData(label, SWT.DEFAULT);
-            gd.widthHint = layoutData.widthHint;
-            gd.heightHint = layoutData.heightHint;
-             label.setLayoutData(gd);
-		}
-		
-		public void setWarning(String message) {
-	        CLabel label = new CLabel(composite, SWT.NONE);
-	        label.setText(message);
-	        label.setImage(warnImage);
-            label.setBackground(backColor);
-            GridData gd = new GridData(SWT.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, true);
-            StatusItemLayoutData layoutData = new StatusItemLayoutData(label, SWT.DEFAULT);
-            gd.widthHint = layoutData.widthHint;
-            gd.heightHint = layoutData.heightHint;
-            gd.grabExcessHorizontalSpace = true;
-            label.setLayoutData(gd);
-		}
-		
-		public void dispose() {
-			composite.dispose();
-		}
-	}
-
-	private final BaseContext baseContext;
+    
+	/** Manages state of all Android projects */
     private final ProjectRegistry projectRegistry;
+    /** Performs control functions for security configuration: validate and persist */
     private final SecurityController securityController;
+    /** plugin ImageDescriptor provider */
     private final PluginResourceProvider resourceProvider;
+    /** JavaProject utilities to hide implementation details */
+    private final JavaProjectHelper javaProjectHelper;
+    /** Signing config entity bean for APK security */
     private SigningConfigBean signingConfig;
     /** Completion task created as soon as the project is validated, but only runs when the user clicks "Finish" */
     private Callable<Boolean> commitTask;
-    /** Project */
+    /** Current Project or null if none selected */
     private IProject project;
     /** Flag set true if message is being displayed indicating an error */
     private boolean hasMessage;
     /** Project selector */
-    private ProjectChooserHelper projectChooserHelper;
-    /** Make icon usage subject to all images available */
-    private boolean useImages;
+    private AndroidProjectCollection androidProjects;
 
     // Controls and images
     private Composite container;
@@ -179,19 +121,18 @@ public class ExportAndroidPage extends WizardPage {
     private Group statusGroup;
     private ErrorControl errorControl;
     private Color hiBackColor;
-    private Image okImage;
-    private Image errorImage;
-    private Image warnImage;
     private Button defaultButton;
 
     /**
      * Construct ExportAndroidPage object
      */
-	protected ExportAndroidPage(BaseContext baseContext, AndworxContext andworxContext, PluginResourceProvider resourceProvider) {
+	protected ExportAndroidPage(AndworxContext andworxContext) {
 		super("exportAndroidApk");
-		this.baseContext = baseContext;
-		this.resourceProvider = resourceProvider;
+        PluginResourceRegistry resourceRegistry = andworxContext.getPluginResourceRegistry();
+        resourceProvider = resourceRegistry.getResourceProvider(BasePlugin.PLUGIN_ID);
+
         projectRegistry = andworxContext.getProjectRegistry();
+        javaProjectHelper = andworxContext.getJavaProjectHelper();
         securityController = andworxContext.getSecurityController();
 		hasMessage = false;
         setTitle(EXPORT_TITLE);
@@ -217,9 +158,8 @@ public class ExportAndroidPage extends WizardPage {
 	public void createControl(Composite parent) {
 		defaultButton = parent.getShell().getDefaultButton();
 		initializeDialogUnits(parent);
-    	createImages(parent.getShell());
 		// Note ProjectChooserHelper is only used for logic, not as a control
-		projectChooserHelper = new ProjectChooserHelper(null,  new NonLibraryProjectOnlyFilter());
+		androidProjects = new AndroidProjectCollection(new NonLibraryProjectOnlyFilter());
         container = new Composite(parent, SWT.NULL);
         setControl(container);
         container.setLayout(new GridLayout(2, false));
@@ -233,7 +173,7 @@ public class ExportAndroidPage extends WizardPage {
         nameLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         GridDataBuilder.create(nameLabel).hLeft().fill().vCenter();
         nameLabel.setText("Project name");
-        projectCombo = new ProjectChooserHelper.ProjectCombo(projectChooserHelper, groupDetails, project);
+        projectCombo = new ProjectChooserHelper.ProjectCombo(androidProjects, groupDetails, project);
         GridDataBuilder.create(projectCombo).fill().hGrab().vCenter();
         Label groupIdLabel = new Label(groupDetails, SWT.NONE); 
         groupIdLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -283,7 +223,11 @@ public class ExportAndroidPage extends WizardPage {
 		projectCombo.addSelectionListener(listener);
 	}
 
-	void setProject(IProject project) {
+	/**
+	 * Sets initial project. Call proir to createControl()
+	 * @param project
+	 */
+	void posfConstruct(IProject project) {
 		if (project != null)
 			this.project = project;
 	}
@@ -304,12 +248,15 @@ public class ExportAndroidPage extends WizardPage {
 	}
 
 	/**
-     * Checks the parameters for correctness, and update the error message and buttons.
+     * Checks the parameters for correctness, and updates the error message and buttons.
      */
     private void handleProjectNameChange() {
+    	// Clear variables tied to previous project
+    	signingConfig = null;
+    	// Prepare to handle next project
+    	IProject exportProject = null;
         setPageComplete(false);
         disposeErrorControl();
-        signingConfig = null;
         // Check the project name
         String text = projectText.getText().trim();
         if (text.length() == 0) {
@@ -317,8 +264,7 @@ public class ExportAndroidPage extends WizardPage {
         } else if (text.matches("[a-zA-Z0-9_ \\.-]+") == false) {
             setErrorMessage("Project name contains unsupported characters!");
         } else {
-            IJavaProject[] projects = projectChooserHelper.getAndroidProjects(null);
-            IProject exportProject = null;
+            IJavaProject[] projects = androidProjects.getAndroidProjects();
             for (IJavaProject javaProject : projects) {
                 if (javaProject.getProject().getName().equals(text)) {
                 	exportProject = javaProject.getProject();
@@ -331,29 +277,17 @@ public class ExportAndroidPage extends WizardPage {
 	        		// Get ready to complete import
 	        		commitTask = getCommitTask();     
 	        		refresh();	
-	        		return;
                 }
             } else {
                 setErrorMessage(String.format("There is no android project named '%1$s'", text));
             }
         }
-        project = null;
+        project = exportProject;
     }
 
 	/**
 	 * Notifies that this dialog's button with the given id has been pressed.
-	 * <p>
-	 * The <code>Dialog</code> implementation of this framework method calls
-	 * <code>okPressed</code> if the ok button is the pressed, and
-	 * <code>cancelPressed</code> if the cancel button is the pressed. All
-	 * other button presses are ignored. Subclasses may override to handle other
-	 * buttons, but should call <code>super.buttonPressed</code> if the
-	 * default handling of the ok and cancel buttons is desired.
-	 * </p>
-	 *
-	 * @param buttonId
-	 *            the id of the button that was pressed (see
-	 *            <code>IDialogConstants.*_ID</code> constants)
+	 * @param buttonId Button id
 	 */
 	private void buttonPressed(int buttonId) {
 		if (SIGNING_ID == buttonId) {
@@ -372,6 +306,7 @@ public class ExportAndroidPage extends WizardPage {
 			if (signingConfigDialog.open() == IDialogConstants.OK_ID) {
 				if (!signingConfigDialog.equals(dialogSigningConfig)) {
 					signingConfig = dialogSigningConfig;
+					// Prepare to update status display by disposing of the previous one
 					disposeErrorControl();
 					if (validateProject())
 		        		commitTask = getCommitTask();       
@@ -380,6 +315,10 @@ public class ExportAndroidPage extends WizardPage {
 		}
 	}
 
+	/**
+	 * Returns Callable to run APK build task
+	 * @return Callable object
+	 */
 	private Callable<Boolean> getCommitTask() {
 		return new Callable<Boolean>() {
 			
@@ -438,15 +377,18 @@ public class ExportAndroidPage extends WizardPage {
 		};
 	}
 
+	/**
+	 * Returns flag set true if  selected project is valid. Also updates status message
+	 * @return boolean
+	 */
     private boolean validateProject() {
     	boolean isProjectValid = false;
-        // Show description the first timeProjectRegistry projectRegistry
         setErrorMessage(null);
         setMessage(null);
-        setPageComplete(true);
+        // Assume error.
+        setPageComplete(false);
         hasMessage = false;
-        JavaProjectHelper javaProjectHelper = baseContext.getJavaProjectHelper();
-        errorControl = new ErrorControl(statusGroup);
+        errorControl = new ErrorControl(statusGroup, resourceProvider);
 
         if (project == null) {
             setErrorMessage("Select project to export.");
@@ -481,8 +423,6 @@ public class ExportAndroidPage extends WizardPage {
                                 "You should set it to false for applications that you release to the public.\n\n" +
                                 "Applications with debuggable=true are compiled in debug mode always.");
                     }
-
-                    // check for mapview stuff
                 }
             } catch (CoreException e) {
                 // unable to access nature
@@ -491,14 +431,15 @@ public class ExportAndroidPage extends WizardPage {
         }
 
         if (hasMessage) {
+        	// When there is an error, dsable configure button
 			signingButton.setEnabled(false);
         } else {
         	isProjectValid = true;
-        	if (!validateSigning())
-                setPageComplete(false);
-        	else {	
+        	if (validateSigning()) {
         		errorControl.displyNoErrors();;
 				signingButton.setEnabled(true);
+        		// Page is valid, so enable Finish button and set focus on it
+                setPageComplete(true);
 				defaultButton.setFocus();
         	}
         } 
@@ -506,16 +447,21 @@ public class ExportAndroidPage extends WizardPage {
         return isProjectValid;
     }
 
+    /**
+     * Returns flag set true if Signing configuration is valid
+     * @return boolean
+     */
     private boolean validateSigning() {
-    	if (signingConfig == null) {
+    	if (signingConfig == null) { // Lazy initialize Signing configuration object
     		ProjectState projectState = projectRegistry.getProjectState(project);
     		signingConfig = new SigningConfigBean(getSigningConfig(projectState));
     	}
+    	// Callback for when valication fails
 		ErrorHandler errorHandler = new ErrorHandler() {
 
 			@Override
 			public void onVailidationFail(SigningConfigField field, String message) {
-				addWarning(message + " - Click Siging.");
+				addWarning(message + " - Click Signing.");
 				signingButton.setEnabled(true);
 				signingButton.setFocus();
 			}};
@@ -545,6 +491,9 @@ public class ExportAndroidPage extends WizardPage {
         hasMessage = true;
     }
 
+    /**
+     * Dispose error control
+     */
 	private void disposeErrorControl() {
         if (errorControl != null) {
             errorControl.dispose();
@@ -552,6 +501,9 @@ public class ExportAndroidPage extends WizardPage {
         }
 	}
 
+	/**
+	 * Refress display of project details
+	 */
 	private void refresh() {
     	ProjectState projectState = projectRegistry.getProjectState(project);
     	ProjectProfile profile = projectState.getProfile();
@@ -560,32 +512,30 @@ public class ExportAndroidPage extends WizardPage {
     	versionText.setText(profile.getIdentity().getVersion());
     }
  
+	/**
+	 * Returns release Signing configuation
+	 * @param projectState Project state
+	 * @return SigningConfig object
+	 */
     private SigningConfig getSigningConfig(ProjectState projectState) {
         AndworxProject andworxProject = projectState.getAndworxProject();
 		return andworxProject.getContext(RELEASE).getVariantConfiguration().getSigningConfig();
     }
-    
-	private void reportError(Throwable e) {
+
+    /**
+     * Log an error and display it in the build console
+     * @param e
+     */
+	private void reportError(Throwable throwable) {
 		String projectName = project != null ? project.getName() : "?";
-    	String message = "Error creating project " + projectName + ": " + Throwables.getRootCause(e).getMessage();
+    	String message = "Error creating project " + projectName + ": " + Throwables.getRootCause(throwable).getMessage();
     	onError(message);
-    	AndworxBuildPlugin.instance().logAndPrintError(e, projectName, message);
+    	AndworxBuildPlugin.instance().logAndPrintError(throwable, projectName, message);
 	}
 	
 	/**
 	 * Creates and returns the contents of this dialog's button bar.
-	 * <p>
-	 * The <code>Dialog</code> implementation of this framework method lays
-	 * out a button bar and calls the <code>createButtonsForButtonBar</code>
-	 * framework method to populate it. Subclasses may override.
-	 * </p>
-	 * <p>
-	 * The returned control's layout data must be an instance of
-	 * <code>GridData</code>.
-	 * </p>
-	 *
-	 * @param parent
-	 *            the parent composite to contain the button bar
+	 * @param parent Pparent composite to contain the button bar
 	 * @return the button bar control
 	 */
     private Control createButtonBar(Composite parent) {
@@ -623,35 +573,15 @@ public class ExportAndroidPage extends WizardPage {
 	 * <p>
 	 * The <code>Dialog</code> implementation of this framework method creates
 	 * a standard push button, registers it for selection events including
-	 * button presses, and registers default buttons with its shell. The button
-	 * id is stored as the button's client data. If the button id is
-	 * <code>IDialogConstants.CANCEL_ID</code>, the new button will be
-	 * accessible from <code>getCancelButton()</code>. If the button id is
-	 * <code>IDialogConstants.OK_ID</code>, the new button will be accesible
-	 * from <code>getOKButton()</code>. Note that the parent's layout is
-	 * assumed to be a <code>GridLayout</code> and the number of columns in
-	 * this layout is incremented. Subclasses may override.
+	 * button presses. The button id is stored as the button's client data. 
+	 * Note that the parent's layout is assumed to be a <code>GridLayout</code> 
+	 * and the number of columns in this layout is incremented.
 	 * </p>
 	 * <p>
-	 * Note: The common button order is: <b>{other buttons}</b>, <b>OK</b>, <b>Cancel</b>.
-	 * On some platforms, {@link #initializeBounds()} will move the default button to the right.
-	 * </p>
-	 *
-	 * @param parent
-	 *            the parent composite
-	 * @param id
-	 *            the id of the button (see <code>IDialogConstants.*_ID</code>
-	 *            constants for standard dialog button ids)
-	 * @param label
-	 *            the label from the button
-	 * @param defaultButton
-	 *            <code>true</code> if the button is to be the default button,
-	 *            and <code>false</code> otherwise
-	 *
+	 * @param parent Parent composite
+	 * @param id Button id
+	 * @param label Button text
 	 * @return the new button
-	 *
-	 * @see #getCancelButton
-	 * @see #getOKButton()
 	 */
 	private Button createButton(Composite parent, int id, String label) {
 		// increment the number of columns in the button bar
@@ -665,43 +595,4 @@ public class ExportAndroidPage extends WizardPage {
 		return button;
 	}
 
-    /**
-     * Create all the images and ensure their disposal
-     */
-    private void createImages(Shell shell) {
-    	useImages = false;
-        ImageDescriptor descriptor = resourceProvider.descriptorFromPath("icons/" + IMG_WARNING + ".png");
-        if (descriptor != null)
-        	warnImage = descriptor.createImage();
-        else
-        	return;
-        descriptor = resourceProvider.descriptorFromPath("icons/" + IMG_ERROR + ".png");
-        if (descriptor != null)
-        	errorImage = descriptor.createImage();
-        else
-        	return;
-        descriptor = resourceProvider.descriptorFromPath("icons/" + IMG_MATCH + ".png"); 
-        if (descriptor != null) {
-        	okImage = descriptor.createImage();
-        	useImages = (okImage != null) && (errorImage != null) && (warnImage != null);
-        }
-        shell.addDisposeListener(new DisposeListener(){
-
-			@Override
-			public void widgetDisposed(DisposeEvent e) {
-		    	disposeImages();
-			}});
-    }
- 
-    /**
-     * Dispose images
-     */
-    private void disposeImages() {
-    	if (warnImage != null)
-    		warnImage.dispose();
-    	if (errorImage != null)
-    		errorImage.dispose();
-    	if (okImage != null)
-    		okImage.dispose();
-   }
 }

@@ -55,7 +55,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -161,14 +160,14 @@ public final class DdmsPlugin extends AbstractUIPlugin implements IDeviceChangeL
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-        IEclipseContext serviceContext = E4Workbench.getServiceContext();
-    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+		AndworxContext objectFactory = AndworxFactory.instance();
+        IEclipseContext eclipseContext = objectFactory.getEclipseContext();
+    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
     	debugConnectorListener = new DebugConnectorListener(eventBroker);
 		final Display display = getDisplay();
 
 		// get the eclipse store
 		final IPreferenceStore eclipseStore = getPreferenceStore();
-		AndworxContext objectFactory = AndworxFactory.instance();
         deviceMonitor = objectFactory.getDeviceMonitor();
 		DdmUiPreferences.setStore(eclipseStore);
 

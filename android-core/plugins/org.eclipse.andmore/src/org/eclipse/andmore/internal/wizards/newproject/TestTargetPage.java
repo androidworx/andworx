@@ -18,6 +18,7 @@ package org.eclipse.andmore.internal.wizards.newproject;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
 import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -95,10 +96,9 @@ class TestTargetPage extends WizardPage implements SelectionListener {
     }
 
     private void initializeList() {
-        ProjectChooserHelper helper = new ProjectChooserHelper(getShell(), null /*filter*/);
+    	AndroidProjectCollection androidProjectCollection = new AndroidProjectCollection(null /*filter*/);
         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-        IJavaModel javaModel = JavaCore.create(workspaceRoot);
-        IJavaProject[] androidProjects = helper.getAndroidProjects(javaModel);
+        IJavaProject[] androidProjects = androidProjectCollection.getAndroidProjects();
         mProjectList.setElements(androidProjects);
         if (mValues.getTestedProject() != null) {
             for (IJavaProject project : androidProjects) {

@@ -17,7 +17,6 @@
 package org.eclipse.andmore.ddms.views;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,18 +25,17 @@ import org.eclipse.andmore.ddms.DdmsPlugin;
 import org.eclipse.andmore.ddms.DebugConnectorHandler;
 import org.eclipse.andmore.ddms.IClientAction;
 import org.eclipse.andmore.ddms.IDebuggerConnector;
-import org.eclipse.andworx.ddms.devices.Devices;
-import org.eclipse.andworx.ddms.devices.DeviceProfile;
 import org.eclipse.andmore.ddms.editors.UiAutomatorViewer;
 import org.eclipse.andmore.ddms.i18n.Messages;
+import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.ddms.devices.Devices;
 import org.eclipse.andworx.event.AndworxEvents;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -55,8 +53,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.AndroidDebugBridge.IClientChangeListener;
@@ -66,8 +62,8 @@ import com.android.ddmlib.ClientData.MethodProfilingStatus;
 import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.IDevice;
 import com.android.ddmuilib.DdmUiPreferences;
-import com.android.ddmuilib.DevicesPanel.IUiSelectionListener;
 import com.android.ddmuilib.DevicesPanel;
+import com.android.ddmuilib.DevicesPanel.IUiSelectionListener;
 import com.android.ddmuilib.ScreenShotDialog;
 import com.android.ddmuilib.ViewLabelProvider;
 import com.android.uiautomator.UiAutomatorHelper;
@@ -80,9 +76,9 @@ public class DeviceView extends ViewPart implements IUiSelectionListener, IClien
 
 	public static final String ID = "org.eclipse.andmore.ddms.views.DeviceView"; //$NON-NLS-1$
 
+	private final Devices devices;
 	private Shell mParentShell;
 	private DevicesPanel mDeviceList;
-	private final Devices devices;
 	private List<IDebuggerConnector> debugConnectors;
 	private ViewDebugConnectorHandler debugConnectHandler;
 	private IEventBroker eventBroker;
@@ -122,18 +118,24 @@ public class DeviceView extends ViewPart implements IUiSelectionListener, IClien
 	public DeviceView() {
 		debugConnectHandler = new ViewDebugConnectorHandler();
 		debugConnectors = new LinkedList<>();
+		AndworxContext objectFactory =  AndworxFactory.instance();
 		// the view is declared with allowMultiple="false" so we can safely do this.
-        IEclipseContext serviceContext = E4Workbench.getServiceContext();
-        eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+		IEclipseContext eclipseContext = objectFactory.getEclipseContext();
+        eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
         eventBroker.post(AndworxEvents.DEBUG_CONNECTOR_HANDLER, debugConnectHandler);
-        devices = AndworxFactory.instance().getDevices();
+        devices = objectFactory.getDevices();
 	}
 
 	@Override
 	public void createPartControl(Composite parent) {
 		mParentShell = parent.getShell();
 		ImageFactory imageFactory = DdmsPlugin.getDefault().getImageFactory();
-		mDeviceList = new DevicesPanel(devices, USE_SELECTED_DEBUG_PORT, imageFactory, DdmUiPreferences.getStore());
+		mDeviceList = new DevicesPanel(
+				devices, 
+				USE_SELECTED_DEBUG_PORT, 
+				imageFactory, 
+				DdmUiPreferences.getStore(),
+				eventBroker);
 		mDeviceList.createPanel(parent);
 		mDeviceList.addSelectionListener(this);
 

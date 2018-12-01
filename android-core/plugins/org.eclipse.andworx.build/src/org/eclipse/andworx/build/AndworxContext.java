@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.andmore.base.BaseContext;
 import org.eclipse.andworx.build.task.AidlCompileTask;
 import org.eclipse.andworx.build.task.BuildConfigTask;
 import org.eclipse.andworx.build.task.D8Task;
@@ -51,7 +52,10 @@ import au.com.cybersearch2.classyjpa.entity.PersistenceWork;
 import au.com.cybersearch2.classyjpa.persist.PersistenceContext;
 import au.com.cybersearch2.classytask.Executable;
 
-public interface AndworxContext {
+/**
+ * Andworx object factory
+ */
+public interface AndworxContext extends BaseContext{
 
 	/**
 	 * Loads an SDK and returns flag to indicate success.

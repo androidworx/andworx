@@ -33,6 +33,7 @@ import org.eclipse.andworx.project.AndroidConfiguration;
 import org.eclipse.andworx.registry.ProjectRegistry;
 import org.eclipse.andworx.task.TaskFactory;
 import org.eclipse.andworx.transform.TransformAgent;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.m2e.core.MavenPlugin;
 
 import com.android.builder.utils.FileCache;
@@ -67,6 +68,7 @@ public class AndworxModule {
     private final EntityClassLoader entityClassLoader;
     private final File dataArea;
     private final FileCache userFileCache;
+    private final IEventBroker eventBroker;
     private final ILogger logger;
     
     /** SQLite database adapter */
@@ -77,12 +79,19 @@ public class AndworxModule {
      * Construct AndworxModule object
      * @param resourceEnvironment Resources adapter
      */
-    public AndworxModule(File databaseDirectory, EntityClassLoader entityClassLoader, File dataArea, FileCache userFileCache,  ILogger logger)
+    public AndworxModule(
+    		File databaseDirectory, 
+    		EntityClassLoader entityClassLoader, 
+    		File dataArea, 
+    		FileCache userFileCache,  
+    		IEventBroker eventBroker,
+    		ILogger logger)
     {
         this.databaseDirectory = databaseDirectory;
         this.entityClassLoader = entityClassLoader;
         this.dataArea = dataArea;
         this.userFileCache = userFileCache;
+        this.eventBroker = eventBroker;
         this.logger = logger;
     }
 
@@ -150,7 +159,7 @@ public class AndworxModule {
     @Provides @Singleton 
     AndroidConfiguration provideAndroidConfiguration(PersistenceService persistenceService) 
     {
-    	return new AndroidConfiguration(persistenceService);
+    	return new AndroidConfiguration(persistenceService, eventBroker);
     }
 
     @Provides @Singleton

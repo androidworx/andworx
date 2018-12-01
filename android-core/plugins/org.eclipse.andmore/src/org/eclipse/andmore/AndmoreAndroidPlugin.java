@@ -40,11 +40,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.andmore.base.BaseContext;
-import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.SdkSelectionListener;
 import org.eclipse.andmore.base.resources.PluginResourceProvider;
-import org.eclipse.andmore.base.resources.PluginResourceRegistry;
 import org.eclipse.andmore.internal.actions.SdkManagerAction;
 import org.eclipse.andmore.internal.editors.AndroidXmlEditor;
 import org.eclipse.andmore.internal.editors.IconFactory;
@@ -102,7 +99,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -315,7 +311,6 @@ public class AndmoreAndroidPlugin extends AbstractUIPlugin implements ILogger {
 			}};
 		sdkInstallJob.addJobChangeListener(listener );
 		sdkInstallJob.setPriority(Job.INTERACTIVE);
-	    BaseContext baseContext = BasePlugin.getBaseContext();
     }
 
     /**
@@ -344,8 +339,8 @@ public class AndmoreAndroidPlugin extends AbstractUIPlugin implements ILogger {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-    	IEclipseContext serviceContext = E4Workbench.getServiceContext();
-    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+    	IEclipseContext eclipseContext = objectFactory.getEclipseContext();
+    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
     	objectFactory.put(AndroidLaunchController.class, new AndroidLaunchController(objectFactory, eventBroker));
 
         // set the default android console.

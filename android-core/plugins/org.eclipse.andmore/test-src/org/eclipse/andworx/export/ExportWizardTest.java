@@ -1,12 +1,22 @@
 package org.eclipse.andworx.export;
 
 import static com.android.builder.core.BuilderConstants.RELEASE;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+
 import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.base.BaseContext;
 import org.eclipse.andmore.base.BasePlugin;
@@ -28,22 +38,20 @@ import org.eclipse.andworx.project.ProjectProfile;
 import org.eclipse.andworx.registry.ProjectRegistry;
 import org.eclipse.andworx.registry.ProjectState;
 import org.eclipse.andworx.wizards.export.ExportAndroidWizard;
-import org.eclipse.andworx.wizards.export.SigningConfigDialog;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.window.IShellProvider;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 //import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 //import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.ui.IWorkbench;
@@ -82,7 +90,68 @@ public class ExportWizardTest {
 				}};
     	}
     }
-    
+ 
+    static class TestPluginResourceProvider implements PluginResourceProvider {
+
+    	String pluginId;
+    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    	public TestPluginResourceProvider(String pluginId) {
+    		this.pluginId = pluginId;
+    	}
+    	
+		@Override
+		public ImageDescriptor descriptorFromPath(String imagePath) {
+			try {
+				return imageDescriptorFromPlugin(imagePath);
+			} catch (URISyntaxException | MalformedURLException e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+				return null;
+			}
+        }
+
+	    private ImageDescriptor imageDescriptorFromPlugin(String imagePath) throws URISyntaxException, MalformedURLException {
+	    	String path = imagePath;
+	    	URL url = classLoader.getResource("");
+	    	if (url == null)
+	    		throw new IllegalArgumentException("Image path " + imagePath + " not found");
+	    	File file = Paths.get(url.toURI()).toFile();
+    		File rootfile = file.getParentFile().getParentFile().getParentFile().getParentFile();
+    		File imageFile;
+	    	if (pluginId.equals(BasePlugin.PLUGIN_ID))
+	    		imageFile = new File(rootfile, "andmore-swt/org.eclipse.andmore.swt/" + imagePath);
+	    	else
+	    		imageFile = new File(rootfile, "android-core/plugins/org.eclipse.andmore/" + imagePath);
+	    	return ImageDescriptor.createFromURL(imageFile.toURI().toURL());
+	    }
+    }
+  
+    class TestJavaProjectHelper extends JavaProjectHelper {
+    	public IFolder getJavaOutputFolder(IProject project) {
+    		return testFolder;
+    	}
+        public IJavaModel getJavaModel() {
+        	return testJavaModel;
+        }
+        public IJavaProject getJavaProject(IProject project) {
+        	return testJavaProject;
+        }
+        public IJavaProject[] getProjectsByNature(String nature) {
+        	return new IJavaProject[] {testJavaProject};
+        }
+        public ILabelProvider getJavaElementLabelProvider() {
+        	return new JavaLabelProvider();
+        }
+    }
+/*
+     	when(testJavaProjectHelper.getJavaProject(testProject)).thenReturn(testJavaProject);
+    	when(testJavaProjectHelper.getJavaModel()).thenReturn(testJavaModel);
+    	when(testJavaProjectHelper.getProjectsByNature(isA(IJavaProject[].class), AndmoreAndroidConstants.NATURE_DEFAULT))
+		.thenReturn(new IJavaProject[] {testJavaProject});
+    	when(testJavaProjectHelper.getJavaOutputFolder(testProject)).thenReturn(testFolder);
+    	when(testJavaProjectHelper.getJavaElementLabelProvider()).thenReturn(new JavaLabelProvider());
+ */
 	@Mock
 	IWorkbench testWorkbench; 
     @Mock
@@ -91,8 +160,6 @@ public class ExportWizardTest {
     IJavaProject testJavaProject;
     @Mock
     IPath testPath;
-    @Mock
-    JavaProjectHelper testJavaProjectHelper;
     @Mock
     IFolder testFolder;
     @Mock
@@ -115,6 +182,7 @@ public class ExportWizardTest {
     AndroidManifestData testManifestData = new AndroidManifestData();
     SigningConfig signingConfig;
     TestSecurityController securityController;
+    TestJavaProjectHelper javaProjectHelper;
 
     @Rule public MockitoRule mockitoRule = MockitoJUnit.rule(); 
 
@@ -140,6 +208,7 @@ public class ExportWizardTest {
 	public void setUp() {
 		signingConfig = new SigningConfigBean(RELEASE);
 		securityController = new TestSecurityController();
+		javaProjectHelper = new TestJavaProjectHelper();
 	}
 	
     @After
@@ -158,8 +227,8 @@ public class ExportWizardTest {
     public void testExportDialog() throws Exception {
 		//when(testJavaProjectHelper.getJavaOutputFolder(isA(IProject.class))).thenReturn(testFolder);
 		PluginResourceRegistry resourceRegistry = new PluginResourceRegistry();
-		assert(resourceRegistry != null);
-		resourceRegistry.putResourceProvider(AndmoreAndroidConstants.PLUGIN_ID, getPluginResourceProvider());
+		setPluginResourceProvider(resourceRegistry, AndmoreAndroidConstants.PLUGIN_ID);
+		setPluginResourceProvider(resourceRegistry, BasePlugin.PLUGIN_ID);
 		BaseContext baseContext = new BaseContext() {
 
 			@Override
@@ -169,7 +238,12 @@ public class ExportWizardTest {
 
 			@Override
 			public JavaProjectHelper getJavaProjectHelper() {
-				return testJavaProjectHelper;
+				return javaProjectHelper;
+			}
+
+			@Override
+			public IEclipseContext getEclipseContext() {
+				return null;
 			}};
 		BasePlugin.setBaseContext(baseContext);
 		AndworxFactory.setAndworxContext(testAndworxContext);
@@ -177,10 +251,10 @@ public class ExportWizardTest {
     	when(testProject.hasNature(JavaCore.NATURE_ID)).thenReturn(true);
     	when(testProject.hasNature(AndmoreAndroidConstants.NATURE_DEFAULT)).thenReturn(true);
     	when(testProject.getReferencedProjects()).thenReturn(new IProject[0]);
+    	when(testProject.exists()).thenReturn(true);
     	when(testProject.isOpen()).thenReturn(true);
     	when(testProject.getType()).thenReturn(IResource.PROJECT);
     	testManifestData.debuggable = Boolean.FALSE;
-		IJavaProject javaProject = JavaCore.create(testProject);
     	when(testVariantConfig.getSigningConfig()).thenReturn(signingConfig);
     	when(testVariantContext.getVariantConfiguration()).thenReturn(testVariantConfig);
     	when(testAndworxProject.parseManifest()).thenReturn(testManifestData);
@@ -188,10 +262,6 @@ public class ExportWizardTest {
     	when(testJavaProject.getElementName()).thenReturn("Permissions");
     	when(testJavaProject.getOutputLocation()).thenReturn(testPath);
     	when(testJavaProject.getProject()).thenReturn(testProject);
-    	when(testJavaProjectHelper.getJavaProject(testProject)).thenReturn(testJavaProject);
-    	when(testJavaProjectHelper.getJavaModel()).thenReturn(testJavaModel);
-    	when(testJavaProjectHelper.getJavaOutputFolder(testProject)).thenReturn(testFolder);
-    	when(testJavaProjectHelper.getJavaElementLabelProvider()).thenReturn(new JavaLabelProvider());
     	when(testProjectState.getAndworxProject()).thenReturn(testAndworxProject);
     	when(testProjectState.getProfile()).thenReturn(testProfile);
     	when(testProjectRegistry.getProjectState(testProject)).thenReturn(testProjectState);
@@ -200,8 +270,8 @@ public class ExportWizardTest {
     	when(testProfile.getIdentity()).thenReturn(new Identity("com.android.example", "permissions", "1.0.0"));
     	when(testProfile.getProjectId()).thenReturn(PROJECT_ID);
     	when(testAndworxContext.getSecurityController()).thenReturn(securityController);
-    	when(testJavaModel.getJavaProjects()).thenReturn(new IJavaProject[] {javaProject});
-    	when(testJavaModel.getJavaProject("Permissions")).thenReturn(javaProject);
+    	when(testJavaModel.getJavaProjects()).thenReturn(new IJavaProject[] {testJavaProject});
+    	when(testJavaModel.getJavaProject("Permissions")).thenReturn(testJavaProject);
 		ExportAndroidWizard exportAndroidPage = new ExportAndroidWizard();
 		IStructuredSelection selection = new IStructuredSelection() {
 
@@ -283,25 +353,11 @@ public class ExportWizardTest {
     	//}
     }
     
-    private SigningConfigBean getSigningConfigBean(String name) {
+	private SigningConfigBean getSigningConfigBean(String name) {
     	return new SigningConfigBean(name);
     }
     
-    private PluginResourceProvider getPluginResourceProvider() {
-    	return new PluginResourceProvider() {
-			@Override
-			public ImageDescriptor descriptorFromPath(String imagePath) {
-				return imageDescriptorFromPlugin(imagePath);
-            }
-		};
-    }
-    
-    private ImageDescriptor imageDescriptorFromPlugin(String imagePath) {
-    	String path = imagePath;
-    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    	URL url = classLoader.getResource(path);
-    	if (url == null)
-    		throw new IllegalArgumentException("Image path " + imagePath + " not found");
-    	return ImageDescriptor.createFromURL(url);
-    }
+    private void setPluginResourceProvider(PluginResourceRegistry resourceRegistry, String pluginId) {
+		resourceRegistry.putResourceProvider(pluginId, new TestPluginResourceProvider(pluginId));
+	}
 }

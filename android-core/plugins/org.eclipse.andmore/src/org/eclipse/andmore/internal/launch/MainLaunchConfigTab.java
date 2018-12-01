@@ -22,7 +22,8 @@ import com.android.ide.common.xml.ManifestData.Activity;
 import org.eclipse.andmore.internal.editors.IconFactory;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
-import org.eclipse.andmore.internal.project.ProjectChooserHelper.IProjectChooserFilter;
+import org.eclipse.andworx.project.AndroidProjectCollection;
+import org.eclipse.andworx.project.AndroidProjectCollection.IProjectChooserFilter;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -81,6 +82,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
     private int mLaunchAction = LaunchConfigDelegate.DEFAULT_LAUNCH_ACTION;
 
     private ProjectChooserHelper mProjectChooserHelper;
+    private AndroidProjectCollection androidProjects;
 
     /**
      * A listener which handles widget change events for the controls in this
@@ -119,7 +121,8 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
     @Override
     public void createControl(Composite parent) {
-        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(), getProjectFilter());
+    	androidProjects = new AndroidProjectCollection(getProjectFilter());
+        mProjectChooserHelper = new ProjectChooserHelper(parent.getShell(), androidProjects);
 
         Font font = parent.getFont();
         Composite comp = new Composite(parent, SWT.NONE);
@@ -333,7 +336,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
         }
         mProjText.setText(projectName);
 
-        IProject proj = mProjectChooserHelper.getAndroidProject(projectName);
+        IProject proj = androidProjects.getAndroidProject(projectName);
         loadActivities(proj);
 
         // load the launch action.
@@ -466,7 +469,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
             } else if (text.matches("[a-zA-Z0-9_ \\.-]+") == false) {
                 setErrorMessage("Project name contains unsupported characters!");
             } else {
-                IJavaProject[] projects = mProjectChooserHelper.getAndroidProjects(null);
+                IJavaProject[] projects = androidProjects.getAndroidProjects();
                 IProject found = null;
                 for (IJavaProject javaProject : projects) {
                     if (javaProject.getProject().getName().equals(text)) {

@@ -42,7 +42,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 
 import com.android.builder.model.ApiVersion;
 import com.android.ddmlib.Client;
@@ -93,8 +92,8 @@ public class Devices {
 		deviceStartMap = new ConcurrentHashMap<>();
 		launchStartMap = new ConcurrentHashMap<>();
         waitingDebugger = new ArrayList<Client>();
-        IEclipseContext serviceContext = E4Workbench.getServiceContext();
-        eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+        IEclipseContext eclipseContext = objectFactory.getEclipseContext();
+        eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
 	}
 
 	/**

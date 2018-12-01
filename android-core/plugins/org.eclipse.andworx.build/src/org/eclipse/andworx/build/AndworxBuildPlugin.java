@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andworx.AndworxConstants;
 import org.eclipse.andworx.config.ProguardFile;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -51,10 +52,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
@@ -187,8 +186,8 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
 	 * @param job Job to run
 	 */
 	public void scheduleJob(Job job) {
-        IEclipseContext serviceContext = E4Workbench.getServiceContext(); 
-        IEventBroker scheduleJobEeventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+        IEclipseContext eclipseContext = BasePlugin.getBaseContext().getEclipseContext(); 
+        IEventBroker scheduleJobEeventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
 		synchronized (jobsMonitor) {
 			if (jobsCounter.get() < START_JOBS_COUNT) {
 		    	EventHandler eventHandler = new EventHandler() {
@@ -252,8 +251,8 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        IEclipseContext serviceContext = E4Workbench.getServiceContext(); 
-    	eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
+        IEclipseContext eclipseContext = BasePlugin.getBaseContext().getEclipseContext(); 
+    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
         // set the default android console.
         buildConsole = new MessageConsole("Build", null);
         ConsolePlugin.getDefault().getConsoleManager().addConsoles(
@@ -331,8 +330,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
     		androidSdkHelper);
     	if (androidSdkValidator.isSdkLocationConfigured()) 
     		objectFactory.loadSdk(androidSdkHelper.getSdkLocation());
-    	ContextInjectionFactory.inject(objectFactory, serviceContext);
-    	serviceContext.set(AndworxFactory.class, objectFactory);
+    	eclipseContext.set(AndworxContext.class, objectFactory);
         Job job = new Job("Start bundle " + PLUGIN_ID) {
 			
 			@Override

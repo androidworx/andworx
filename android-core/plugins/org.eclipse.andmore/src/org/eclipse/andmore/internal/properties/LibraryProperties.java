@@ -24,9 +24,10 @@ import java.util.Set;
 
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
-import org.eclipse.andmore.internal.project.ProjectChooserHelper.IProjectChooserFilter;
 import org.eclipse.andworx.maven.Dependency;
 import org.eclipse.andworx.polyglot.PolyglotAgent;
+import org.eclipse.andworx.project.AndroidProjectCollection;
+import org.eclipse.andworx.project.AndroidProjectCollection.IProjectChooserFilter;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.registry.ProjectState;
 import org.eclipse.andworx.repo.DependencyArtifact;
@@ -161,8 +162,8 @@ final class LibraryProperties {
         Composite buttons = new Composite(mTop, SWT.NONE);
         buttons.setLayout(new GridLayout());
         buttons.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-        mProjectChooser = new ProjectChooserHelper(parent.getShell(), mFilter);
+        AndroidProjectCollection androidProjects = new AndroidProjectCollection(mFilter);
+        mProjectChooser = new ProjectChooserHelper(parent.getShell(), androidProjects);
 
         mAddButton = new Button(buttons, SWT.PUSH | SWT.FLAT);
         mAddButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

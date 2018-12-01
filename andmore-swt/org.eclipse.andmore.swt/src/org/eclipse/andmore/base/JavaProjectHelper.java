@@ -15,6 +15,7 @@
  */
 package org.eclipse.andmore.base;
 
+import java.util.ArrayList;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -28,6 +29,9 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 
+/**
+ * JavaProject utilities to hide implementation details
+ */
 public class JavaProjectHelper {
 
     /**
@@ -38,7 +42,7 @@ public class JavaProjectHelper {
      * @param project the {@link IProject}
      * @return an IFolder item or null.
      */
-    public final IFolder getJavaOutputFolder(IProject project) {
+    public IFolder getJavaOutputFolder(IProject project) {
         try {
             if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
                 // get a java project from the normal project object
@@ -55,16 +59,57 @@ public class JavaProjectHelper {
         return null;
     }
 
+	/**
+	 * Returns the Java model.
+	 * @return the Java model, or <code>null</code> if the workspace root is null
+	 */
     public IJavaModel getJavaModel() {
         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         return JavaCore.create(workspaceRoot);
     }
-    
+
+    /**
+     * Returns Label provider for Java project elements
+     * @return ILabelProvider object
+     */
     public ILabelProvider getJavaElementLabelProvider() {
     	return new JavaElementLabelProvider();
     }
     
+	/**
+	 * Returns the Java project corresponding to the given project.
+	 * <p>
+	 * Creating a Java Project has the side effect of creating and opening all of the
+	 * project's parents if they are not yet open.
+	 * </p>
+	 * <p>
+	 * Note that no check is done at this time on the existence or the java nature of this project.
+	 * </p>
+	 *
+	 * @param project the given project
+	 * @return the Java project corresponding to the given project, null if the given project is null
+	 */
     public IJavaProject getJavaProject(IProject project) {
     	return JavaCore.create(project);
     }
+
+    /**
+     * Returns Java projects which have given nature
+     * @param nature Project nature
+     * @return IJavaProject array
+     */
+    public IJavaProject[] getProjectsByNature(String nature) {
+    	ArrayList<IJavaProject> projects = new ArrayList<IJavaProject>();
+		try {
+        	for (IJavaProject javaProject: getJavaModel().getJavaProjects()) {
+        		IProject projectResource = javaProject.getProject();
+        		if (projectResource.exists() && projectResource.isOpen() && projectResource.hasNature(nature))
+        			projects.add(javaProject);
+        	}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+        return projects.toArray(new IJavaProject[projects.size()]);
+    }
+
 }

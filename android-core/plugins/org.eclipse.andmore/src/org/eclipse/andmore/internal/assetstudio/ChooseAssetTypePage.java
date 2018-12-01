@@ -21,6 +21,7 @@ import com.android.resources.ResourceFolderType;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.ProjectCombo;
 import org.eclipse.andmore.internal.resources.ResourceNameValidator;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -87,9 +88,9 @@ public class ChooseAssetTypePage extends WizardPage implements SelectionListener
         projectLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         projectLabel.setText("Project:");
 
-        ProjectChooserHelper helper =
-                new ProjectChooserHelper(getShell(), null /* filter */);
-        mProjectButton = new ProjectCombo(helper, container, mValues.project);
+        AndroidProjectCollection projects =
+                new AndroidProjectCollection(null /* filter */);
+        mProjectButton = new ProjectCombo(projects, container, mValues.project);
         mProjectButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         mProjectButton.addSelectionListener(this);
 

@@ -38,6 +38,7 @@ import org.eclipse.andmore.internal.project.ProjectChooserHelper;
 import org.eclipse.andmore.internal.project.ProjectChooserHelper.ProjectCombo;
 import org.eclipse.andmore.internal.wizards.templates.Parameter.Constraint;
 import org.eclipse.andmore.internal.wizards.templates.Parameter.Type;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -199,9 +200,9 @@ public class NewTemplatePage extends WizardPage
             projectLabel.setText("Project:");
             projectLabel.setToolTipText(tooltip);
 
-            ProjectChooserHelper helper =
-                    new ProjectChooserHelper(getShell(), null /* filter */);
-            mProjectButton = new ProjectCombo(helper, container, mValues.project);
+            AndroidProjectCollection projects =
+                    new AndroidProjectCollection(null /* filter */);
+            mProjectButton = new ProjectCombo(projects, container, mValues.project);
             mProjectButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
             mProjectButton.setToolTipText(tooltip);
             mProjectButton.addSelectionListener(this);

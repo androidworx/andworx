@@ -48,6 +48,7 @@ import org.eclipse.andmore.internal.sdk.Sdk.TargetChangeListener;
 import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
+import org.eclipse.andworx.project.AndroidProjectCollection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -483,10 +484,10 @@ class NewXmlFileCreationPage extends WizardPage {
         projectLabel.setText("Project:");
         projectLabel.setToolTipText(tooltip);
 
-        ProjectChooserHelper helper =
-                new ProjectChooserHelper(getShell(), null /* filter */);
+        AndroidProjectCollection projects =
+                new AndroidProjectCollection(null /* filter */);
 
-        mProjectButton = new ProjectCombo(helper, composite, mValues.project);
+        mProjectButton = new ProjectCombo(projects, composite, mValues.project);
         mProjectButton.setToolTipText(tooltip);
         mProjectButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         mProjectButton.addSelectionListener(new SelectionAdapter() {

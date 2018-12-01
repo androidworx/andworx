@@ -45,6 +45,7 @@ import org.eclipse.andmore.internal.sdk.AdtConsoleSdkLog;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andmore.sdktool.SdkCallAgent;
 import org.eclipse.andworx.build.AndworxContext;
+import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.ddms.devices.DeviceProfile;
 import org.eclipse.andworx.ddms.devices.Devices;
@@ -70,7 +71,6 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -642,7 +642,7 @@ public final class AndroidLaunchController implements ILaunchController {
      * Returns the singleton reference.
      */
     public static AndroidLaunchController getInstance() {
-    	return E4Workbench.getServiceContext().get(AndroidLaunchController.class);
+    	return AndworxFactory.instance().getEclipseContext().get(AndroidLaunchController.class);
     }
 
 

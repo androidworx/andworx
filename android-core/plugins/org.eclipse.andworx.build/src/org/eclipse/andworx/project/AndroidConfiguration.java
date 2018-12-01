@@ -38,7 +38,6 @@ import javax.persistence.Query;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.internal.workbench.E4Workbench;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.eclipse.andworx.event.AndworxEvents;
@@ -147,14 +146,14 @@ public class AndroidConfiguration {
 		public void handleEvent(Event event) {
 			Object eventData = event.getProperty(IEventBroker.DATA);
 			if ((eventData != null) && (eventData instanceof ConfigContext))
-				handleUpdate((ConfigContext)eventData);
+				handleUpdate((ConfigContext<?>)eventData);
 		}};
 
 	/**
 	 * Construct AndroidConfiguration object
 	 * @param persistenceService Service to execute persistence tasks sequentially
 	 */
-	public AndroidConfiguration(PersistenceService persistenceService) {
+	public AndroidConfiguration(PersistenceService persistenceService, IEventBroker eventBroker) {
 		this.persistenceService = persistenceService;
 		entityOp = new EntityOperation();
 		transactionCount = new AtomicInteger();
@@ -178,9 +177,6 @@ public class AndroidConfiguration {
 			        projectPersistence.addNamedQuery(BuildTypeBean.class, BUILDTYPE_BY_ID, entityByProjectIdGenerator);
 			        projectPersistence.addNamedQuery(BaseConfigBean.class, BASE_CONFIG_BY_ID, entityByProjectIdGenerator);
 			        projectPersistence.addNamedQuery(AndroidSourceBean.class, ANDROID_SOURCE_BY_ID, entityByProjectIdGenerator);
-			        
-			        IEclipseContext serviceContext = E4Workbench.getServiceContext(); 
-			        IEventBroker eventBroker = (IEventBroker) serviceContext.get(IEventBroker.class.getName());
 			        eventBroker.subscribe(AndworxEvents.UPDATE_ENTITY_BEAN, updateEventHandler );
 				}
 

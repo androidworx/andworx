@@ -21,6 +21,8 @@ import com.android.builder.utils.FileCache;
  * System constants
  */
 public class AndworxConstants {
+    /** Nature of Android projects */
+    public final static String ANDROID_NATURE = "org.eclipse.andmore.AndroidNature";
 	/** Project build file name */
 	public static final String FN_BUILD_ANDWORX = "build.andworx";
 	/** Log4j file location property key used by log4j.xml */

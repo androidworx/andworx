@@ -21,6 +21,8 @@ import org.osgi.framework.BundleContext;
 
 public class BasePlugin extends AbstractUIPlugin {
 
+	public static final String PLUGIN_ID = "org.eclipse.andworx.swt";
+	
 	private static BasePlugin instance;
 	/** External BaseContext object - only for unit testing */
 	private static BaseContext externalBaseContext;
