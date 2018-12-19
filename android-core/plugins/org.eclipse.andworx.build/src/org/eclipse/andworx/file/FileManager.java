@@ -16,17 +16,12 @@
 package org.eclipse.andworx.file;
 
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -34,7 +29,6 @@ import org.eclipse.andworx.log.SdkLogger;
 
 import com.android.builder.utils.FileCache;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
 
@@ -47,36 +41,22 @@ public class FileManager {
 	private static SdkLogger logger = SdkLogger.getLogger(FileManager.class.getName());
 	
     /** Workspace location in which to locate the files */
-    private File dataArea;
-    /** A cache for already-created files/directories */
-	private FileCache userFileCache;
+    private final File dataArea;
+	/** Utility to facilitate project builds */
+	private final BuildHelper buildHelper;
 	/** Plugin version to apply to file cache */
-	private String pluginVersion;
-	/** Maps cached file to file name */
-	private Map<String, CachedFile> cachedFileMap;
-	// Utility to facilitate project builds
-	private BuildHelper buildHelper;
+	private final String pluginVersion;
 	
 	/**
 	 * Construct FileManager object
 	 * @param pluginVersion Input parameter required when using {@link FileCache}
 	 */
-    public FileManager(File dataArea, FileCache userFileCache, String pluginVersion) {
+    public FileManager(File dataArea, String pluginVersion) {
     	assert(dataArea != null);
     	this.dataArea = new File(dataArea, FILES_ROOT);
-    	this.userFileCache = userFileCache;
 		this.pluginVersion = pluginVersion;
-		cachedFileMap = new HashMap<>();
 		buildHelper = AndworxFactory.instance().getBuildHelper();
 	}
-
-    /**
-     * Set Android SDK builder utils cache for already-created files/directories
-     * @param userFileCache FileCache object
-     */
-    public void setFileCache(FileCache userFileCache) {
-    	this.userFileCache = userFileCache;
-    }
 
     /**
      * Returns plugin version
@@ -140,12 +120,6 @@ public class FileManager {
 		return path;
 	}
 
-	/**
-	 * Copy data area file to given destination 
-	 * @param filePath Input file path
-	 * @param destination Output directory
-	 * @return flag set true if copy succeeded
-	 */
 	public boolean copyFile(String filePath, File destination) {
     	File dataFile = new File(dataArea, filePath);
     	if (dataFile.exists()) {
@@ -196,58 +170,6 @@ public class FileManager {
 			logger.error(e, dataFile.getAbsolutePath());
 		}
 		return false;
-	}
-
-	/**
-	 * Add file to Android SDK build utils cache 
-	 * @param cachedFile Reference to file to be placed in cache
-	 * @throws IOException
-	 */
-	public void addFile(CachedFile cachedFile) throws IOException {
-    	String filename = cachedFile.getFileResource().getFileName(); 
-    	synchronized(cachedFileMap) {
-	        cachedFileMap.put(filename, cachedFile);
-	        if (!cachedFile.isInitialized()) {
-	            initializeFile(cachedFile);
-	        }
-    	}
-    }
-
-	/**
-	 * Returns absolute path to given filename
-	 * @param filename Name of file in cache
-	 * @return File object
-	 */
-    public File getFile(String filename) {
-    	File file = null;
-    	synchronized(cachedFileMap) {
-	    	CachedFile cachedFile = cachedFileMap.get(filename);
-	    	if (cachedFile != null) {
-	    		file = cachedFile.getPath().toFile();
-	    	}
-    	}
-    	return file;
-    }
-  
-    /**
-     * Place file in given cache
-	 * @param cachedFile Reference to file to be placed in cache
-     * @throws IOException
-     */
-	private void initializeFile(CachedFile cachedFile) throws IOException {
-		FileResource resource = cachedFile.getFileResource();
-        URL url = resource.asUrl();
-        Preconditions.checkNotNull(url);
-
-        Path path = null;
-        if (userFileCache != null) {
-            try {
-            	path = cachedFile.initialize(userFileCache, pluginVersion);
-            } catch (IOException | ExecutionException e) {
-                logger.error(e, "Unable to cache " + resource.getFileName() + ". Extracting to temp dir.");
-            }
-        }
-        cachedFile.update(path);
 	}
 
 	/**

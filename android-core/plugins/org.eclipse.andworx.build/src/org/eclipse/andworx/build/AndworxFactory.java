@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.andmore.base.AndworxJob;
 import org.eclipse.andmore.base.BaseContext;
 import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.JavaProjectHelper;
@@ -42,6 +43,7 @@ import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.ddms.devices.Devices;
 import org.eclipse.andworx.ddms.devices.DeviceMonitor;
 import org.eclipse.andworx.exception.AndworxException;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -49,8 +51,11 @@ import org.eclipse.andworx.helper.ProjectBuilder;
 import org.eclipse.andworx.jpa.PersistenceService;
 import org.eclipse.andworx.maven.MavenServices;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
+import org.eclipse.andworx.polyglot.AndworxBuildParser;
 import org.eclipse.andworx.process.java.JavaQueuedProcessor;
 import org.eclipse.andworx.project.AndroidConfiguration;
+import org.eclipse.andworx.project.AndroidDigest;
+import org.eclipse.andworx.project.AndworxParserContext;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.ProjectConfiguration;
 import org.eclipse.andworx.project.ProjectProfile;
@@ -62,6 +67,7 @@ import org.eclipse.andworx.task.ManifestMergeHandler;
 import org.eclipse.andworx.task.TaskFactory;
 import org.eclipse.andworx.transform.Pipeline;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaProject;
@@ -103,7 +109,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 		baseContext = BasePlugin.getBaseContext();
 	}
 	
-	AndworxFactory(
+	protected AndworxFactory(
 			File databaseDirectory, 
 			EntityClassLoader entityClassLoader, 
 			File dataArea, 
@@ -165,11 +171,25 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 
 	@Override
 	public JavaProjectHelper getJavaProjectHelper() {
-		// TODO Auto-generated method stub
 		return baseContext.getJavaProjectHelper();
 	}
 	
-    /* (non-Javadoc)
+	@Override
+	public AndworxJob getAndworxJob(String name, IJobFunction jobFunction) {
+		return baseContext.getAndworxJob(name, jobFunction);
+	}
+	
+	@Override
+	public AndroidSdkHandler getAndroidSdkHandler(File localPath) {
+		return baseContext.getAndroidSdkHandler(localPath);
+	}
+	
+	@Override
+	public BuildConsole getBuildConsole() {
+		return AndworxBuildPlugin.instance();
+	}
+	
+   /* (non-Javadoc)
 	 * @see org.eclipse.andworx.build.AndworxContext#loadSdk(java.io.File)
 	 */
 	@Override
@@ -202,7 +222,8 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
 	@Override
 	public AndroidEnvironment getAndroidEnvironment() {
-		return androidEnvironment;
+		SdkProfile sdkProfile = sdkTracker.getSdkProfile();
+		return sdkProfile != null ? sdkProfile : androidEnvironment;
 	}
 
 	/* (non-Javadoc)
@@ -280,8 +301,8 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	public ProjectProfile createProject(
     		String projectName, 
 			ProjectProfile projectProfile, 
-			AndroidConfigurationBuilder androidConfigurationBuilder) {
-    	return daggerFactory.createProject(projectName, projectProfile, androidConfigurationBuilder);
+			AndroidDigest androidDigest) {
+    	return daggerFactory.createProject(projectName, projectProfile, androidDigest);
     }
     
 	/* (non-Javadoc)
@@ -323,10 +344,15 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 * @see org.eclipse.andworx.build.AndworxContext#getAndroidConfigBuilder(java.io.File)
 	 */
     @Override
-	public AndroidConfigurationBuilder getAndroidConfigBuilder(File gradleBuildFile) {
-    	return daggerFactory.getAndroidConfigBuilder(gradleBuildFile, androidEnvironment);
+	public AndroidConfigurationBuilder getAndroidConfigBuilder() {
+    	return daggerFactory.getAndroidConfigBuilder(androidEnvironment);
     }
 
+    @Override
+    public AndworxBuildParser getAndworxBuildParser(AndworxParserContext context) {
+    	return new AndworxBuildParser(context, getAndroidConfigBuilder());
+    }
+    
     /* (non-Javadoc)
 	 * @see org.eclipse.andworx.build.AndworxContext#getRenderscriptCompileTask(org.eclipse.andworx.context.VariantContext)
 	 */
@@ -439,6 +465,14 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	@Override
 	public FileManager getFileManager() {
 		return daggerFactory.getFileManager();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.andworx.build.AndworxContext#getFileManager()
+	 */
+	@Override
+	public CacheManager getCacheManager() {
+		return daggerFactory.getCacheManager();
 	}
 
     /* (non-Javadoc)
@@ -601,7 +635,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
     }
 
     private static boolean isOsgiPlatform() {
-    	return (BasePlugin.instance() != null) || (AndworxBuildPlugin.instance() != null);
+    	return (BasePlugin.instance() != null);
     }
-	
+
 }

@@ -15,9 +15,14 @@
  */
 package org.eclipse.andmore.base;
 
+import java.io.File;
+
 import org.eclipse.andmore.base.resources.PluginResourceRegistry;
+import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.internal.workbench.E4Workbench;
+
+import com.android.sdklib.repository.AndroidSdkHandler;
 
 public class BaseContextContainer {
 	private volatile BaseContext baseContext;
@@ -44,6 +49,17 @@ public class BaseContextContainer {
 						public IEclipseContext getEclipseContext() {
 							return E4Workbench.getServiceContext();
 						}
+
+						@Override
+						public AndworxJob getAndworxJob(String name, IJobFunction jobFunction) {
+							return new AndworxJob(name, jobFunction);
+						}
+
+						@Override
+						public AndroidSdkHandler getAndroidSdkHandler(File localPath) {
+							return AndroidSdkHandler.getInstance(localPath);
+						}
+
 					};
 			}
 		}

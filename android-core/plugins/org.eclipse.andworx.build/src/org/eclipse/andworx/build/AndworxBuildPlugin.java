@@ -75,15 +75,15 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.core.DesugarProcessBuilder;
 import com.android.builder.utils.FileCache;
-import com.android.tools.r8.com.google.common.base.Throwables;
 import com.android.utils.PathUtils;
 import com.google.common.io.Files;
+import com.google.common.base.Throwables;
 import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.logger.LoggerFactory.LogType;
 
 import au.com.cybersearch2.classyjpa.entity.EntityClassLoader;
 
-public class AndworxBuildPlugin extends AbstractUIPlugin {
+public class AndworxBuildPlugin extends AbstractUIPlugin implements BuildConsole {
 
 	public static String PLUGIN_ID = "org.eclipse.andworx.build";
 	private static final int START_JOBS_COUNT = 2;
@@ -233,6 +233,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
      * @param format
      * @param args
      */
+    @Override
     public void logAndPrintError(Throwable exception, String tag,
             String format, Object ... args) {
         String message = String.format(format, args);
@@ -457,7 +458,7 @@ public class AndworxBuildPlugin extends AbstractUIPlugin {
 				return DesugarProcessBuilder.class.getClassLoader().getResource(AndworxConstants.DESUGAR_JAR);
 			}};
         CachedFile cachedFile = new CachedFile(FileCache.Command.EXTRACT_DESUGAR_JAR, fileResource);
-        objectFactory.getFileManager().addFile(cachedFile);
+        objectFactory.getCacheManager().addFile(cachedFile);
     }
 
     private void handleStartJobCompleted() {

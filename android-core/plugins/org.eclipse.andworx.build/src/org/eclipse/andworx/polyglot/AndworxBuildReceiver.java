@@ -15,29 +15,18 @@
  */
 package org.eclipse.andworx.polyglot;
 
+import java.io.File;
+
+import org.eclipse.andworx.project.AndroidDigest;
+import org.eclipse.andworx.project.SyntaxItemReceiver;
+
 /**
  * Handles content extracted from a configuration file by a parser
  */
-public interface AndworxBuildReceiver {
+public interface AndworxBuildReceiver extends SyntaxItemReceiver, AndroidDigest {
+
 	/**
-	 * Handle value item 
-	 * @param path Abstract Syntax Tree path
-	 * @param value Value at indicated path
+	 * Prepare to receive next file
 	 */
-	void receiveItem(String path, String value);
-	/**
-	 * Handle property item 
-	 * @param path Abstract Syntax Tree path
-	 * @param key Property key
-	 * @param value Property value
-	 */
-	void receiveItem(String path, String key, String value);
-	/**
-	 * Handle binary item 
-	 * @param path Abstract Syntax Tree path
-	 * @param lhs Left hand side expression
-	 * @param op Binary operator
-	 * @param rhs Right hand side expression
-	 */
-	void receiveItem(String path, String lhs, String op, String rhs);
+	void setProjectLocation(File projectLocation);
 }

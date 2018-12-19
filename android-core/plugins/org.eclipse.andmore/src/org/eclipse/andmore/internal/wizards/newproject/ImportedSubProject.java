@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.editors.layout.gle2.DomUtilities;
-import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
+import org.eclipse.andworx.project.AndroidDigest;
 import org.eclipse.andworx.project.Identity;
 import org.eclipse.andworx.project.ProjectProfile;
 import org.eclipse.core.resources.IResource;
@@ -170,7 +170,7 @@ public class ImportedSubProject implements ImportedProject {
     }
 
 	@Override
-	public AndroidConfigurationBuilder getAndroidConfig() {
+	public AndroidDigest getAndroidDigest() {
 		return null;
 	}
 	@Override

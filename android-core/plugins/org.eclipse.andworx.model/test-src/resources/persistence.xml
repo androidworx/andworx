@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             version="2.0">
+   <persistence-unit name="org.eclipse.andworx.build">
+       <class>org.eclipse.andworx.entity.ProjectBean</class>
+       <class>org.eclipse.andworx.entity.ProjectProfileBean</class>
+       <class>org.eclipse.andworx.entity.DependencyBean</class>
+       <class>org.eclipse.andworx.entity.AndroidBean</class>
+       <class>org.eclipse.andworx.entity.ProductFlavorBean</class>
+       <class>org.eclipse.andworx.entity.BuildTypeBean</class>
+       <class>org.eclipse.andworx.entity.FlavorString</class>
+       <class>org.eclipse.andworx.entity.BaseConfigBean</class>
+       <class>org.eclipse.andworx.entity.BaseString</class>
+       <class>org.eclipse.andworx.entity.ClassFieldBean</class>
+       <class>org.eclipse.andworx.entity.SigningConfigBean</class>
+       <class>org.eclipse.andworx.entity.AndroidSourceBean</class>
+       <class>org.eclipse.andworx.entity.SourceSetBean</class>
+       <class>org.eclipse.andworx.entity.FilterPatternBean</class>
+       <property name="database-name" value="andworx.db"/>
+   </persistence-unit>
+</persistence>

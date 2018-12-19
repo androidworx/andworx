@@ -42,12 +42,17 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.eclipse.andworx.helper.CommentStrip;
+import org.eclipse.andworx.project.AndroidDigest;
+import org.eclipse.andworx.project.AndworxParserContext;
+import org.eclipse.andworx.project.AndworxParserContext.Variable;
+import org.eclipse.andworx.project.SyntaxItemReceiver;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 
 /**
- * Statically parses Andworx configuration file using Groovy AST parser
+ * Parses Andworx configuration file using Groovy AST parser
+ * TODO - Complete support for Groovy scripting
  */
 public class AndworxBuildParser {
 
@@ -82,29 +87,30 @@ public class AndworxBuildParser {
 
 	}
 
-	/** Input file */
-	private final File buildFile;
 	/** Handles content extracted from a configuration file by a parser */
 	private final AndworxBuildReceiver receiver;
 	/** Assembles declarations embedded in the build file */
 	private final AndworxBuildAssembler assembler;
+	private final AndworxParserContext context;
+	private SyntaxItemReceiver chainSyntaxItemReceiver;
 
 	/**
 	 * Construct AndworxBuildParser object
 	 * @param buildFile Input file
 	 * @param receiver Handles content extracted from a configuration file by a parser
 	 */
-	public AndworxBuildParser(File buildFile, AndworxBuildReceiver receiver) {
-		this.buildFile = buildFile;
+	public AndworxBuildParser(AndworxParserContext context, AndworxBuildReceiver receiver) {
+		this.context = context;
 		this.receiver = receiver;
-		assembler = new AndworxBuildAssembler(buildFile.getParentFile());
+		assembler = new AndworxBuildAssembler();
 	}
 
 	/**
 	 * Parser entry point
 	 * @throws IOException
 	 */
-	public void parse() throws IOException {
+	public void parse(File buildFile) throws IOException {
+		receiver.setProjectLocation(buildFile.getParentFile());
 		// Read input file into String object, stripping out comments in the process
         CommentStrip commentStrip = new CommentStrip();
         String fileContents = commentStrip.contentCommentStrip(buildFile);
@@ -117,6 +123,14 @@ public class AndworxBuildParser {
         }
 	}
 
+	public AndroidDigest getAndroidDigest() {
+		return receiver;
+	}
+
+	public void setChainSyntaxItemReceiver(SyntaxItemReceiver chainSyntaxItemReceiver) {
+		this.chainSyntaxItemReceiver = chainSyntaxItemReceiver;
+	}
+
 	/**
 	 * Action tuple
 	 * @param tupleExpression TupleExpression obje3ct
@@ -126,34 +140,43 @@ public class AndworxBuildParser {
     		TupleExpression tupleExpression, 
     		List<MethodCallExpression> methodCallStack) {
         MethodCallExpression call = methodCallStack.get(methodCallStack.size() - 1);
-        String parent = call.getMethodAsString();
-        String parentParent = getParentParent(methodCallStack);
         if (call.getArguments() == tupleExpression) {
-            boolean isInterestingblock = isInterestingBlock(parent, parentParent);
-            if (isInterestingblock) {
-	            if (tupleExpression instanceof ArgumentListExpression) {
-	            	actionArgumentList(tupleExpression, parent, parentParent);
+            String parent = call.getMethodAsString();
+            String parentParent = getParentParent(methodCallStack);
+            if (tupleExpression instanceof ArgumentListExpression) {
+            	boolean isInterestingblock = isInterestingBlock(parent, parentParent);
+	            if (isInterestingblock) {
+		            if (tupleExpression instanceof ArgumentListExpression) {
+		            	actionArgumentList(tupleExpression, parent, parentParent);
+		            }
 	            }
-	            /* Otherwise can scan for "apply" statement, but this is Gradle-specific */
-            }
+            } else {
+                if (isInterestingStatement(parent, parentParent)) {
+                	/*
+                    Map<String, String> namedArguments = new HashMap<>();
+                    List<String> unnamedArguments = new ArrayList<>();
+                    for (Expression subExpr : tupleExpression.getExpressions()) {
+                        if (subExpr instanceof NamedArgumentListExpression) {
+                            NamedArgumentListExpression nale = (NamedArgumentListExpression) subExpr;
+                            for (MapEntryExpression mae : nale.getMapEntryExpressions()) {
+                                namedArguments.put(mae.getKeyExpression().getText(),
+                                        mae.getValueExpression().getText());
+                            }
+                        }
+                    }
+                    checkMethodCall(context, parent, parentParent, namedArguments, unnamedArguments, call);
+                    */
+                }
+            } 
         } else if (call.getArguments() instanceof ArgumentListExpression) 
-        	analyseCall(call);
+         	invokeCall(call);
         	//System.out.println(call.getArguments().getClass().getSimpleName());
 	}
 
-    /**
-     * Analyse method call
-     * @param call MethodCallExpression object
-     */
-	private void analyseCall(MethodCallExpression call) {
-    	String variableName = call.getObjectExpression().getText();
-	    String parent = variableName + "/" + "*" + "/" + call.getMethodAsString();
-	    ArgumentListExpression argList = (ArgumentListExpression)call.getArguments();
-	    int argCount = argList.getExpressions().size();
-	    assembler.receiveMethod(parent, "", argCount);
-	    if (argCount > 0)
-            for (Expression arg : argList.getExpressions())
-        		analyseExpression(arg, parent);
+    protected static boolean isInterestingStatement(
+            @NonNull String statement,
+            @Nullable String parent) {
+        return parent == null && statement.equals("apply");
     }
 
 	/**
@@ -199,9 +222,22 @@ public class AndworxBuildParser {
                     (expressions.get(0) instanceof ConstructorCallExpression))
             {
         	    ConstructorCallExpression constructorCall = (ConstructorCallExpression)expressions.get(0);
-        	    analyseConstructorCall(constructorCall, parent);
+        	    invokeConstructor(constructorCall, parent);
              }
 
+    }
+
+    /**
+     * Invoke method call
+     * @param call MethodCallExpression object
+     */
+	private void invokeCall(MethodCallExpression call) {
+	    Class<?> clazz = call.getType().getTypeClass();
+	    String type = call.getType().getName();
+	    context.setType(type, clazz);
+	    ArgumentListExpression argList = (ArgumentListExpression)call.getArguments();
+	    Object[] arguments = evaluate(argList.getExpressions());
+	    assembler.invokeMethod(context, type, call.getObjectExpression().getText(), call.getMethodAsString(), arguments);
     }
 
 	/**
@@ -209,37 +245,91 @@ public class AndworxBuildParser {
 	 * @param constructorCall ConstructorCallExpression object
 	 * @param parent Parent name
 	 */
-    private void analyseConstructorCall(ConstructorCallExpression constructorCall, String parent) {
+    private void invokeConstructor(ConstructorCallExpression constructorCall, String parent) {
 	    if (constructorCall.isSuperCall() || constructorCall.isThisCall())
 	    	return; // Not new 
+	    Class<?> clazz = constructorCall.getType().getTypeClass();
 	    String type = constructorCall.getType().getName();
-	    parent = parent + "/" + type + "/" + constructorCall.getMethodAsString();
+	    context.setType(type, clazz);
 	    ArgumentListExpression argList = (ArgumentListExpression)constructorCall.getArguments();
-	    int argCount = argList.getExpressions().size();
-	    assembler.receiveMethod(parent, type, argCount);
-	    if (argCount > 0)
-            for (Expression arg : argList.getExpressions())
-        		analyseExpression(arg, parent);
+	    Object[] arguments = evaluate(argList.getExpressions());
+	    assembler.invokeMethod(context, type, "", constructorCall.getMethodAsString(), arguments);
 	}
 
     /**
      * Action variable method
+     * @param variable VariableExpression object to receive result
      * @param call MethodCallExpression object
+     */
+	private void actionVariableMethod(VariableExpression variable, MethodCallExpression call) {
+	    String variableName = variable.getName();
+	    Variable newVariable = context.variableInstance(variableName);
+	    newVariable.value = evaluateMethodCall(call);
+	}
+
+	/**
+	 * Return arguments in an array
+	 * @param expressions Argument list
+	 * @return Object array
+	 */
+    private Object[] evaluate(List<Expression> expressions) {
+    	if (expressions.size() == 0)
+    		return new Object[] {};
+    	List<Object> returnList = new ArrayList<Object>();
+    	for (Expression expression: expressions) {
+    		if (expression instanceof VariableExpression) {
+    			VariableExpression varExpr = (VariableExpression)expression;
+    			Variable variable = context.getVariable(varExpr.getName());
+    			if (variable != null)
+    				returnList.add(variable.value);
+    			else
+    				returnList.add(null);
+    		}
+    		else if (expression instanceof MethodCallExpression) 
+    	    	returnList.add(evaluateMethodCall((MethodCallExpression)expression));
+    	    else if (expression instanceof ConstructorCallExpression) 
+    	    	returnList.add(evaluateConstructorCall((ConstructorCallExpression)expression));
+    	    else
+    	    	returnList.add(expressions.get(0).getText());
+    	}
+		return returnList.toArray(new Object[returnList.size()]);
+	}
+
+    /**
+     * Invoke method call
+     * @param call MethodCallExpression object
+     */
+	private Object evaluateMethodCall(MethodCallExpression call) {
+	    Class<?> clazz = call.getType().getTypeClass();
+	    String type = call.getType().getName();
+	    context.setType(type, clazz);
+	    ArgumentListExpression argList = (ArgumentListExpression)call.getArguments();
+	    Object[] arguments = evaluate(argList.getExpressions());
+	    return assembler.invokeMethod(context, type, call.getObjectExpression().getText(), call.getMethodAsString(), arguments);
+	}
+	
+	/**
+     * Action variable method
+     * @param call ConstructorCallExpression object
      * @param variable VariableExpression object
      */
-	private void actionVariableMethod(MethodCallExpression call, VariableExpression variable) {
+	private void actionVariableMethod(ConstructorCallExpression call, VariableExpression variable) {
 	    String variableName = variable.getName();
-	    String variableType = variable.getType().getName();
-	    // Leave type empty if non-specific
-	    if ("java.lang.Object".equals(variableType))
-	    	variableType = "";
-	    String parent = variableName + "/" + call.getObjectExpression().getText() + "/" + call.getMethodAsString();
+	    Variable newVariable = context.variableInstance(variableName);
+	    newVariable.value = evaluateConstructorCall(call);
+	}
+
+	/**
+     * Invoke constructor
+     * @param call ConstructorCallExpression object
+      */
+	private Object evaluateConstructorCall(ConstructorCallExpression call) {
+	    Class<?> clazz = call.getType().getTypeClass();
+	    String type = call.getType().getName();
+	    context.setType(type, clazz);
 	    ArgumentListExpression argList = (ArgumentListExpression)call.getArguments();
-	    int argCount = argList.getExpressions().size();
-	    assembler.receiveMethod(parent, variableType, argCount);
-	    if (argCount > 0)
-            for (Expression arg : argList.getExpressions())
-        		analyseExpression(arg, parent);
+	    Object[] arguments = evaluate(argList.getExpressions());
+	    return assembler.invokeMethod(context, type, "", call.getMethodAsString(), arguments);
 	}
 
 	/**
@@ -251,14 +341,13 @@ public class AndworxBuildParser {
 			return; // eg. def (x, y) = ..." not supported 
 	    VariableExpression variable = expression.getVariableExpression();
 	    String variableName = variable.getName();
-	    String variableType = variable.getType().getName();
-	    // Leave type empty if non-specific
-	    if ("java.lang.Object".equals(variableType))
-	    	variableType = "";
 	    Expression right = expression.getRightExpression();
-	    assembler.receiveDeclaration(variableName, variableType);
+		context.variableInstance(variableName);
 	    if (right instanceof MethodCallExpression) {
 	    	MethodCallExpression methodCall = (MethodCallExpression)right;
+	    	actionVariableMethod(variable, methodCall);
+	    } else if (right instanceof ConstructorCallExpression) {
+	    	ConstructorCallExpression methodCall = (ConstructorCallExpression)right;
 	    	actionVariableMethod(methodCall, variable);
 	    } else {
 	    	analyseExpression(expression.getRightExpression(), variableName);
@@ -280,7 +369,10 @@ public class AndworxBuildParser {
             analyseClosure(closureExpression, parent);
         } else if (arguments instanceof ArgumentListExpression) {
         	ArgumentListExpression argListExpression = (ArgumentListExpression)arguments;
-            for (Expression expression : argListExpression.getExpressions())
+        	List<Expression> expressions = argListExpression.getExpressions();
+        	if (expressions.isEmpty())
+             	receiveItem(parent + "/" + method, "");
+        	else for (Expression expression : expressions)
         		analyseExpression(expression, parent + "/" + method);
          } else if (arguments instanceof TupleExpression) {
         	List<Expression> expressions = ((TupleExpression) arguments).getExpressions();
@@ -318,7 +410,7 @@ public class AndworxBuildParser {
             for (Expression arg : argListExpression.getExpressions())
         		analyseExpression(arg, parent);
          }  else if (expression instanceof ConstructorCallExpression) {
-        	 analyseConstructorCall((ConstructorCallExpression)expression, parent);
+        	 invokeConstructor((ConstructorCallExpression)expression, parent);
          } else {
     		String argsText = expression.getText();
             if (!argsText.isEmpty())
@@ -387,12 +479,12 @@ public class AndworxBuildParser {
 		Expression leftExpression = expression.getLeftExpression();
 		Expression rightExpression = expression.getRightExpression();
         if (operation.getType() == Types.LEFT_SQUARE_BRACKET) 
-        	receiveItem(parent, assembler.receiveMap(parent, leftExpression.getText(), rightExpression.getText()));
+        	receiveItem(parent, assembler.receiveMap(context, leftExpression.getText(), rightExpression.getText()));
         	//analyseExpression(rightExpression, parent + "/" + leftExpression.getText());
         	//receiveItem(parent, leftExpression.getText(), rightExpression.getText());
             //System.out.println(parent + "(" + leftExpression.getText() + "[" + rightExpression.getText() + "]" + ")");
         else
-        	receiver.receiveItem(parent, leftExpression.getText(), operation.getText(), rightExpression.getText());
+        	receiver.receiveItem(context, parent, leftExpression.getText(), operation.getText(), rightExpression.getText());
             //System.out.println(parent + "(" + leftExpression.getText() + " " + operation.getText() + " " + rightExpression.getText() + ")");
  	}
 
@@ -402,9 +494,9 @@ public class AndworxBuildParser {
 	 * @param value
 	 */
 	private void receiveItem(String path, String value) {
-		// Allow assembler to filter items going to receiver
-		if (!assembler.receiveItem(path, value))
-			receiver.receiveItem(path, value);
+		receiver.receiveItem(context, path, value);
+		if (chainSyntaxItemReceiver != null)
+			chainSyntaxItemReceiver.receiveItem(context, path, value);
 	}
 
 	/**
@@ -414,9 +506,9 @@ public class AndworxBuildParser {
 	 * @param value
 	 */
 	private void receiveItem(String path, String key, String value) {
-		// Allow assembler to filter items going to receiver
-		if (!assembler.receiveItem(path, key, value))
-			receiver.receiveItem(path, key, value);
+		receiver.receiveItem(context, path, key, value);
+		if (chainSyntaxItemReceiver != null)
+			chainSyntaxItemReceiver.receiveItem(context, path, key, value);
 	}
 
 	/**
@@ -433,6 +525,8 @@ public class AndworxBuildParser {
                 return parentParent == null;
             case "android":
             case "project":
+            case "buildscript":
+            case "allprojects":
                 return true;
             case "identity":
             	return "project".equals(parentParent);

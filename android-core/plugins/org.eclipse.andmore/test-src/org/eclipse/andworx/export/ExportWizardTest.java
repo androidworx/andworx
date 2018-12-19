@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
+import org.eclipse.andmore.base.AndworxJob;
 import org.eclipse.andmore.base.BaseContext;
 import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andmore.base.JavaProjectHelper;
@@ -42,6 +43,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.jobs.IJobFunction;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -66,6 +69,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import com.android.builder.model.SigningConfig;
+import com.android.sdklib.repository.AndroidSdkHandler;
 
 public class ExportWizardTest {
     private static final int PROJECT_ID = 7;
@@ -243,6 +247,16 @@ public class ExportWizardTest {
 
 			@Override
 			public IEclipseContext getEclipseContext() {
+				return null;
+			}
+
+			@Override
+			public AndworxJob getAndworxJob(String name, IJobFunction jobFunction) {
+				return null;
+			}
+
+			@Override
+			public AndroidSdkHandler getAndroidSdkHandler(File localPath) {
 				return null;
 			}};
 		BasePlugin.setBaseContext(baseContext);

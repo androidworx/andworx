@@ -20,6 +20,7 @@ import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.ddms.devices.DeviceMonitor;
 import org.eclipse.andworx.ddms.devices.Devices;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -27,8 +28,11 @@ import org.eclipse.andworx.helper.ProjectBuilder;
 import org.eclipse.andworx.jpa.PersistenceService;
 import org.eclipse.andworx.maven.MavenServices;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
+import org.eclipse.andworx.polyglot.AndworxBuildParser;
 import org.eclipse.andworx.process.java.JavaQueuedProcessor;
 import org.eclipse.andworx.project.AndroidConfiguration;
+import org.eclipse.andworx.project.AndroidDigest;
+import org.eclipse.andworx.project.AndworxParserContext;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.ProjectConfiguration;
 import org.eclipse.andworx.project.ProjectProfile;
@@ -55,8 +59,10 @@ import au.com.cybersearch2.classytask.Executable;
 /**
  * Andworx object factory
  */
-public interface AndworxContext extends BaseContext{
+public interface AndworxContext extends BaseContext {
 
+	BuildConsole getBuildConsole();
+	
 	/**
 	 * Loads an SDK and returns flag to indicate success.
 	 * <p/>If the SDK failed to load, it displays an error to the user.
@@ -91,8 +97,7 @@ public interface AndworxContext extends BaseContext{
 
 	DeviceMonitor getDeviceMonitor();
 
-	ProjectProfile createProject(String projectName, ProjectProfile projectProfile,
-			AndroidConfigurationBuilder androidConfigurationBuilder);
+	ProjectProfile createProject(String projectName, ProjectProfile projectProfile, AndroidDigest androidDigest);
 
 	/**
 	 * Returns Project profile read from database
@@ -122,11 +127,12 @@ public interface AndworxContext extends BaseContext{
 			ProjectConfiguration projectConfig);
 
 	/**
-	 * Returns Android configuration read from specified Gradle build file
-	 * @param gradleBuildFile Inpt file 
+	 * Returns Android configuration file reader
 	 * @return AndroidConfigurationBuilder object
 	 */
-	AndroidConfigurationBuilder getAndroidConfigBuilder(File gradleBuildFile);
+	AndroidConfigurationBuilder getAndroidConfigBuilder();
+	
+	AndworxBuildParser getAndworxBuildParser(AndworxParserContext context);
 
 	RenderscriptCompileTask getRenderscriptCompileTask(VariantContext variantScope);
 
@@ -168,6 +174,8 @@ public interface AndworxContext extends BaseContext{
 	 */
 	FileManager getFileManager();
 
+	CacheManager getCacheManager();
+	
 	BuildElementFactory getBuildElementFactory();
 
 	BuildHelper getBuildHelper();

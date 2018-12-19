@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.build.task.AidlCompileTask;
 import org.eclipse.andworx.build.task.BuildConfigTask;
 import org.eclipse.andworx.build.task.D8Task;
@@ -33,6 +34,7 @@ import org.eclipse.andworx.build.task.RenderscriptCompileTask;
 import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.context.VariantContext;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -44,6 +46,7 @@ import org.eclipse.andworx.maven.MavenServices;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
 import org.eclipse.andworx.process.java.JavaQueuedProcessor;
 import org.eclipse.andworx.project.AndroidConfiguration;
+import org.eclipse.andworx.project.AndroidDigest;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.ProjectConfiguration;
 import org.eclipse.andworx.project.ProjectProfile;
@@ -86,6 +89,7 @@ public class DaggerFactory implements BuildFactory {
 		/** Returns the MavenServices singleton */
 		MavenServices mavenServices();
 		FileManager fileManager();
+		CacheManager cacheManager();
 		BuildElementFactory buildElementFactory();
 		BuildHelper buildHelper();
 		JavaQueuedProcessor javaQueuedProcessor();
@@ -274,8 +278,8 @@ public class DaggerFactory implements BuildFactory {
     public ProjectProfile createProject(
     		String projectName, 
 			ProjectProfile projectProfile, 
-			AndroidConfigurationBuilder androidConfigurationBuilder) {
-    	CreateProjectModule createProjectModule = new CreateProjectModule(projectName, projectProfile, androidConfigurationBuilder);
+			AndroidDigest androidDigest) {
+    	CreateProjectModule createProjectModule = new CreateProjectModule(projectName, projectProfile, androidDigest);
     	return component.plus(createProjectModule).projectProfile();
     }
     
@@ -299,12 +303,11 @@ public class DaggerFactory implements BuildFactory {
     
 	/**
 	 * Returns Android configuration read from specified Gradle build file
-	 * @param gradleBuildFile Inpt file 
 	 * @param androidEnvironment References a single Android SDK installation and resources in the Android environment 
 	 * @return AndroidConfigurationBuilder object
 	 */
-    public AndroidConfigurationBuilder getAndroidConfigBuilder(File gradleBuildFile, AndroidEnvironment androidEnvironment) {
-    	ConfigBuilderModule configBuilderModule = new ConfigBuilderModule(gradleBuildFile, androidEnvironment);
+    public AndroidConfigurationBuilder getAndroidConfigBuilder(AndroidEnvironment androidEnvironment) {
+    	ConfigBuilderModule configBuilderModule = new ConfigBuilderModule(androidEnvironment);
     	return component.plus(configBuilderModule).androidConfigurationBuilder();
     }
     
@@ -332,7 +335,7 @@ public class DaggerFactory implements BuildFactory {
         // To populate these tables, call setUp().
         // Get Interface for JPA Support, required to create named queriesPersistenceService.
     	PersistenceContext persistenceContext = getPersistenceContext();
-        PersistenceAdmin persistenceAdmin = persistenceContext.getPersistenceAdmin(PersistenceService.PU_NAME);
+        PersistenceAdmin persistenceAdmin = persistenceContext.getPersistenceAdmin(AndworxConstants.PU_NAME);
         logger.info("Andworx database version = " + persistenceAdmin.getDatabaseVersion());
 	    PersistenceRunner persistenceRunner = new PersistenceRunner() {
 
@@ -393,6 +396,11 @@ public class DaggerFactory implements BuildFactory {
     }
  
     @Override
+	public CacheManager getCacheManager() {
+    	return component.cacheManager();
+    }
+
+    @Override
     public BuildElementFactory getBuildElementFactory() {
     	return component.buildElementFactory();
     }
@@ -417,7 +425,7 @@ public class DaggerFactory implements BuildFactory {
 	 */
     @Override
 	public File getBundleFile(String filePath) {
-    	BundleFileModule bundleFileModule =  new BundleFileModule(filePath);
+    	BundleFileModule bundleFileModule =  new BundleFileModule(AndworxBuildPlugin.PLUGIN_ID, filePath);
     	return component.plus(bundleFileModule).file();
     }
 
@@ -426,7 +434,7 @@ public class DaggerFactory implements BuildFactory {
 	 */
     @Override
 	public Executable getExecutable(PersistenceWork persistenceWork) {
-    	PersistenceWorkModule persistenceWorkModule = new PersistenceWorkModule(PersistenceService.PU_NAME, true, persistenceWork);
+    	PersistenceWorkModule persistenceWorkModule = new PersistenceWorkModule(AndworxConstants.PU_NAME, true, persistenceWork);
         return component.plus(persistenceWorkModule).executable();
     }
 

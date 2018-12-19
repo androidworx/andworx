@@ -19,19 +19,26 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
+import java.util.function.Predicate;
 
+import org.eclipse.andmore.base.BaseContext;
+import org.eclipse.andmore.base.BasePlugin;
 import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.context.AndroidEnvironment;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.log.SdkLogger;
 
+import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.sdk.LoadStatus;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
+import com.android.repository.Revision;
+import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressIndicator;
 import com.android.repository.api.ProgressIndicatorAdapter;
 import com.android.repository.api.RepoManager;
+import com.android.repository.api.RepoPackage;
 import com.android.sdklib.AndroidTargetHash;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.BuildToolInfo;
@@ -121,7 +128,8 @@ public class SdkProfile extends AndroidEnvironment implements ILogger {
 		}
 		targetLoadStatusMonitor = new LoadingTargetLoadStatus();
         // SdkManager object for the location
-        androidSdkHandler = AndroidSdkHandler.getInstance(sdkDirectory);
+		BaseContext baseContext = BasePlugin.getBaseContext();
+        androidSdkHandler = baseContext.getAndroidSdkHandler(sdkDirectory);
         // If lastest build tool not available, do not proceed
         BuildToolInfo buildToolInfo = androidSdkHandler.getLatestBuildTool(getProgressIndicator(), true /*allowPreview*/);
             if (buildToolInfo == null) {
@@ -348,6 +356,5 @@ public class SdkProfile extends AndroidEnvironment implements ILogger {
     	}
     	return getHighestTarget();
     }
-
 
 }

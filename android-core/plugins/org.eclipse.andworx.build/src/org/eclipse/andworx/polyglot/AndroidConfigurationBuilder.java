@@ -18,14 +18,17 @@ package org.eclipse.andworx.polyglot;
 import static com.android.builder.core.BuilderConstants.MAIN;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Repository;
 import org.eclipse.andworx.config.AndroidConfig;
 import org.eclipse.andworx.config.ProguardFile;
 import org.eclipse.andworx.context.AndroidEnvironment;
@@ -44,13 +47,13 @@ import org.eclipse.andworx.log.SdkLogger;
 import org.eclipse.andworx.model.CodeSource;
 import org.eclipse.andworx.model.FieldName;
 import org.eclipse.andworx.model.ProductFlavorImpl;
+import org.eclipse.andworx.model.RepositoryUrl;
 import org.eclipse.andworx.model.SourceSet;
+import org.eclipse.andworx.project.AndworxParserContext;
 
 import com.android.SdkConstants;
 import com.android.builder.core.BuilderConstants;
 import com.android.builder.model.SigningConfig;
-
-import au.com.cybersearch2.classyjpa.EntityManagerLite;
 
 /**
  * Assembles configuration content extracted by a Groovy AST parser into JPA entity beans and then persists them
@@ -90,12 +93,12 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			baseStringSet = new HashSet<>();
 		}
 
-		protected void persist(ProjectBean projectBean, EntityManagerLite entityManager) {
+		protected void addAll(ProjectBean projectBean, List<Object> entityList) {
 			base.setProjectBean(projectBean);
-			entityManager.persist(base);
+			entityList.add(base);
 			for (BaseString baseString: baseStringSet) {
 				baseString.setBaseConfigBean(base);
-				entityManager.persist(baseString);
+				entityList.add(baseString);
 			}
 		}
     }
@@ -109,10 +112,10 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			atom = new ProductFlavorBean(name);
 		}
 		
-		public void persist(ProjectBean projectBean, EntityManagerLite entityManager) {
+		public void addAll(ProjectBean projectBean, List<Object> entityList) {
 			atom.setProjectBean(projectBean);
-			entityManager.persist(atom);
-			super.persist(projectBean, entityManager);
+			entityList.add(atom);
+			super.addAll(projectBean, entityList);
 		}
 	}
 	
@@ -125,7 +128,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			atom = new BuildTypeBean(name);
 		}
 		
-		public void persist(ProjectBean projectBean, EntityManagerLite entityManager, Map<String, SigningConfigBean> signingConfigBeanMap) {
+		public void addAll(ProjectBean projectBean, List<Object> entityList, Map<String, SigningConfigBean> signingConfigBeanMap) {
 			atom.setProjectBean(projectBean);
 			// SigningConfig is found by name and joined
 			SigningConfig signingConfig = atom.getSigningConfig();
@@ -134,8 +137,8 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 				if (bean != null)
 					atom.setSigningConfigId(bean.getId());
 			}
-			entityManager.persist(atom);
-			super.persist(projectBean, entityManager);
+			entityList.add(atom);
+			super.addAll(projectBean, entityList);
 		}
     }
     
@@ -153,30 +156,31 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			return name;
 		}
 
-		public void persist(AndroidSourceBean androidSourceBean, EntityManagerLite entityManager) {
+		public void addAll(AndroidSourceBean androidSourceBean, List<Object> entityList) {
 			for (SourceSetBean sourceSetBean: sourceSetBeanMap.values()) {
 				sourceSetBean.setAndroidSourceBean(androidSourceBean);
-				entityManager.persist(sourceSetBean);
+				entityList.add(sourceSetBean);
 			}
 		}
 	}
 	
 	/** Manager of file cache and bundle files */
 	private final FileManager fileManager;
-	/** Project absolute directory */
-	private final File projectLocation;
 	/** Provides debug signing configuration */
 	private final AndroidEnvironment androidEnvironment;
 	/** Maven model is a POM configuration used to resolve external dependencies */
-	private final Model mavenModel;
+	private Model mavenModel;
+	/** Project absolute directory */
+	private File projectLocation;
 	/** Entity bean to persist configuration in "android" block */ 
-	private final AndroidBean androidBean;
+	private AndroidBean androidBean;
 	
 	// Map structural components by name 
 	private final Map<String, ProductFlavorComposite> productFlavorMap;
 	private final Map<String, BuildTypeComposite> buildTypeMap;
 	private final Map<String, SigningConfigBean> signingConfigBeanMap;
 	private final Map<String, SourceSetComposite> sourceSetMap;
+	private final Map<String, RepositoryUrl> repositoryUrlMap;
 
 	/**
 	 * Construct AndroidConfigurationBuilder object
@@ -184,29 +188,44 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * @param projectLocation Project absolute directory 
 	 * @param androidEnvironment Provides debug signing configuration
 	 */
-	public AndroidConfigurationBuilder(FileManager fileManager, File projectLocation, AndroidEnvironment androidEnvironment) {
+	public AndroidConfigurationBuilder(FileManager fileManager, AndroidEnvironment androidEnvironment) {
 		this.fileManager = fileManager;
-		this.projectLocation = projectLocation;
 		this.androidEnvironment = androidEnvironment;
-		mavenModel = new Model();
-		// Model version is mandatory
-		mavenModel.setVersion("4.0.0");
-		androidBean = new AndroidBean();
 		productFlavorMap = new HashMap<>();
 		buildTypeMap = new HashMap<>();
 		sourceSetMap = new HashMap<>();
 		signingConfigBeanMap = new HashMap<>(); 
+		repositoryUrlMap = new HashMap<>();
+	}
+
+	@Override
+	public void addRepositoryUrl(RepositoryUrl repositoryUrl) {
+		repositoryUrlMap.put(repositoryUrl.getName(), repositoryUrl);
+	}
+	
+	@Override
+	public void setProjectLocation(File projectLocation) {
+		this.projectLocation = projectLocation;
+		productFlavorMap.clear();
+		buildTypeMap.clear();
+		sourceSetMap.clear();
+		signingConfigBeanMap.clear();
+		androidBean = new AndroidBean();
 		setDefaultSigningConfig();
 		// Add product flavor named "main" to use as default config
 		ProductFlavorComposite defaultConfig = new ProductFlavorComposite(MAIN);
 		productFlavorMap.put(MAIN, defaultConfig);
 		androidBean.setDefaultConfig(new ProductFlavorImpl(defaultConfig.atom, defaultConfig.base));
+		mavenModel = new Model();
+		// Model version is mandatory
+		mavenModel.setVersion("4.0.0");
 	}
-
+	
 	/**
 	 * Returns user configuration settings within the "android" block, excluding those shared by BuildType
 	 * @return AndroidConfig object
 	 */
+	@Override
 	public AndroidConfig getAndroidConfig() {
 		return androidBean;
 	}
@@ -215,14 +234,24 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * Returns Maven model containing project dependendencies
 	 * @return Model object
 	 */
+	@Override
 	public Model getMavenModel() {
-		return mavenModel;
+		Model exportModel = mavenModel.clone();
+		for (RepositoryUrl repositoryUrl: repositoryUrlMap.values()) {
+			Repository repository = new Repository();
+			repository.setId(repositoryUrl.getName());
+			repository.setName(repositoryUrl.getName());
+			repository.setUrl(repositoryUrl.getUrlValue());
+			exportModel.addRepository(repository);
+		}
+		return exportModel;
 	}
 
 	/**
 	 * Returns debug Signing Configuration
 	 * @return SigningConfig object
 	 */
+	@Override
 	public SigningConfig getDefaultSigningConfig() {
 		return androidEnvironment.getDefaultDebugSigningConfig();
 	}
@@ -232,6 +261,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * @param codeSource Source set type
 	 * @return path
 	 */
+	@Override
 	public String getSourceFolder(CodeSource codeSource) {
 		SourceSetComposite mainSourceSet = sourceSetMap.get(SourceSet.MAIN_SOURCE_SET_NAME);
 		if (mainSourceSet != null) {
@@ -243,28 +273,31 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	}
 
 	/**
-	 * Persist entire configuration
-	 * @param entityManager Entity manager operating in persistence context
-	 * @param projectBean Project entity object which has already been persisted
+	 * Returns array containing entity objects ready to be persisted
+	 * @param projectBean Associated Project entity bean
+	 * @return Object array
 	 */
-	public void persist(EntityManagerLite entityManager, ProjectBean projectBean) {
+	@Override
+	public Object[] asEntities(ProjectBean projectBean) {
 		androidBean.setProjectBean(projectBean);
-		entityManager.persist(androidBean);
+		List<Object> entityList = new ArrayList<Object>();
+		entityList.add(androidBean);
 		for (SigningConfigBean bean: signingConfigBeanMap.values()) {
 			bean.setAndroidBean(androidBean);
-			entityManager.persist(bean);
+			entityList.add(bean);
 		}
 		for (SourceSetComposite sourceSetComposite: sourceSetMap.values()) {
 			AndroidSourceBean androidSourceBean = new AndroidSourceBean(projectBean, sourceSetComposite.getName());
-			entityManager.persist(androidSourceBean);
-			sourceSetComposite.persist(androidSourceBean, entityManager);
+			entityList.add(androidSourceBean);
+			sourceSetComposite.addAll(androidSourceBean, entityList);
 		}
 		for (ProductFlavorComposite composite: productFlavorMap.values()) {
-			composite.persist(projectBean, entityManager);
+			composite.addAll(projectBean, entityList);
 		}
 		for (BuildTypeComposite composite: buildTypeMap.values()) {
-			composite.persist(projectBean, entityManager, signingConfigBeanMap);
+			composite.addAll(projectBean, entityList, signingConfigBeanMap);
 		}
+		return entityList.toArray(new Object[entityList.size()]);
 	}
 
 	/**
@@ -273,7 +306,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * @param value Value at indicated path
 	 */
 	@Override
-	public void receiveItem(String path, String value) {
+	public void receiveItem(AndworxParserContext context, String path, String value) {
 		if (path.startsWith(ANDROID)) {
 		    configureAndroid(path.substring(ANDROID.length() + 1), value);
 		} else if (path.startsWith(DEPENDENCIES)) {
@@ -284,8 +317,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 		    if ((items.length > 1) && (items.length < 5))
 		    	configureDependency(path, items);
 		    // TODO - report invalid configuration
-		}
-		else if (path.startsWith(PROJECT)) {
+		} else if (path.startsWith(PROJECT)) {
 			    configureProject(path.substring(PROJECT.length() + 1), value);
 		}
 	}
@@ -297,7 +329,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * @param value Property value
 	 */
 	@Override
-	public void receiveItem(String path, String key, String value) {
+	public void receiveItem(AndworxParserContext context, String path, String key, String value) {
 	}
 
 	/**
@@ -308,9 +340,9 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 	 * @param rhs Right hand side expression
 	 */
 	@Override
-	public void receiveItem(String path, String lhs, String op, String rhs) {
+	public void receiveItem(AndworxParserContext context, String path, String lhs, String op, String rhs) {
 		if ("=".equals(op)) {
-			receiveItem(path + "/" + lhs, rhs);
+			receiveItem(context, path + "/" + lhs, rhs);
 			//System.out.println(path + "/" + lhs + " = " + rhs);
 		}
 	}
@@ -620,5 +652,6 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 		SigningConfigBean bean = new SigningConfigBean(getDefaultSigningConfig());
 		signingConfigBeanMap.put(BuilderConstants.DEBUG, bean);
 	}
+
 
 }

@@ -15,14 +15,9 @@
  */
 package org.eclipse.andworx;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.eclipse.andworx.context.AndroidEnvironment;
-import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
-import org.eclipse.andworx.polyglot.AndworxBuildParser;
 
 import dagger.Module;
 import dagger.Provides;
@@ -33,25 +28,16 @@ import dagger.Provides;
 @Module
 public class ConfigBuilderModule {
 	
-	private final File gradleBuildFile;
 	private final AndroidEnvironment androidEnvironment;
 	
-	public ConfigBuilderModule(File gradleBuildFile, AndroidEnvironment androidEnvironment) {
-		this.gradleBuildFile = gradleBuildFile;
+	public ConfigBuilderModule(AndroidEnvironment androidEnvironment) {
 		this.androidEnvironment = androidEnvironment;
 	}
 	
     @Provides
     AndroidConfigurationBuilder provideAndroidConfigurationBuilder(FileManager fileManager) {
 		AndroidConfigurationBuilder androidConfigurationBuilder = 
-				new AndroidConfigurationBuilder(fileManager, gradleBuildFile.getParentFile(), androidEnvironment);
-		AndworxBuildParser andworxBuildParser = 
-			new AndworxBuildParser(gradleBuildFile, androidConfigurationBuilder);
-		try {
-			andworxBuildParser.parse();
-		} catch (IOException e) {
-			throw new AndworxException("Error parsing file " + gradleBuildFile.toString(), e);
-		}
+				new AndroidConfigurationBuilder(fileManager, androidEnvironment);
 		return androidConfigurationBuilder;
     }
 }

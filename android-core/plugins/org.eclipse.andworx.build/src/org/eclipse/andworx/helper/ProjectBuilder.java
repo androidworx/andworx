@@ -53,6 +53,7 @@ public class ProjectBuilder {
     public static final String LAUNCH_PATH = "launch";
     public static final String DESUGAR = "Desugar";
     public static final String D8 = "D8";
+
     public static SdkLogger logger = SdkLogger.getLogger(ProjectBuilder.class.getName());
 
     /** Utility to facilitate project builds */
@@ -186,7 +187,7 @@ public class ProjectBuilder {
 	}
 
 	
-    /**
+	/**
      * Returns launch cofiguration identified by name
      * @param configName name of configuration
      * @return ILaunchConfiguration object or null if not found

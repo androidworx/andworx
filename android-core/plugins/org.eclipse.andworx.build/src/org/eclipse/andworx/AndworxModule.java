@@ -20,8 +20,10 @@ import java.util.Properties;
 
 import javax.inject.Singleton;
 
+import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.build.AndworxIssueReport;
 import org.eclipse.andworx.config.SecurityController;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -71,8 +73,7 @@ public class AndworxModule {
     private final IEventBroker eventBroker;
     private final ILogger logger;
     
-    /** SQLite database adapter */
-   // private SQLiteDatabaseSupport sqliteDatabaseSupport;
+    /** H2 database adapter */
     private H2DatabaseSupport h2DatabaseSupport;
 
     /**
@@ -98,6 +99,7 @@ public class AndworxModule {
     @Provides  @Singleton
     ResourceEnvironment provideResourceEnvironment(FileManager fileManager) {
 	    return	new SqliteEnvironment(
+	    		        AndworxBuildPlugin.PLUGIN_ID,
 	    				"META-INF", 
 	    				databaseDirectory, 
 	    				entityClassLoader,
@@ -118,9 +120,7 @@ public class AndworxModule {
 
     @Provides @Singleton 
     DatabaseSupport provideDatabaseSupport(ResourceEnvironment resourceEnvironment)
-    {   // Returns Sqlite database adapter configured for file system persistence 
-        //sqliteDatabaseSupport = new SQLiteDatabaseSupport(resourceEnvironment.getDatabaseDirectory());
-        //return sqliteDatabaseSupport;    
+    {   // Returns H2 database adapter configured for file system persistence 
         h2DatabaseSupport = new H2DatabaseSupport(resourceEnvironment.getDatabaseDirectory()); 
         return h2DatabaseSupport;     
     }
@@ -130,18 +130,18 @@ public class AndworxModule {
     {   // Returns PersistenceFactory object which creates the configured perisistence unit(s)
     	PersistenceFactory persistenceFactory = new PersistenceFactory(databaseSupport, resourceEnvironment);
     	// Add user property and custom settings to be appended to connection URL
-    	Properties props = persistenceFactory.getPersistenceUnit(PersistenceService.PU_NAME)
+    	Properties props = persistenceFactory.getPersistenceUnit(AndworxConstants.PU_NAME)
     	                  .getPersistenceAdmin()
     	                  .getProperties();
-    	for (String[] item: PersistenceService.CONNECTION_PROPERTIES)
-    		props.put(item[0], item[1]);
+    	if (resourceEnvironment.getDatabaseDirectory() != null)
+	    	for (String[] item: PersistenceService.CONNECTION_PROPERTIES)
+	    		props.put(item[0], item[1]);
         return persistenceFactory;
     }
 
     @Provides @Singleton 
     ConnectionSourceFactory provideConnectionSourceFactory()
-    {   // Returns ConnectionSourceFactory for Sqlite
-        //return sqliteDatabaseSupport;
+    {   // Returns ConnectionSourceFactory for H2
         return h2DatabaseSupport;     
     }
 
@@ -153,7 +153,7 @@ public class AndworxModule {
  
     @Provides @Singleton 
     PersistenceService providePersistenceService(PersistenceContext persistenceContext) {
-    	return new PersistenceService(persistenceContext);
+    	return new PersistenceService(persistenceContext, "Andworx Build " + PersistenceService.SERVICE_NAME);
     }
     
     @Provides @Singleton 
@@ -174,7 +174,12 @@ public class AndworxModule {
     
     @Provides @Singleton 
     FileManager provideFileManager() {
-    	return new FileManager(dataArea, userFileCache, AndworxConstants.ANDWORX_BUILD_VERSION);
+    	return new FileManager(dataArea, AndworxConstants.ANDWORX_BUILD_VERSION);
+    }
+    
+    @Provides @Singleton 
+    CacheManager provideCacheManager() {
+    	return new CacheManager(userFileCache, AndworxConstants.ANDWORX_BUILD_VERSION);
     }
     
     @Provides @Singleton

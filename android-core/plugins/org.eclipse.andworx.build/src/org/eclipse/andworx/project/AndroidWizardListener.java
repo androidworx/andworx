@@ -15,14 +15,14 @@
  */
 package org.eclipse.andworx.project;
 
-import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
+import org.eclipse.andworx.helper.ErrorListener;
 
 import com.android.ide.common.xml.ManifestData;
 
 /**
  *  Interface to project import wizard page
  */
-public interface AndroidWizardListener {
+public interface AndroidWizardListener extends ErrorListener {
 	/**
 	 * Handle Android manifest file parsed
 	 * @param manifestData Manifest data
@@ -30,9 +30,9 @@ public interface AndroidWizardListener {
 	void onManifestParsed(ManifestData manifestData);
 	/**
 	 * Handle configuration file parsed
-	 * @param androidConfigurationBuilder Assembles configuration content extracted by a Groovy AST parser into JPA entity beans and then persists them
+	 * @param androidDigest Configuration content extracted by a Groovy AST parser into JPA entity beans and then persists them
 	 */
-	void onConfigParsed(AndroidConfigurationBuilder androidConfigurationBuilder);
+	void onConfigParsed(AndroidDigest androidDigest);
 	/**
 	 * Handle profile resolved
 	 * @param projectProfile Project profile
@@ -43,9 +43,10 @@ public interface AndroidWizardListener {
 			ProjectProfile projectProfile, 
 			boolean isResolved, 
 			String message);
+	
 	/**
-	 * Display error
-	 * @param message Error mesage
+	 * Handle no Android mainfest file found in source set
 	 */
-	void onError(String message);
+	void onNoManifest(String manifestFile);
+
 }

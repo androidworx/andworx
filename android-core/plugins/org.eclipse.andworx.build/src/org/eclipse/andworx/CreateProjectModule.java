@@ -19,6 +19,7 @@ import org.eclipse.andworx.entity.ProjectBean;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
 import org.eclipse.andworx.project.AndroidConfiguration;
+import org.eclipse.andworx.project.AndroidDigest;
 import org.eclipse.andworx.project.ProjectProfile;
 
 import dagger.Module;
@@ -32,14 +33,14 @@ public class CreateProjectModule {
 
 	private final String projectName;
 	private final ProjectProfile projectProfile;
-	private final AndroidConfigurationBuilder androidConfigurationBuilder;
+	private final AndroidDigest androidDigest;
 
 	public CreateProjectModule(String projectName, 
 			ProjectProfile projectProfile, 
-			AndroidConfigurationBuilder androidConfigurationBuilder) {
+			AndroidDigest androidDigest) {
 		this.projectName = projectName;
 		this.projectProfile = projectProfile;
-		this.androidConfigurationBuilder = androidConfigurationBuilder;
+		this.androidDigest = androidDigest;
 	}
 
     @Provides
@@ -47,7 +48,7 @@ public class CreateProjectModule {
     	// Returns profile updated with new project ID
 		try {
 		    ProjectBean projectBean = androidConfig.createProject(projectName, projectProfile);
-		    androidConfig.persist(projectBean, androidConfigurationBuilder);
+		    androidConfig.persist(projectBean, androidDigest);
 		} catch (InterruptedException e) {
 			Thread.interrupted();
 			throw new AndworxException(projectName + " interrupted");

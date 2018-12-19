@@ -23,8 +23,12 @@ import com.android.builder.utils.FileCache;
 public class AndworxConstants {
     /** Nature of Android projects */
     public final static String ANDROID_NATURE = "org.eclipse.andmore.AndroidNature";
+    /** PersistenceUnitAdmin Unit name to look up configuration details in persistence.xml */
+    static public final String PU_NAME = "org.eclipse.andworx.build";
 	/** Project build file name */
 	public static final String FN_BUILD_ANDWORX = "build.andworx";
+	/** Project build file name */
+	public static final String FN_BUILD_GRADLE= "build.gradle";
 	/** Log4j file location property key used by log4j.xml */
 	public static final String LOG4J_LOG_DIR_KEY = "log4j.log.dir";
 	/** "Plugin version" input parameter required when using {@link FileCache} */

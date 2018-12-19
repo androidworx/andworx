@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.log.SdkLogger;
 
@@ -35,7 +34,8 @@ import dagger.Provides;
 public class BundleFileModule {
 
 	private static SdkLogger logger = SdkLogger.getLogger(BundleFileModule.class.getName());
-	
+
+	private final String pluginId;
 	private final String filePath;
 
 	/**
@@ -43,7 +43,8 @@ public class BundleFileModule {
 	 * @param pluginBundle Plugin bundle
 	 * @param filePath File path
 	 */
-	public BundleFileModule(String filePath) {
+	public BundleFileModule(String pluginId, String filePath) {
+		this.pluginId = pluginId;
 		this.filePath = filePath;
 	}
 	
@@ -73,7 +74,7 @@ public class BundleFileModule {
 	 * @throws IOException
 	 */
 	private void createBundleFile(File bundleFile, FileManager fileManager) throws IOException {
-    	URL url = new URL("platform:/plugin/" + AndworxBuildPlugin.PLUGIN_ID + "/" + filePath);
+    	URL url = new URL("platform:/plugin/" + pluginId + "/" + filePath);
     	try (InputStream inputStream = url.openConnection().getInputStream()) {
     		bundleFile = fileManager.saveFile(filePath, inputStream);
     	}

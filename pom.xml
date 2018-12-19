@@ -8,34 +8,6 @@
 	<version>0.0.2-SNAPSHOT</version>
 	<name>Andworx Parent</name>
 	<packaging>pom</packaging>
-<!--
-	<url>https://eclipse.org/andmore</url>
-
-	<organization>
-		<name>Eclipse Foundation</name>
-		<url>http://eclipse.org</url>
-	</organization>
-
-	<mailingLists>
-		<mailingList>
-			<name>andmore-dev Mailing List</name>
-			<post>andmore-dev@eclipse.org</post>
-			<subscribe>https://dev.eclipse.org/mailman/listinfo/andmore-dev</subscribe>
-			<unsubscribe>https://dev.eclipse.org/mailman/listinfo/andmore-dev</unsubscribe>
-			<archive>http://dev.eclipse.org/mhonarc/lists/andmore-dev</archive>
-		</mailingList>
-	</mailingLists>
-
-	<issueManagement>
-		<url>https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced;product=Andmore;classification=Tools</url>
-		<system>Bugzilla</system>
-	</issueManagement>
-
-	<ciManagement>
-		<system>Hudson</system>
-		<url>https://hudson.eclipse.org/andmorethe </url>
-	</ciManagement>
--->
 	<properties>
 	    <java.execution.version>1.8</java.execution.version>
 	    <java.execution.vendor>openjdk</java.execution.vendor>
@@ -44,6 +16,10 @@
         <android.builder.version>3.1.1</android.builder.version>
         <android.tools.version>26.1.1</android.tools.version>
         <dagger.version>2.6.1</dagger.version>
+        <junit.version>4.12</junit.version>
+        <powermock.version>1.6.5</powermock.version>
+        <mockito.version>2.0.42-beta</mockito.version>
+        <easytesting.version>2.0M10</easytesting.version>
 	</properties>
 
 	<repositories>
@@ -82,20 +58,6 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<distributionManagement>
-		<repository>
-			<id>repo.eclipse.org</id>
-			<name>Andmore Maven Repository - Releases</name>
-			<url>https://repo.eclipse.org/content/repositories/andmore-releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>repo.eclipse.org</id>
-			<name>Andmore Maven Repository - Snapshots</name>
-			<url>https://repo.eclipse.org/content/repositories/andmore-snapshots/</url>
-			<uniqueVersion>true</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<modules>
 		<module>andworx.target</module>
 		<module>andmore-swt</module>
@@ -103,6 +65,29 @@
 		<module>andmore-core</module>
 	</modules>
 
+    <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <exclusions>
+            	<exclusion>
+            	    <!-- Powermock uses later version of objenesis -->
+		            <groupId>org.objenesis</groupId>
+		            <artifactId>objenesis</artifactId>
+            	</exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.easytesting</groupId>
+          <artifactId>fest-assert-core</artifactId>
+          <version>${easytesting.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<pluginManagement>
@@ -112,8 +97,13 @@
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
-				<plugin>
-					<groupId>org.eclipse.tycho</groupId>
+        	    <plugin>
+        			<groupId>org.apache.maven.plugins</groupId>
+        			<artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M1</version>
+       	       </plugin>
+        	   <plugin>
+ 		 			<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-maven-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<extensions>true</extensions>
@@ -257,7 +247,7 @@
                 <groupId>org.eclipse.tycho</groupId>  
                 <artifactId>tycho-versions-plugin</artifactId>  
              </plugin>     
-			<plugin>
+		     <plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<configuration>
@@ -271,19 +261,16 @@
                     </target>   
                     <executionEnvironmentDefault>JavaSE-1.8</executionEnvironmentDefault>   
 					<environments>
-					    <!--
 						<environment>
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
 						</environment>
-						-->
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86_64</arch>
 						</environment>
-						<!--
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
@@ -299,11 +286,10 @@
 							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
-					-->
 					</environments>
-          <dependency-resolution>
-            <optionalDependencies>ignore</optionalDependencies>
-          </dependency-resolution>
+                   <dependency-resolution>
+                       <optionalDependencies>ignore</optionalDependencies>
+                  </dependency-resolution>
 				</configuration>
 			</plugin>
 		</plugins>

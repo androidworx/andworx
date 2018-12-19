@@ -19,7 +19,7 @@ import java.io.File;
 
 import org.eclipse.andmore.internal.wizards.newproject.ImportedProject;
 import org.eclipse.andworx.model.CodeSource;
-import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
+import org.eclipse.andworx.project.AndroidDigest;
 import org.eclipse.andworx.project.ProjectProfile;
 
 import com.android.ide.common.xml.ManifestData;
@@ -33,7 +33,7 @@ public class AndworxImportedProject implements ImportedProject {
 	private ProjectProfile projectProfile;
 	private File location;
 	private ManifestData manifestData;
-	private AndroidConfigurationBuilder androidConfigurationBuilder;
+	private AndroidDigest androidDigest;
 
 	public void setProjectName(String projectName) {
 		this.projectName = projectName;
@@ -51,8 +51,8 @@ public class AndworxImportedProject implements ImportedProject {
 		this.manifestData = manifestData;
 	}
 
-	public void setAndroidConfigBuilder(AndroidConfigurationBuilder androidConfigurationBuilder) {
-		this.androidConfigurationBuilder = androidConfigurationBuilder;
+	public void setAndroidDigest(AndroidDigest androidDigest) {
+		this.androidDigest = androidDigest;
 	}
 
 	@Override
@@ -82,11 +82,11 @@ public class AndworxImportedProject implements ImportedProject {
 
 	@Override
 	public String getSourceFolder() {
-		return androidConfigurationBuilder.getSourceFolder(CodeSource.javaSource);
+		return androidDigest.getSourceFolder(CodeSource.javaSource);
 	}
 
 	@Override
-	public AndroidConfigurationBuilder getAndroidConfig() {
-		return androidConfigurationBuilder;
+	public AndroidDigest getAndroidDigest() {
+		return androidDigest;
 	}
 }

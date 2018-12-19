@@ -15,16 +15,13 @@
  */
 package org.eclipse.andworx.jpa;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.log.SdkLogger;
-import org.eclipse.datatools.connectivity.drivers.DriverManager;
 
 import au.com.cybersearch2.classyjpa.EntityManagerLite;
 import au.com.cybersearch2.classyjpa.entity.PersistenceWork;
@@ -39,8 +36,6 @@ import au.com.cybersearch2.classytask.WorkStatus;
  */
 public class PersistenceService {
 
-    /** PersistenceUnitAdmin Unit name to look up configuration details in persistence.xml */
-    static public final String PU_NAME = "org.eclipse.andworx.build";
 	/** Name of dynamically configured driver configured for archive "sqlite-jdbc-3.8.5-pre1.jar" */
 	public static final String JDBC_DRIVER_INSTANCE_NAME = "h2_driver";
 	/** Name of template to which "sqlite_jdbc_driver" is assigned. Note driver version indicates compatibility, not what is actully used */
@@ -52,6 +47,9 @@ public class PersistenceService {
     	{ "USER", System.getProperty("user.name", "sa") },
     	{ "DB_CLOSE_ON_EXIT", "FALSE" },
     	{ "AUTO_SERVER", "TRUE" }
+    };
+    public static String[][] TEST_CONNECTION_PROPERTIES = new String[][] {
+    	{ "DB_CLOSE_DELAY", "-1" }
     };
 
     /** Task which configures the persistence context */
@@ -68,15 +66,20 @@ public class PersistenceService {
     private Thread consumeThread;
     /** Persistence context */
     private final PersistenceContext persistenceContext;
+    /** Service name */
+    private final String serviceName;
+    /** Tasks to run before starting the service */
+    private List<PersistenceWork> initialTasks;
 
     /**
      * Construct PersistenceService object
      */
-	public PersistenceService(PersistenceContext persistenceContext) {
+	public PersistenceService(PersistenceContext persistenceContext, String serviceName) {
 		this.persistenceContext = persistenceContext;
     	// Queue capacity allows for a generous maximum number of tasks to be queued
     	// Fair access for waiting threads is turned on but should not be needed
     	taskQueue = new ArrayBlockingQueue<PersistenceWork>(MAX_QUEUE_LENGTH, true);
+    	this.serviceName = serviceName;
 	}
 
     /**
@@ -126,6 +129,17 @@ public class PersistenceService {
             }
         });
 	}
+
+	/**
+	 * Add initial task
+	 * @param initialTask Persistence wurk unit
+	 */
+	public void addInitialTask(PersistenceWork initialTask) {
+		if (initialTasks == null) {
+			initialTasks = new ArrayList<>();
+		}
+		initialTasks.add(initialTask);
+	}
 	
 	/**
 	 * Start service. NOTE: the persistence context must be initialized prior to calling this method.
@@ -144,18 +158,25 @@ public class PersistenceService {
             {
 				// Register Sqlite JDBC driver with Eclipse Database Tools disabled for h2
 				//registerDriver();
-				logger.info(SERVICE_NAME + " initalized successfully");
+				logger.info(serviceName + " initalized successfully");
+				if (initialTasks != null) {
+					for (PersistenceWork initialTask: initialTasks)
+						try {
+							executeTask(initialTask, persistenceRunner);
+						} catch (InterruptedException e1) {
+							return;
+						}
+				}
+				// Notify service start
+                synchronized(self) {
+                	self.notifyAll();
+                }
                 while (true)
                 {
                     try 
                     {
-                    	PersistenceWork task = taskQueue.take();
-                   	    if (task != null) { // Paranoid null check
-                   	    	WorkStatus workStatus = persistenceRunner.run(task).waitForTask();
-                   	    	if (workStatus != WorkStatus.FINISHED) {
-                   	    		logger.warning("Persistence task terminated prematurely");
-                   	    	}
-                    	} else break; // This is not expected to happen
+                    	if (!executeTask(taskQueue.take(), persistenceRunner)) 
+                    	    break; // This is not expected to happen
                     	if (taskQueue.isEmpty())
                     		// Notify when queue becomes empty
 	                        synchronized(self) {
@@ -175,7 +196,7 @@ public class PersistenceService {
         			taskQueue.remove();
         		}
             }};
-        consumeThread = new Thread(comsumeTask, SERVICE_NAME);
+        consumeThread = new Thread(comsumeTask, serviceName);
         consumeThread.start();
 	}
 	
@@ -186,8 +207,19 @@ public class PersistenceService {
 		if (consumeThread != null) {
 			consumeThread.interrupt();
 		    consumeThread = null;
-			logger.info(SERVICE_NAME + " stopped");
+			logger.info(serviceName + " stopped");
 		}
+	}
+
+	private boolean executeTask(PersistenceWork task, PersistenceRunner persistenceRunner) throws InterruptedException {
+   	    if (task != null) { 
+   	    	WorkStatus workStatus = persistenceRunner.run(task).waitForTask();
+   	    	if (workStatus != WorkStatus.FINISHED) {
+   	    		logger.warning("Persistence task terminated prematurely");
+   	    	}
+   	    	return true;
+    	}
+   	    return false;
 	}
 	
 	/**

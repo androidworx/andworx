@@ -32,8 +32,6 @@ public class SdkTracker {
 
     /** List of listeners for SDK loaded */
     private final List<SdkListener> sdkListeners;
-    /** Application component object factory */
-    private final AndworxFactory objectFactory;
     /** Tracks Target Data Load Status */
 	private TargetLoadStatusMonitor targetLoadStatusMonitor;
 
@@ -41,8 +39,7 @@ public class SdkTracker {
 	 * Construct SdkTracker object
 	 * @param objectFactory Object factory
 	 */
-    public SdkTracker(AndworxFactory objectFactory) {
-    	this.objectFactory = objectFactory;
+    public SdkTracker(AndworxContext objectFactory) {
 		sdkListeners = new ArrayList<>();
     }
 
@@ -65,9 +62,7 @@ public class SdkTracker {
 			if (targetLoadStatusMonitor != null)
 				trialSdk.setTargetLoadStatusMonitor(targetLoadStatusMonitor);
 	    	//System.out.println("Notifying " + sdkListeners.size() + " SDK listeners");
-			objectFactory.setAndroidEnvironment(trialSdk);
 			sdkProfile = trialSdk;
-			
 			synchronized(sdkListeners) {
 				sdkListeners.forEach(sdkListener -> sdkListener.onLoadSdk(trialSdk));
 			}

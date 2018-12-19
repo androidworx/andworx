@@ -15,19 +15,35 @@
  */
 package org.eclipse.andmore.base;
 
+import java.io.File;
+
 import org.eclipse.andmore.base.resources.PluginResourceRegistry;
+import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+
+import com.android.annotations.Nullable;
+import com.android.sdklib.repository.AndroidSdkHandler;
 
 /**
  * Context for containing foundation classes available to all bundles
  */
 public interface BaseContext {
+    /**
+     * Get a {@code AndroidSdkHandler} instance.
+     *
+     * @param localPath The path to the local SDK. If {@code null} this handler will only be used
+     *                  for remote operations.
+     */
+	AndroidSdkHandler getAndroidSdkHandler(@Nullable File localPath);
+	
 	/**
 	 * Returns a context that can be used to lookup OSGi services
 	 * @return IEclipseContext object
 	 */
 	IEclipseContext getEclipseContext();
 
+	/** Call job.schedule() when runnning on osgi  platform */
+	AndworxJob getAndworxJob(String name, IJobFunction jobFunction);
 	/** Container for plugin ImageDescriptor providers */
 	PluginResourceRegistry getPluginResourceRegistry();
 	/** Utility to support unit testing requiring JavaProject mocking */

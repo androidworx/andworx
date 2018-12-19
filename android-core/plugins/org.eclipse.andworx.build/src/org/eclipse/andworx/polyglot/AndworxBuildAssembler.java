@@ -15,167 +15,114 @@
  */
 package org.eclipse.andworx.polyglot;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
+import org.eclipse.andworx.exception.AndworxException;
+import org.eclipse.andworx.functions.Builtin;
+import org.eclipse.andworx.project.AndworxParserContext;
+import org.eclipse.andworx.project.AndworxParserContext.Function;
+import org.eclipse.andworx.project.AndworxParserContext.Variable;
+
 /**
- * Assembles declarations embedded in the build file
+ * Assembles parser syntax item into parser context
  */
 public class AndworxBuildAssembler {
 	/** Special method name for a class constructor */
 	public static final String CTOR = "<init>";
 	
-	/** Variable attributes */
-	private static class Variable {
-		public String name;
-		public Class<?> type;
-		public Object value;
-	}
-
-	/** Function attributes */
-	private static class Function {
-		public Variable variable;
-		public String classname;
-		public String methodname;
-		public int argCount;
-		public List<String> arguments;
-	}
-	
-	private final File projectLocation;
-	private final Map<String,Variable> variableMap;
-	private final Map<Variable,Function> functionMap;
-
 	/** 
 	 * Construct AndworxBuildAssembler object
-	 * @param projectLocation
 	 */
-	public AndworxBuildAssembler(File projectLocation) {
-		this.projectLocation = projectLocation;
-		variableMap = new HashMap<>();
-		functionMap = new HashMap<>();
+	public AndworxBuildAssembler() {
 	}
-	
-	boolean receiveItem(String path, String value) {
-		String[] split = path.split("/");
-		if (split.length == 3) {
-			String variableName = split[0];
-			if (variableMap.containsKey(variableName)) {
-				Variable variable = variableMap.get(variableName);
-				if (variable != null) {
-					Function function = functionMap.get(variable);
-					if (function != null) {
-						if (function.arguments == null)
-							function.arguments = new ArrayList<>();
-						function.arguments.add(value);
-						if (function.argCount == function.arguments.size())
-							invoke(function);
+
+	/**
+	 * Invoke a method call and return result
+	 * @param context Parser context
+	 * @param type Retuurn type
+	 * @param methodClass Class to invoke or empty string for constructor call 
+	 * @param name Method to invoke
+	 * @param args Call parameters
+	 * @return Object
+	 */
+	public Object invokeMethod(
+			AndworxParserContext context, 
+			String type, 
+			String methodClass, 
+			String name, 
+			Object[] args) {
+		if (methodClass.isEmpty()) { // Constructor call
+			Class<?> clazz = context.getType(type);
+			if (clazz == null)
+				throw new AndworxException("Build file parser can not resolve type " + type);
+			try {
+				if (args.length == 0)
+					return clazz.newInstance();
+				else {
+					Class<?>[] paramClasses = new Class[args.length];
+					for (int index = 0; index < args.length; ++index)
+						paramClasses[index] = args[index].getClass();
+					Constructor<?> constructor = clazz.getConstructor(paramClasses);
+					return constructor.newInstance(args);
+				}
+			} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+				throw new AndworxException("Build file parser can not instantiate type " + type, e);
+			}
+		}
+		if (context.hasVariable(methodClass)) { // Variable or function invocation
+			Variable variable = context.getVariable(methodClass);
+			Function function = context.getFunction(variable);
+			if (function == null) {
+				// TODO - Method call by reflection
+				if ((variable.value instanceof Properties) && name.equals("load")) {
+					// Special case for variable containing a properties object
+					Properties props = (Properties) variable.value;
+					try {
+						props.load((InputStream)args[0]);
+					} catch (IOException e) {
+						throw new AndworxException("Error loading properties file", e);
 					}
 				}
-				//System.out.println(path + " : " + value);
-				return true;
+				return null;
+			} else {
+				function.arguments = args;
+				return invoke(context, function);
 			}
 		}
-		if (variableMap.containsKey(path)) {
-			//System.out.println(path + " : " + value);
-			return true;
-		}
-		return false;
-	}
-	
-	boolean receiveItem(String path, String key, String value) {
-		if (variableMap.containsKey(path)) {
-			//System.out.println(path + " : " + key + " [" + value + "]");
-			return true;
-		}
-		return false;
+		return null;
 	}
 
-	public void receiveDeclaration(String name, String type) {
-		Variable var = new Variable();
-		variableMap.put(name, var);
-		var.name = name;
-		if (!type.isEmpty())
-			try {
-				var.type = Class.forName(type);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-	}
-
-	public void receiveMethod(String path, String type, int argCount) {
-		String[] split = path.split("/");
-		String variableName = split[0];
-		if (variableMap.containsKey(variableName)) {
-			Variable variable = variableMap.get(variableName);
-			// Check for case this call is a call argument
-			Function function = functionMap.get(variable);
-			if (function != null) { // No support, so skip
-				return;
-			}
-			String className = split[1];
-			String methodName = split[2];
-			function = new Function();
-			function.variable = variable;
-			function.classname = className;
-			function.methodname = methodName;
-			function.argCount = argCount;
-			functionMap.put(variable, function);
-			if (argCount == 0)
-				invoke(function);
-			printFunction(type, function);
+	/**
+	 * Returns value from map contained in a variable
+	 * @param context Parser context
+	 * @param name Variable name
+	 * @param key Key associated with required value
+	 * @return
+	 */
+    public String receiveMap(AndworxParserContext context, String name, String key) {
+		Variable variable = context.getVariable(name);
+		if (variable != null) {
+			Properties props = (Properties)variable.value;
+			String value = props.getProperty(key);
+			//System.out.println(path + "." + name + " = " + value);
+			return value;
 		}
-	}
-	
-	public String receiveMap(String path, String name, String key) {
-		for (Variable variable: variableMap.values())
-			if (variable.name.equals(name)) {
-				Properties props = (Properties)variable.value;
-				String value = props.getProperty(key);
-				//System.out.println(path + "." + name + " = " + value);
-				return value;
-			}
 		//System.out.println(path + "." + name + "[" + key + "]");
 		return key;
 	}
-	
-	private void invoke(Function function) {
-		if (function.classname.equals("rootProject")) {
-			if (function.methodname.equals("file")) {
-				Variable variable = function.variable;
-				variable.type = Properties.class;
-				File propsFile = new File(projectLocation, function.arguments.get(0));
-				Properties properties = new Properties();
-				try (FileInputStream inStream = new FileInputStream(propsFile)) {
-					properties.load(inStream);
-					variable.value = properties;
-					//properties.list(System.out);
-				} catch (IOException e) {
-					// TODO - Log error
-					e.printStackTrace();
-				}
-			}
-		}
-		
-	}
 
-	private void printFunction(String type, Function function) {
-		/*
-		StringBuilder builder = new StringBuilder();
-		if (!type.isEmpty())
-			builder.append(type).append(' ');
-		builder.append(function.variable.name);
-		if (!"*".equals(function.classname))
-			builder.append(" = ").append(function.classname).append('.').append(function.methodname).append('(').append(function.argCount).append(')');
-		else
-			builder.append('.').append(function.methodname).append('(').append(function.argCount).append(')');
-		System.out.println(builder.toString());
-		*/
+    private Object invoke(AndworxParserContext context, Function function) {
+    	if (function.classname.equals(Builtin.class.getName())) {
+    		Builtin builtin = new Builtin(context);
+    		Object result = builtin.invoke(function);
+    		function.variable.value = result;
+    		return result;
+    	}
+    	return null;
 	}
 
 }

@@ -37,7 +37,8 @@ public class SqliteEnvironment implements ResourceEnvironment {
     public static interface ResourceOpener {
     	InputStream openResource(String resourceName) throws IOException;
     }
-    
+
+    private final String pluginId;
     /** Set locale for consistent operations involing text */
     private Locale locale = Locale.US;
     /** Path to be prepended to resource names */
@@ -55,8 +56,14 @@ public class SqliteEnvironment implements ResourceEnvironment {
      * @param entityClassLoader ClassLoader object for creating entity classes specified in persistence.xml
      * @param fileManager File manager needed to store resource files from the bundle
      */
-    public SqliteEnvironment(String resourceLocation, File databaseDirectory, EntityClassLoader entityClassLoader, FileManager fileManager)
+    public SqliteEnvironment(
+    		String pluginId,
+    		String resourceLocation, 
+    		File databaseDirectory, 
+    		EntityClassLoader entityClassLoader, 
+    		FileManager fileManager)
     {
+    	this.pluginId = pluginId;
         this.resourceLocation = resourceLocation;
         this.databaseDirectory = databaseDirectory;
     	this.entityClassLoader = entityClassLoader;
@@ -73,7 +80,7 @@ public class SqliteEnvironment implements ResourceEnvironment {
     {   // Use resource path to fetch bundle file
 		String resourcePath = resourceLocation + "/" + resourceName;
     	// The bundle file is extracted from the plugin jar and cached on the file system
-	    BundleFileModule bundleFileModule = new BundleFileModule(resourcePath);
+	    BundleFileModule bundleFileModule = new BundleFileModule(pluginId, resourcePath);
     	File resourceFile = bundleFileModule.provideFile(fileManager);
     	if (resourceFile == null)
     		throw new IOException("Failed to open resource " + resourceName);
@@ -97,7 +104,7 @@ public class SqliteEnvironment implements ResourceEnvironment {
      */
 	@Override
 	public File getDatabaseDirectory() {
-		if (!databaseDirectory.exists())
+		if ((databaseDirectory != null) && !databaseDirectory.exists())
 			databaseDirectory.mkdirs();
 		return databaseDirectory;
 	}

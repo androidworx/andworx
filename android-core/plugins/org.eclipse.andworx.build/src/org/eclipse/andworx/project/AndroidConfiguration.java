@@ -31,12 +31,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
-import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -71,7 +69,6 @@ import org.eclipse.andworx.model.BuildTypeImpl;
 import org.eclipse.andworx.model.ProductFlavorImpl;
 import org.eclipse.andworx.model.ProjectSourceProvider;
 import org.eclipse.andworx.model.SourceSet;
-import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
 import org.eclipse.andworx.repo.DependencyArtifact;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -100,13 +97,13 @@ public class AndroidConfiguration {
     /** Number of digits in project ID format */
 	private static final int ID_LENGTH = 10;
 	/** Duration in milliseconds to wait for datgbase  operation to complete - 20 seconds */
-	private static final long DATABASE_TIMEOUT = 20000;
+	public static final long DATABASE_TIMEOUT = 20000;
     /** Prefix for name of query to fetch entity by primary key */
-	private static final String ENTITY_BY_ID = "org.eclipse.andworx.project.EntityById";
+	public static final String ENTITY_BY_ID = "org.eclipse.andworx.project.EntityById";
     /** Prefix for name of query to fetch entity by project ID */
 	private static final String ENTITY_BY_PROJECT_ID = "org.eclipse.andworx.project.EntityByProjectId";
     /** Prefix for name of query to fetch entity by project ID */
-	private static final String ITEM_BY_DUAL_KEY = "org.eclipse.andworx.project.ItemByDualKey";
+	//private static final String ITEM_BY_DUAL_KEY = "org.eclipse.andworx.project.ItemByDualKey";
     /** Name of query to fetch project by primary key */
 	private static final String PROJECT_BY_ID = ENTITY_BY_ID + "0";
 	/** Name of query to fetch Signing Config by ID */
@@ -128,9 +125,9 @@ public class AndroidConfiguration {
 	/** Name of query to fetch Android source by project ID */
 	private static final String ANDROID_SOURCE_BY_ID = ENTITY_BY_PROJECT_ID + "6";
 	
-	protected static final String DATABASE_COMPLETE_MESSAGE = "Database operation %d completed";
-	protected static final String DATABASE_ROLLBACK_MESSAGE = "Database operation %d failed. See logs for details.";
-	protected static final String DATABASE_FAIL_MESSAGE = "Database operation %d was teriminated";
+	public static final String DATABASE_COMPLETE_MESSAGE = "Database operation %s completed";
+	public static final String DATABASE_ROLLBACK_MESSAGE = "Database operation %s failed. See logs for details.";
+	public static final String DATABASE_FAIL_MESSAGE = "Database operation %s was teriminated";
 
 	private static SdkLogger logger = SdkLogger.getLogger(AndroidConfiguration.class.getName());
 
@@ -138,8 +135,6 @@ public class AndroidConfiguration {
 	private final PersistenceService persistenceService;
 	/** Persistent task utility to Facilitate simple operations such as persist and delete */
 	private final EntityOperation entityOp;
-	/** Generates transaction id for logging purposes */
-	private final AtomicInteger transactionCount;
 	protected EventHandler updateEventHandler = new EventHandler() {
 
 		@Override
@@ -156,34 +151,9 @@ public class AndroidConfiguration {
 	public AndroidConfiguration(PersistenceService persistenceService, IEventBroker eventBroker) {
 		this.persistenceService = persistenceService;
 		entityOp = new EntityOperation();
-		transactionCount = new AtomicInteger();
 		// Start by adding named queries to the persistence context. Use the service to avoid start up synchronization issues.
 		try {
-			persistenceService.offer(new CallableTask() {
-
-				@Override
-				public void call(PersistenceContext persistenceContext) throws Exception {
-					PersistenceAdmin projectPersistence = persistenceContext.getPersistenceAdmin(PersistenceService.PU_NAME);
-			        EntityByPrimaryKeyGenerator entityByPrimaryKeyGenerator = new EntityByPrimaryKeyGenerator();
-			        projectPersistence.addNamedQuery(ProjectBean.class, PROJECT_BY_ID, entityByPrimaryKeyGenerator);
-			        projectPersistence.addNamedQuery(SigningConfigBean.class, SIGNING_CONFIG_BY_ID, entityByPrimaryKeyGenerator);
-			        EntityBySecondaryKeyGenerator entityByNameGenerator = new EntityBySecondaryKeyGenerator("name");
-			        projectPersistence.addNamedQuery(ProjectBean.class, PROJECT_BY_NAME, entityByNameGenerator);
-			        EntityByProjectIdGenerator entityByProjectIdGenerator = new EntityByProjectIdGenerator();
-			        projectPersistence.addNamedQuery(ProjectProfileBean.class, PROJECT_PROFILE_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(DependencyBean.class, DEPENDENCY_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(AndroidBean.class, DEFAULT_CONFIG_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(ProductFlavorBean.class, PRODUCT_FLAVOR_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(BuildTypeBean.class, BUILDTYPE_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(BaseConfigBean.class, BASE_CONFIG_BY_ID, entityByProjectIdGenerator);
-			        projectPersistence.addNamedQuery(AndroidSourceBean.class, ANDROID_SOURCE_BY_ID, entityByProjectIdGenerator);
-			        eventBroker.subscribe(AndworxEvents.UPDATE_ENTITY_BEAN, updateEventHandler );
-				}
-
-				@Override
-				public String getName() {
-					return "Set up Android Configuration";
-				}});
+			persistenceService.offer(getSetupTask(eventBroker));
 		} catch (InterruptedException e) {
 			throw new AndworxException("Persistence service startup interrupted", e);
 		}
@@ -229,7 +199,7 @@ public class AndroidConfiguration {
 	public ProjectBean createProject(String projectName, ProjectProfile projectProfile) throws InterruptedException {
 		ProjectBean projectBean = findProjectByName(projectName); //, projectIdFile, numberFormat);
 		if (projectBean != null) { // This is not expected but possibly a project name is being recycled
-			doPersistenceTask(entityOp.delete(projectBean));
+			doPersistenceTask("delete project bean", entityOp.delete(projectBean));
 		}
 		// The project bean has an ID and Eclipse project name.
     	ProjectBean newProject = new ProjectBean();
@@ -258,7 +228,7 @@ public class AndroidConfiguration {
 				dependencyBean.setPath(path);
 				entityManager.persist(dependencyBean);
 		}};
-		doPersistenceTask(persistenceTask);
+		doPersistenceTask("create project " + projectName, persistenceTask);
 		return newProject;
 	}
 
@@ -286,14 +256,16 @@ public class AndroidConfiguration {
 	 * @param androidConfigurationBuilder Object which assembles parsed nodes of build.gradle configuration
 	 * @throws InterruptedException
 	 */
-	public void persist(ProjectBean projectBean, AndroidConfigurationBuilder androidConfigurationBuilder) throws InterruptedException {
+	public void persist(ProjectBean projectBean, AndroidDigest androidDigest) throws InterruptedException {
 		PersistenceTask persistenceTask = new PersistenceTask() {
 
 			@Override
 			public void doTask(EntityManagerLite entityManager) {
-	           	androidConfigurationBuilder.persist(entityManager, projectBean);
+				Object[] entities = androidDigest.asEntities(projectBean);
+				for (Object bean: entities)
+					entityManager.persist(bean);
 			}};
-		doPersistenceTask(persistenceTask);
+		doPersistenceTask("persist project bean for " + projectBean.getName(), persistenceTask);
 	}
 
 	/**
@@ -349,7 +321,7 @@ public class AndroidConfiguration {
 	                	logger.warning("Project profile not found for project %s", projectName);
 	                }
 				}};
-			doPersistenceTask(persistenceTask);
+			doPersistenceTask("get profile for project " + projectName, persistenceTask);
 		}
 		return projectProfile[0];
 	}
@@ -379,11 +351,11 @@ public class AndroidConfiguration {
 				new ListQueryTask<>(BASE_CONFIG_BY_ID, BaseConfigBean.PROJECT_ID_FIELD_NAME, projectId);
 		ListQueryTask<AndroidSourceBean,Integer> findAndroidSourcesTask = 
 				new ListQueryTask<>(ANDROID_SOURCE_BY_ID, AndroidSourceBean.PROJECT_ID_FIELD_NAME, projectId);
-		doPersistenceTask(findDefaultConfigTask);
-		doPersistenceTask(findProductFlavorsTask);
-		doPersistenceTask(findBuildTypesTask);
-		doPersistenceTask(findBaseConfigsTask);
-		doPersistenceTask(findAndroidSourcesTask);
+		doPersistenceTask("find default config for " + projectName, findDefaultConfigTask);
+		doPersistenceTask("find product flavors for " + projectName, findProductFlavorsTask);
+		doPersistenceTask("find buildtypes for " + projectName, findBuildTypesTask);
+		doPersistenceTask("find base configs for " + projectName, findBaseConfigsTask);
+		doPersistenceTask("find Android sources for " + projectName, findAndroidSourcesTask);
 		AndroidBean androidBean = findDefaultConfigTask.getResult();  
 		Collection<ProductFlavor> productFlavors = new ArrayList<>();
 		Collection<BuildType> buildTypes = new ArrayList<>();
@@ -462,9 +434,8 @@ public class AndroidConfiguration {
 
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					int projectId = configContext.getProjectProfile().getProjectId();
 					try {
-						doPersistenceTask(entityOp.update(entityObject));
+						doPersistenceTask(getName(), entityOp.update(entityObject));
 					} catch (Exception e) {
 						logger.error(e, "Error running job \"%\"", getName());
 						return Status.CANCEL_STATUS;
@@ -500,7 +471,7 @@ public class AndroidConfiguration {
                 	
                 }
             }};
-         doPersistenceTask(task);
+         doPersistenceTask("set " + bean.getName() + " signing config", task);
          bean.setSigningConfig(signingConfigBean[0]);
 	}
 
@@ -567,7 +538,7 @@ public class AndroidConfiguration {
             	    			"\" is being renamed to same name as that of project ID " + projectList.get(0));
             	    }
             	    projectById.setName(projectName);
-                    entityManager.persist(projectById);
+                    entityManager.merge(projectById);
                 } catch (NoResultException e) {
                 	// This is not expected. Maybe the project is copied from another workspace.
                 	// Delete the project ID file as it no longer useful.
@@ -576,39 +547,38 @@ public class AndroidConfiguration {
             }
         };
         // Execute work and wait synchronously for completion
-        doPersistenceTask(task);
+        doPersistenceTask("find project by id or name", task);
 		return project[0] != null ? project[0] : findProjectByName(projectName);
 	}
 
 	/**
 	 * Offers task to persistence service. Records transaction sequence number to assist tracing activity. 
+	 * Qparam taskTitle
 	 * @param persistenceTask Task requiring EntityManager
 	 * @throws InterruptedException
 	 */
-	private void doPersistenceTask(PersistenceTask persistenceTask) throws InterruptedException {
+	private void doPersistenceTask(String taskTitle, PersistenceTask persistenceTask) throws InterruptedException {
         PersistenceWork task = new PersistenceWork(){
-            int transactionID;
             
             @Override
             public void doTask(EntityManagerLite entityManager)
             {
-            	transactionID = transactionCount.incrementAndGet();
             	persistenceTask.doTask(entityManager);
-            	logger.verbose(DATABASE_COMPLETE_MESSAGE, transactionID);
+            	logger.verbose(DATABASE_COMPLETE_MESSAGE, taskTitle);
             }
             
             @Override
             public void onPostExecute(boolean success)
             {
                 if (!success) {
-                     logger.error(null, DATABASE_FAIL_MESSAGE, transactionID);
+                     logger.error(null, DATABASE_FAIL_MESSAGE, taskTitle);
                 }
             }
 
             @Override
             public void onRollback(Throwable rollbackException)
             {
-                 logger.error(rollbackException, DATABASE_ROLLBACK_MESSAGE, transactionID);
+                 logger.error(rollbackException, DATABASE_ROLLBACK_MESSAGE, taskTitle);
             }
         };
         // Execute work and wait synchronously for completion
@@ -636,7 +606,7 @@ public class AndroidConfiguration {
 	 */
 	private ProjectBean findProjectByName(String projectName) throws InterruptedException {
 		ListQueryTask<ProjectBean,String> findProjectTask = new ListQueryTask<>(PROJECT_BY_NAME, "name", projectName);
-		doPersistenceTask(findProjectTask);
+		doPersistenceTask("find prject by name " + projectName, findProjectTask);
 		return findProjectTask.getResultList().isEmpty() ? null : findProjectTask.getResultList().get(0);
 	}
 
@@ -657,4 +627,31 @@ public class AndroidConfiguration {
 		}
 	}
 
+	private CallableTask getSetupTask(IEventBroker eventBroker) {
+		return new CallableTask() {
+
+			@Override
+			public void call(PersistenceContext persistenceContext) throws Exception {
+				PersistenceAdmin projectPersistence = persistenceContext.getPersistenceAdmin(AndworxConstants.PU_NAME);
+		        EntityByPrimaryKeyGenerator entityByPrimaryKeyGenerator = new EntityByPrimaryKeyGenerator();
+		        projectPersistence.addNamedQuery(ProjectBean.class, PROJECT_BY_ID, entityByPrimaryKeyGenerator);
+		        projectPersistence.addNamedQuery(SigningConfigBean.class, SIGNING_CONFIG_BY_ID, entityByPrimaryKeyGenerator);
+		        EntityBySecondaryKeyGenerator entityByNameGenerator = new EntityBySecondaryKeyGenerator("name");
+		        projectPersistence.addNamedQuery(ProjectBean.class, PROJECT_BY_NAME, entityByNameGenerator);
+		        EntityByProjectIdGenerator entityByProjectIdGenerator = new EntityByProjectIdGenerator();
+		        projectPersistence.addNamedQuery(ProjectProfileBean.class, PROJECT_PROFILE_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(DependencyBean.class, DEPENDENCY_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(AndroidBean.class, DEFAULT_CONFIG_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(ProductFlavorBean.class, PRODUCT_FLAVOR_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(BuildTypeBean.class, BUILDTYPE_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(BaseConfigBean.class, BASE_CONFIG_BY_ID, entityByProjectIdGenerator);
+		        projectPersistence.addNamedQuery(AndroidSourceBean.class, ANDROID_SOURCE_BY_ID, entityByProjectIdGenerator);
+		        eventBroker.subscribe(AndworxEvents.UPDATE_ENTITY_BEAN, updateEventHandler );
+			}
+
+			@Override
+			public String getName() {
+				return "Set up Android Configuration";
+			}};
+	}
 }

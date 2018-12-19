@@ -78,6 +78,7 @@ import org.eclipse.andworx.sdk.AndroidSdkValidator;
 import org.eclipse.andworx.sdk.CheckSdkErrorHandler;
 import org.eclipse.andworx.sdk.SdkProfile;
 import org.eclipse.andworx.sdk.SdkTargetDataMap;
+import org.eclipse.andworx.topology.ModelPlugin;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -363,6 +364,7 @@ public class AndmoreAndroidPlugin extends AbstractUIPlugin implements ILogger {
                     }
                 }
 	        });
+        info("Model Plugin available = " + (ModelPlugin.getModelFactory() != null));
         Job job = new Job("Start bundle " + AndmoreAndroidConstants.PLUGIN_ID) {
 			
 			@Override

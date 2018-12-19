@@ -15,14 +15,6 @@
  */
 package org.eclipse.andworx.task.java;
 
-import com.android.annotations.NonNull;
-import com.android.ide.common.process.JavaProcessInfo;
-import com.android.ide.common.process.ProcessEnvBuilder;
-import com.android.ide.common.process.ProcessException;
-import com.android.ide.common.process.ProcessInfoBuilder;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,13 +27,20 @@ import java.util.Map;
 import org.eclipse.andworx.AndworxConstants;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.exception.AndworxException;
-import org.eclipse.andworx.file.FileManager;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.helper.ProjectBuilder;
 import org.eclipse.andworx.process.java.JvmParameters;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
+import com.android.annotations.NonNull;
 import com.android.builder.core.DesugarProcessArgs;
 import com.android.builder.core.DesugarProcessBuilder;
+import com.android.ide.common.process.JavaProcessInfo;
+import com.android.ide.common.process.ProcessEnvBuilder;
+import com.android.ide.common.process.ProcessException;
+import com.android.ide.common.process.ProcessInfoBuilder;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Desugar process builder that holds environment variable information
@@ -96,8 +95,8 @@ public class DesugarJavaBuilder extends ProcessEnvBuilder<DesugarProcessBuilder>
 	 * @return JavaProcessInfo object
 	 */
 	public static JavaProcessInfo getJavaProcessInfo() {
-		FileManager fileManager = AndworxFactory.instance().getFileManager();
-		File desugarArchive = fileManager.getFile(AndworxConstants.DESUGAR_JAR);
+		CacheManager cacheManager = AndworxFactory.instance().getCacheManager();
+		File desugarArchive = cacheManager.getFile(AndworxConstants.DESUGAR_JAR);
 		if (desugarArchive == null)
 			throw new AndworxException("File " + AndworxConstants.DESUGAR_JAR + " not found");
 		return new JavaProcessInfo() {

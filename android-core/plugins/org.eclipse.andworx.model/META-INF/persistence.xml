@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             version="2.0">
+   <persistence-unit name="org.eclipse.andworx.topology">
+       <class>org.eclipse.andworx.topology.entity.ModelNodeBean</class>
+       <class>org.eclipse.andworx.topology.entity.ModelTypeBean</class>
+       <class>org.eclipse.andworx.topology.entity.RepositoryBean</class>
+       <class>org.eclipse.andworx.topology.entity.ModuleBean</class>
+       <property name="database-name" value="andworx-model.db"/>
+      <!-- <property name="schema-filename" value="topology_schema.sql"/>-->
+   </persistence-unit>
+</persistence>

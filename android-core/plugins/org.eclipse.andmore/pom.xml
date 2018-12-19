@@ -15,10 +15,6 @@
 	</parent>
 	<properties>
 		<os-jvm-flags>-Xms256m -Xmx1024m</os-jvm-flags>
-        <junit.version>4.12</junit.version>
-        <powermock.version>1.6.5</powermock.version>
-        <mockito.version>2.0.42-beta</mockito.version>
-        <easytesting.version>2.0M10</easytesting.version>
 	</properties>
     <dependencies>
         <dependency>
@@ -73,39 +69,39 @@
 					</execution>
 				</executions>
 			</plugin>
-	    <plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-surefire-plugin</artifactId>
-			<executions>
-			  <execution>
-				<id>test</id>
-				<phase>test</phase>
-				<configuration>
-				  <includes>
-					 <include>org/eclipse/andworx/export/ExportWizardTest.java</include>
-				  </includes>
-				  <argLine>-noverify</argLine>
-				</configuration>
-				<goals>
-				  <goal>test</goal>
-				</goals>
-			  </execution>
-			</executions>
-	    </plugin>
-	    <plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<executions>
-			  <execution>
-				<id>compiletests</id>
-				<phase>test-compile</phase>
-				<goals>
-				  <goal>testCompile</goal>
-				</goals>
-			  </execution>
-			</executions>
-	    </plugin>       
-		   <plugin>
+    	    <plugin>
+    			<groupId>org.apache.maven.plugins</groupId>
+    			<artifactId>maven-surefire-plugin</artifactId>
+    			<executions>
+    			  <execution>
+    				<id>test</id>
+    				<phase>test</phase>
+    				<configuration>
+    				  <includes>
+    					 <include>org/eclipse/andworx/export/ExportWizardTest.java</include>
+    				  </includes>
+    				  <argLine>-noverify</argLine>
+    				</configuration>
+    				<goals>
+    				  <goal>test</goal>
+    				</goals>
+    			  </execution>
+    			</executions>
+    	    </plugin>
+    	    <plugin>
+    			<groupId>org.apache.maven.plugins</groupId>
+    			<artifactId>maven-compiler-plugin</artifactId>
+    			<executions>
+    			  <execution>
+    				<id>compiletests</id>
+    				<phase>test-compile</phase>
+    				<goals>
+    				  <goal>testCompile</goal>
+    				</goals>
+    			  </execution>
+    			</executions>
+    	    </plugin>       
+		    <plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho-version}</version>
@@ -160,29 +156,6 @@
            </plugin> 	
  		</plugins>
     </build>
-    <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <exclusions>
-            	<exclusion>
-            	    <!-- Powermock uses later version of objenesis -->
-		            <groupId>org.objenesis</groupId>
-		            <artifactId>objenesis</artifactId>
-            	</exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.easytesting</groupId>
-          <artifactId>fest-assert-core</artifactId>
-          <version>${easytesting.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </dependencyManagement>
 	<profiles>
 		<profile>
 			<id>macosx-jvm-flags</id>
@@ -202,11 +175,17 @@
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-surefire-plugin</artifactId>
-						<version>${tycho-version}</version>
 						<configuration>
 							<skipTests>true</skipTests>
 						</configuration>
 					</plugin>
+            	    <plugin>
+            			<groupId>org.apache.maven.plugins</groupId>
+            			<artifactId>maven-surefire-plugin</artifactId>
+   						<configuration>
+							<skipTests>true</skipTests>
+						</configuration>
+         	       </plugin>
 				</plugins>
 			</build>
 		</profile>

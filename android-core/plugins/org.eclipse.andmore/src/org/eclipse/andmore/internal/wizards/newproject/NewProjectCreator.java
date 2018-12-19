@@ -387,9 +387,9 @@ public class NewProjectCreator  {
             parameters.put(PARAM_PACKAGE, packageName);
             parameters.put(PARAM_IS_NEW_PROJECT, Boolean.FALSE);
             parameters.put(PARAM_SRC_FOLDER, importedProject.getSourceFolder());
-            String resDirectory = importedProject.getAndroidConfig().getSourceFolder(CodeSource.res) + AndmoreAndroidConstants.WS_SEP;
+            String resDirectory = importedProject.getAndroidDigest().getSourceFolder(CodeSource.res) + AndmoreAndroidConstants.WS_SEP;
             parameters.put(PARAM_RES_FOLDER, resDirectory);
-            String assetsDirectory = importedProject.getAndroidConfig().getSourceFolder(CodeSource.assets) + AndmoreAndroidConstants.WS_SEP;
+            String assetsDirectory = importedProject.getAndroidDigest().getSourceFolder(CodeSource.assets) + AndmoreAndroidConstants.WS_SEP;
             parameters.put(PARAM_ASSETS_FOLDER, assetsDirectory);
             List<String> defaultDirs = new ArrayList<>();
             defaultDirs.add(BIN_DIRECTORY);

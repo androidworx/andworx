@@ -1,0 +1,7 @@
+<factorypath>
+    <factorypathentry kind="WKSPJAR" id="/org.eclipse.andworx.swt/libs/guava-22.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/org.eclipse.andworx.build/libs/dagger-compiler-2.6.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/org.eclipse.andworx.build/libs/dagger-producers-2.6.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/org.eclipse.andworx.build/libs/dagger-2.6.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/org.eclipse.andworx.build/libs/javax.inject-1.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>

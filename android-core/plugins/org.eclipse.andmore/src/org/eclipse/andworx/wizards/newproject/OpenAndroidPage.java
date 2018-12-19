@@ -35,12 +35,15 @@ import org.eclipse.andmore.internal.wizards.newproject.NewProjectWizardState;
 import org.eclipse.andmore.internal.wizards.newproject.WorkingSetGroup;
 import org.eclipse.andmore.internal.wizards.newproject.WorkingSetHelper;
 import org.eclipse.andworx.AndworxConstants;
+import org.eclipse.andworx.build.AndroidProjectReader;
 import org.eclipse.andworx.config.AndroidConfig;
-import org.eclipse.andworx.polyglot.AndroidConfigurationBuilder;
-import org.eclipse.andworx.project.AndroidProjectOpener;
+import org.eclipse.andworx.helper.ProjectOpenHelper;
+import org.eclipse.andworx.project.AndroidDigest;
 import org.eclipse.andworx.project.AndroidWizardListener;
 import org.eclipse.andworx.project.ProjectField;
 import org.eclipse.andworx.project.ProjectProfile;
+import org.eclipse.andworx.topology.ModelFactory;
+import org.eclipse.andworx.topology.ModelPlugin;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -94,9 +97,10 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 	private static final String ANDWORX_GROUP_ID = "org.eclipse.andworx";
 
 	/** Performs background tasks and notifies this page of results  throught the AndroidWizardListener interface */
-	private final AndroidProjectOpener androidProjectOpener;
+	private final AndroidProjectReader androidProjectOpener;
 	/** Image resources */
 	private final PluginResourceProvider resourceProvider;
+	private final ProjectOpenHelper projectOpenHelper;
     /** Make icon usage subject to all images available */
     private boolean useImages;
     /** Optional working set */
@@ -140,7 +144,9 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 	public OpenAndroidPage(PluginResourceProvider resourceProvider) {
 		super("importAndroidProject");
 		this.resourceProvider = resourceProvider;
-		androidProjectOpener = new AndroidProjectOpener(this);
+		projectOpenHelper = new ProjectOpenHelper(this);
+		ModelFactory modelFactory = ModelPlugin.getModelFactory();
+		androidProjectOpener = modelFactory.getModelProjectReader(this);
         setTitle("Import Android Project");
         setDescription("Select a directory to search for an existing Android project");
         workingSetGroup = new WorkingSetGroup();
@@ -192,13 +198,13 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 	 * @param androidConfigurationBuilder Object cotaining results of parsing build.andworx config file
 	 */
 	@Override
-	public void onConfigParsed(AndroidConfigurationBuilder androidConfigurationBuilder) {
+	public void onConfigParsed(AndroidDigest androidDigest) {
     	setErrorMessage(null);
     	String groupId;
     	// Android config block contains compileSdkVersion
-    	AndroidConfig androidConfig = androidConfigurationBuilder.getAndroidConfig();
+    	AndroidConfig androidConfig = androidDigest.getAndroidConfig();
     	// Model contains group and artifact IDs
-    	Model model = androidConfigurationBuilder.getMavenModel();
+    	Model model = androidDigest.getMavenModel();
     	if ((model.getGroupId() != null) && !model.getGroupId().isEmpty())
     	    groupId =  model.getGroupId();
     	else { // This is not expected
@@ -263,7 +269,7 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 				Map<ProjectField,String> fieldMap = getFieldMap();
 				validate(fieldMap);
 				// Create a copy of the resolved project profile with above identity
-				ProjectProfile projectProfile = androidProjectOpener.getProjectProfile(fieldMap, resolvedProjectProfile);
+				ProjectProfile projectProfile = projectOpenHelper.getProjectProfile(fieldMap, resolvedProjectProfile);
 				// Create object used to pass new project data to the project creation code
 				NewProjectWizardState projectState = new NewProjectWizardState(NewProjectWizardState.Mode.ANY, projectProfile.getIdentity());
 	        	projectState.setCopyIntoWorkspace(copyCheckBox.getSelection());
@@ -274,13 +280,13 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 				importedProject.setLocation(location);
 				importedProject.setProjectProfile(projectProfile);
 				importedProject.setManifestData(manifestData);
-				importedProject.setAndroidConfigBuilder(androidConfigurationBuilder);
+				importedProject.setAndroidDigest(androidDigest);
 				// Create entries in the configuration dataabase for the imported project.
 				// This must be performed before the new project is created so the new project state can be configured.
 			    // The project will be located by name the first time, and then by ID from then onwards to allow for project name change.
 			    // Capture project ID so it can be written out to a new project ID file.
 			    // Run task to populate the configuration database in forked thread
-		        int projectId = androidProjectOpener.persistProjectConfigTask(projectName, projectProfile, androidConfigurationBuilder, getContainer());
+		        int projectId = projectOpenHelper.persistProjectConfigTask(projectName, projectProfile, androidDigest, getContainer());
 				if (projectId == VOID_PROJECT_ID)
 					return Boolean.FALSE;
 				// Now create the new project in the workspace
@@ -296,7 +302,7 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 		        	newFileLocation = location;
 		        }
 		        // Write project ID to disk
-		        androidProjectOpener.writeProjectIdFileTask(projectName, projectId, newFileLocation, getContainer());
+		        projectOpenHelper.writeProjectIdFileTask(projectName, projectId, newFileLocation, getContainer());
 		        return Boolean.TRUE;
 			}};
 	}
@@ -340,7 +346,16 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 			}});
 	}
 
-	@Override
+	/**
+	 * Handle no Android mainfest file found in source set
+	 */
+    @Override
+	public void onNoManifest(String manifestFile) {
+    	String message = "Project file \"" + manifestFile + "\" not found";
+    	onError(message);
+	}
+
+    @Override
 	public void createControl(Composite parent) {
     	createImages(parent.getShell());
         Composite container = new Composite(parent, SWT.NULL);
@@ -663,5 +678,6 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
     	if (okImage != null)
     		okImage.dispose();
     }
+
 
 }

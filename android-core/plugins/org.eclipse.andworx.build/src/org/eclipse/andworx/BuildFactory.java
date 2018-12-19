@@ -27,6 +27,7 @@ import org.eclipse.andworx.build.task.PackageApplicationTask;
 import org.eclipse.andworx.build.task.PreManifestMergeTask;
 import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.context.VariantContext;
+import org.eclipse.andworx.file.CacheManager;
 import org.eclipse.andworx.file.FileManager;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
@@ -81,6 +82,8 @@ public interface BuildFactory {
 	 */
 	FileManager getFileManager();
 
+	CacheManager getCacheManager();
+	
 	File getBundleFile(String filePath);
 	
 	BuildElementFactory getBuildElementFactory();
