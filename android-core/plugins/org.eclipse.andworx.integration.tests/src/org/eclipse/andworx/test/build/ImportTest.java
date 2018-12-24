@@ -214,8 +214,8 @@ public class ImportTest {
 			   }
 			   workspace.removeResourceChangeListener(changeListener);
 			   if (!projectCreated(project)) {
-					//fail("Timed out waiting for project creation");
-				   waitForShutdown();
+				   fail("Timed out waiting for project creation");
+				   //waitForShutdown();
 			   }
 		}
 		IPath projectPath = project.getFile("bin").getLocation();

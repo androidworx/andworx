@@ -91,10 +91,6 @@
       <import plugin="org.eclipse.jdt.junit4.runtime" version="1.1.650" match="greaterOrEqual"/>
       <import plugin="org.junit"/>
       <import plugin="org.eclipse.equinox.console"/>
-      <import plugin="com.gradleware.tooling.model" version="0.19.3" match="equivalent"/>
-      <import plugin="com.gradleware.tooling.client" version="0.19.3" match="equivalent"/>
-      <import plugin="com.gradleware.tooling.utils" version="0.19.3" match="equivalent"/>
-      <import plugin="org.eclipse.buildship.core" version="2.2.1" match="greaterOrEqual"/>
       <import feature="org.eclipse.jdt" version="3.15.0.v20180906-0745"/>
       <import feature="org.eclipse.jdt" version="3.15.0.v20180906-0745"/>
       <import feature="org.eclipse.jdt" version="3.15.0.v20180906-0745"/>
