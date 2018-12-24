@@ -85,7 +85,6 @@
       <import plugin="org.eclipse.equinox.p2.operations"/>
       <import plugin="org.eclipse.equinox.p2.touchpoint.natives"/>
       <import plugin="org.eclipse.equinox.p2.ui.sdk"/>
-      <import feature="org.eclipse.datatools.enablement.sqlite.feature" version="1.8.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

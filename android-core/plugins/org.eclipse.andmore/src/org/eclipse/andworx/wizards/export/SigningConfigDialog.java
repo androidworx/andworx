@@ -242,7 +242,7 @@ public class SigningConfigDialog extends Dialog {
 	    SigningConfigBean toValidate = new SigningConfigBean(signingConfig.getName());
     	if (validate(toValidate))  {
     		signingConfigContext.update(toValidate);
-    		securityController.persist();
+    		signingConfigContext.persist();
    		    return true;
     	}
     	return false;

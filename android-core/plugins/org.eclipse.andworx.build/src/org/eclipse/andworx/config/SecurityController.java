@@ -211,8 +211,4 @@ public class SecurityController {
         return keyStore;
     }
 
-	public void persist() {
-		// TODO Auto-generated method stub
-		
-	}
 }
