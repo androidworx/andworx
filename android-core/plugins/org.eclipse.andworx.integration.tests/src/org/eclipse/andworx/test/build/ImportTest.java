@@ -37,6 +37,9 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchListener;
+import org.eclipse.ui.PlatformUI;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -152,7 +155,7 @@ public class ImportTest {
 		swtbot.textWithLabel("Project Directory:").setText(application.getAbsolutePath());
 		swtbot.button("Refresh").click();
 	    // Import may take a long time if a lot of dependencies are to be downloaded
-	    int timeout = 150000;
+	    int timeout = 300000;
 	    // check every second, if the condition is fulfilled
 	    int interval = 2000;
 	    swtbot.waitUntil(new DefaultCondition() {
@@ -207,11 +210,13 @@ public class ImportTest {
 			   };
 			   workspace.addResourceChangeListener(changeListener);
 			   synchronized (changeListener) {
-				   changeListener.wait(20000);
+				   changeListener.wait(30000);
 			   }
 			   workspace.removeResourceChangeListener(changeListener);
-			   if (!projectCreated(project))
-					fail("Timed out waiting for project creation");
+			   if (!projectCreated(project)) {
+					//fail("Timed out waiting for project creation");
+				   waitForShutdown();
+			   }
 		}
 		IPath projectPath = project.getFile("bin").getLocation();
 		if (projectPath == null)
@@ -255,5 +260,26 @@ public class ImportTest {
 
 	private boolean projectCreated(IProject project) {
 		return project.exists() && (project.getFile("bin").getLocation() != null);
+	}
+
+	private void waitForShutdown() throws InterruptedException {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchListener listener = new IWorkbenchListener() {
+
+			@Override
+			public boolean preShutdown(IWorkbench workbench, boolean forced) {
+				synchronized(this) {
+					notifyAll();
+				}
+				return true;
+			}
+
+			@Override
+			public void postShutdown(IWorkbench workbench) {
+			}};
+		workbench.addWorkbenchListener(listener );
+		synchronized(listener) {
+			listener.wait();
+		}
 	}
 }
