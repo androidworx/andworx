@@ -77,6 +77,7 @@
     				<id>test</id>
     				<phase>test</phase>
     				<configuration>
+                      <skipTests>true</skipTests>
     				  <includes>
     					 <include>org/eclipse/andworx/export/ExportWizardTest.java</include>
     				  </includes>

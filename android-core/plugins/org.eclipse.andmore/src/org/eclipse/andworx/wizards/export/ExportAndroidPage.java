@@ -18,6 +18,8 @@ package org.eclipse.andworx.wizards.export;
 import static com.android.builder.core.BuilderConstants.RELEASE;
 import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +43,7 @@ import org.eclipse.andworx.config.ConfigContext;
 import org.eclipse.andworx.config.SecurityController;
 import org.eclipse.andworx.config.SecurityController.ErrorHandler;
 import org.eclipse.andworx.config.SigningConfigField;
+import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.control.ErrorControl;
 import org.eclipse.andworx.entity.SigningConfigBean;
 import org.eclipse.andworx.project.AndroidManifestData;
@@ -71,6 +74,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -81,6 +85,7 @@ import com.android.builder.model.SigningConfig;
 import com.android.sdkuilib.ui.GridDataBuilder;
 import com.android.sdkuilib.ui.GridLayoutBuilder;
 import com.google.common.base.Throwables;
+import com.google.common.io.Files;
 
 /**
  * Page to export a release APK from an Android project
@@ -304,7 +309,7 @@ public class ExportAndroidPage extends WizardPage {
 			ConfigContext<SigningConfigBean> signingConfigContext = securityController.configContext(profile, dialogSigningConfig);
 			SigningConfigDialog signingConfigDialog = new SigningConfigDialog(shellProvider, title, signingConfigContext, securityController);
 			if (signingConfigDialog.open() == IDialogConstants.OK_ID) {
-				if (!signingConfigDialog.equals(dialogSigningConfig)) {
+				if (!signingConfig.equals(dialogSigningConfig)) {
 					signingConfig = dialogSigningConfig;
 					// Prepare to update status display by disposing of the previous one
 					disposeErrorControl();
@@ -370,8 +375,36 @@ public class ExportAndroidPage extends WizardPage {
 				} catch (InterruptedException e) {
 					Thread.interrupted();
 				}
-		        if (success[0])
+		        if (success[0]) {
+			    	ProjectState projectState = projectRegistry.getProjectState(project);
+			    	VariantContext context = projectState.getContext();
+			    	File apkDirectory = context.getApkLocation();
+			    	FilenameFilter filter = new FilenameFilter() {
+						@Override
+						public boolean accept(File dir, String name) {
+							return name.endsWith(".apk");
+						}};
+					File[] apkHolder = apkDirectory.listFiles(filter );
+					// TODO - handle APK not found
+					if (apkHolder.length > 0) {
+						File apkFile = apkHolder[0];
+					    FileDialog dialog = new FileDialog(container.getParent().getShell(), SWT.SAVE);
+					    dialog
+					        .setFilterNames(new String[] { "APK Files", "All Files (*.*)" });
+					    dialog.setFilterExtensions(new String[] { "*.apk", "*.*" }); 
+					    dialog.setFilterPath(projectState.getAndworxProject().absoluteDir("").getAbsolutePath()); 
+					    dialog.setFileName(apkFile.getName());
+					    String fullPath = dialog.open();
+			            if (fullPath == null) {
+			            	return Boolean.FALSE;
+			            }
+			            File dest = new File(fullPath);
+			            if (!dest.getParentFile().exists())
+			            	dest.getParentFile().mkdirs();
+			            Files.copy(apkFile, dest);
+					}
 		        	setPageComplete(true);
+		        }
 		        return Boolean.valueOf(success[0]);
 			}
 		};

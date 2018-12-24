@@ -587,8 +587,8 @@ public class TestAndworxContext implements AndworxContext {
 	 * @see org.eclipse.andworx.build.AndworxContext#getPackageApplicationTask(org.eclipse.andworx.context.VariantContext)
 	 */
     @Override
-    public PackageApplicationTask getPackageApplicationTask(VariantContext variantScope) {
-    	return daggerFactory.getPackageApplicationTask(variantScope);
+    public PackageApplicationTask getPackageApplicationTask(AndworxProject andworxProject, VariantContext variantScope) {
+    	return daggerFactory.getPackageApplicationTask(andworxProject, variantScope);
     }
     
 	public void startPersistenceService() {

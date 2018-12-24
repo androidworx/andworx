@@ -118,7 +118,7 @@ public class AndworxPackager {
     @NonNull
     public AndworxPackager withSigning(@Nullable SigningConfig signingConfig) {
         try {
-            if (signingConfig != null && signingConfig.isSigningReady()) {
+            if ((signingConfig != null) && signingConfig.isSigningReady()) {
                 CertificateInfo certificateInfo = KeystoreHelper.getCertificateInfo(
                         signingConfig.getStoreType(),
                         Preconditions.checkNotNull(signingConfig.getStoreFile()),

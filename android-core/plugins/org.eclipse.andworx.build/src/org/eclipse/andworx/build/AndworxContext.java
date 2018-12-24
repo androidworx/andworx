@@ -210,6 +210,6 @@ public interface AndworxContext extends BaseContext {
 
 	D8Task getD8Task(Pipeline pipeline, VariantContext variantScope);
 
-	PackageApplicationTask getPackageApplicationTask(VariantContext variantScope);
+	PackageApplicationTask getPackageApplicationTask(AndworxProject andworxProject, VariantContext variantScope);
 
 }

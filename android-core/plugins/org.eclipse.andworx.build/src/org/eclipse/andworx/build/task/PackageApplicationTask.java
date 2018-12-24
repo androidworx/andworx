@@ -36,6 +36,7 @@ import org.eclipse.andworx.packaging.AndworxPackager;
 import org.eclipse.andworx.task.StandardBuildTask;
 import org.eclipse.andworx.task.TaskFactory;
 
+import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.OutputFile;
@@ -96,7 +97,7 @@ public class PackageApplicationTask extends StandardBuildTask {
 		resourceFile = resourceElement.getOutputFile();
         apkInfo = resourceElement.getApkInfo();
         // If we are not dealing with possible splits, we can generate in the final folder directly.
-        outputFile = getOutputFile(packagingScope.getVariantScope(), apkInfo);
+        outputFile = getOutputFile(packagingScope.getVariantScope(), packagingScope.getAndworxProject().getName());
         return outputFile;
 	}
 
@@ -220,12 +221,13 @@ public class PackageApplicationTask extends StandardBuildTask {
         }
     }
 
-	private File getOutputFile(VariantContext variantScope, ApkInfo apkInfo) {
+	private File getOutputFile(VariantContext variantScope, String projectName) {
         final boolean splitsArePossible = 
         		variantScope.getMultiOutputPolicy() == MultiOutputPolicy.SPLITS;
 		File outputDir = splitsArePossible ?
                variantScope.getFullApkPackagesOutputDirectory() :
                variantScope.getApkLocation();
-        return new File(outputDir, apkInfo.getOutputFileName());
+        //return new File(outputDir, apkInfo.getOutputFileName());
+        return new File(outputDir, projectName + "-" + variantScope.getVariantConfiguration().getBaseName() + "." + SdkConstants.EXT_ANDROID_PACKAGE);
 	}
 }

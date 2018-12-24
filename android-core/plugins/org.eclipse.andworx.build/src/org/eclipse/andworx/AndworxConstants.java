@@ -29,6 +29,8 @@ public class AndworxConstants {
 	public static final String FN_BUILD_ANDWORX = "build.andworx";
 	/** Project build file name */
 	public static final String FN_BUILD_GRADLE= "build.gradle";
+	/** Default group ID if none specified or project name clash to be avoided */
+	public static final String ANDWORX_GROUP_ID = "org.eclipse.andworx";
 	/** Log4j file location property key used by log4j.xml */
 	public static final String LOG4J_LOG_DIR_KEY = "log4j.log.dir";
 	/** "Plugin version" input parameter required when using {@link FileCache} */
@@ -45,4 +47,5 @@ public class AndworxConstants {
 	public static final int MERGED_RESOURCES_PROCESSOR_TIMEOUT = 20;
 	/** Launch configuration constant for application name */
 	public final static String ATTR_LAUNCH_APPLICATION = "org.eclipse.andworx.application";
+	public final static String DEFAULT_MAVEN_VERSION = "1.0.0-SNAPSHOT";
 }

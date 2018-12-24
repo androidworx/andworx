@@ -310,7 +310,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
 	@Override
 	public ProjectProfile getProjectProfile(String projectName, File projectLocation) {
-		return  daggerFactory.getProjectProfile(projectName, projectLocation, androidEnvironment);
+		return  daggerFactory.getProjectProfile(projectName, projectLocation, getAndroidEnvironment());
 	}
 
 	/* (non-Javadoc)
@@ -318,8 +318,8 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
 	@Override
 	public ProjectConfiguration getProjectConfig(String projectName, File projectLocation) {
-		ProjectProfile profile =  daggerFactory.getProjectProfile(projectName, projectLocation, androidEnvironment);
-		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, androidEnvironment);
+		ProjectProfile profile =  daggerFactory.getProjectProfile(projectName, projectLocation, getAndroidEnvironment());
+		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, getAndroidEnvironment());
 		return projectConfiguration;
 	}
 
@@ -328,7 +328,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
 	@Override
 	public ProjectConfiguration getProjectConfig(ProjectProfile profile, String projectName, File projectLocation) {
-		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, androidEnvironment);
+		ProjectConfiguration projectConfiguration = daggerFactory.getProjectConfig(profile, projectName, projectLocation, getAndroidEnvironment());
 		return projectConfiguration;
 	}
 
@@ -337,7 +337,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
 	@Override
 	public Map<String, VariantContext> createVariantContextMap(AndworxProject andworxProject, ProjectConfiguration projectConfig) {
-		return daggerFactory.createVariantContextMap(andworxProject, projectConfig, androidEnvironment);
+		return daggerFactory.createVariantContextMap(andworxProject, projectConfig, getAndroidEnvironment());
 	}
 
 	/* (non-Javadoc)
@@ -345,7 +345,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
     @Override
 	public AndroidConfigurationBuilder getAndroidConfigBuilder() {
-    	return daggerFactory.getAndroidConfigBuilder(androidEnvironment);
+    	return daggerFactory.getAndroidConfigBuilder(getAndroidEnvironment());
     }
 
     @Override
@@ -358,7 +358,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
     @Override
 	public RenderscriptCompileTask getRenderscriptCompileTask(VariantContext variantScope) {
-    	return daggerFactory.getRenderscriptCompileTask(variantScope, androidEnvironment);
+    	return daggerFactory.getRenderscriptCompileTask(variantScope, getAndroidEnvironment());
     }
 
     /* (non-Javadoc)
@@ -366,7 +366,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
     @Override
 	public AidlCompileTask getAidlCompileTask(VariantContext variantScope) {
-    	return daggerFactory.getAidlCompileTask(variantScope, androidEnvironment);
+    	return daggerFactory.getAidlCompileTask(variantScope, getAndroidEnvironment());
     }
     
     /* (non-Javadoc)
@@ -374,7 +374,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
     @Override
 	public AndroidBuilder getAndroidBuilder(VariantContext variantScope) {
-     	return daggerFactory.getAndroidBuilder(variantScope, androidEnvironment);
+     	return daggerFactory.getAndroidBuilder(variantScope, getAndroidEnvironment());
     }
 
     /* (non-Javadoc)
@@ -382,7 +382,7 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 */
     @Override
 	public BuildToolInfo getBuildToolInfo(String buildToolVersion) {
-    	AndroidSdkHandler androidSdkHandler = androidEnvironment.getAndroidSdkHandler();
+    	AndroidSdkHandler androidSdkHandler = getAndroidEnvironment().getAndroidSdkHandler();
     	BuildToolInfo buildToolInfo = androidSdkHandler.getBuildToolInfo(Revision.parseRevision(buildToolVersion), new FakeProgressIndicator());;
     	if (buildToolInfo == null)
     		return androidSdkHandler.getLatestBuildTool(new FakeProgressIndicator(), true);
@@ -593,8 +593,8 @@ public class AndworxFactory implements BuildFactory, AndworxContext {
 	 * @see org.eclipse.andworx.build.AndworxContext#getPackageApplicationTask(org.eclipse.andworx.context.VariantContext)
 	 */
     @Override
-    public PackageApplicationTask getPackageApplicationTask(VariantContext variantScope) {
-    	return daggerFactory.getPackageApplicationTask(variantScope);
+    public PackageApplicationTask getPackageApplicationTask(AndworxProject andworxProject, VariantContext variantScope) {
+    	return daggerFactory.getPackageApplicationTask(andworxProject, variantScope);
     }
     
 	void setAndroidEnvironment(AndroidEnvironment androidEnvironment) {

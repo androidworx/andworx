@@ -59,6 +59,7 @@ import org.eclipse.aether.metadata.DefaultMetadata;
 import org.eclipse.aether.metadata.Metadata;
 import org.eclipse.aether.metadata.Metadata.Nature;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.andworx.AndworxConstants;
 import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.repo.ProjectRepository;
 import org.eclipse.core.runtime.CoreException;
@@ -186,6 +187,8 @@ public class MavenServicesProvider implements MavenServices {
 	@Override
 	public void createMavenModel(File pomFile, Model model) {
         final SettableFuture<ProjectRepository> actualResult = SettableFuture.create();
+        if (model.getVersion() == null)
+        	model.setVersion(AndworxConstants.DEFAULT_MAVEN_VERSION);
 		Job job = new Job("Configure libraries") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {

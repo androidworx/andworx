@@ -24,7 +24,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.andworx.build.OutputType;
+import org.eclipse.andworx.config.SecurityController;
+import org.eclipse.andworx.config.SigningConfigField;
 import org.eclipse.andworx.core.VariantConfiguration;
+import org.eclipse.andworx.entity.SigningConfigBean;
 import org.eclipse.andworx.options.ProjectOptions;
 import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.transform.TransformAgent;
@@ -44,6 +47,7 @@ import com.android.utils.FileUtils;
  */
 public class PackagingScope {
 
+	private final AndworxProject andworxProject;
 	/** Android variant context provides project resources and information */
     private final VariantContext variantScope;
     /** Variant configuration */
@@ -55,12 +59,17 @@ public class PackagingScope {
      * Construct PackagingScope object
      * @param variantScope Android variant context provides project resources and information
      */
-	public PackagingScope(VariantContext variantScope) {
+	public PackagingScope(AndworxProject andworxProject, VariantContext variantScope) {
+		this.andworxProject = andworxProject;
 		this.variantScope = variantScope;
 		variantConfig = variantScope.getVariantConfiguration();
 		transformAgent = new TransformAgent();
 	}
 
+	public AndworxProject getAndworxProject() {
+		return andworxProject;
+	}
+	
     public VariantContext getVariantScope() {
 		return variantScope;
 	}
@@ -118,7 +127,15 @@ public class PackagingScope {
 
     @Nullable
     public SigningConfig getSigningConfig() {
-    	return variantConfig.getSigningConfig();
+    	SigningConfig signingConfig = variantConfig.getSigningConfig();
+    	if ((signingConfig instanceof SigningConfigBean) && !signingConfig.isSigningReady()) {
+    		SigningConfigBean signingConfigBean = (SigningConfigBean)signingConfig;
+    		SecurityController securityController = new SecurityController();
+    		if (securityController.validate(signingConfigBean, new SecurityController.ErrorHandler(){
+				    @Override public void onVailidationFail(SigningConfigField field, String message) {}}))
+    			signingConfigBean.setIsSigningReady(true);
+    	}
+    	return signingConfig;
     }
 
     @NonNull

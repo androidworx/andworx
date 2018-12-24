@@ -485,8 +485,8 @@ public class DaggerFactory implements BuildFactory {
     }
     
     @Override
-    public PackageApplicationTask getPackageApplicationTask(VariantContext variantScope) {
-    	PackageApplicationModule packageApplicationModule = new PackageApplicationModule(variantScope);
+    public PackageApplicationTask getPackageApplicationTask(AndworxProject andworxProject, VariantContext variantScope) {
+    	PackageApplicationModule packageApplicationModule = new PackageApplicationModule(andworxProject, variantScope);
       	return component.plus(packageApplicationModule).packageApplicationTask();
     }
 

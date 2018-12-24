@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.andworx.build.AndworxBuildPlugin;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.config.AndroidConfig;
 import org.eclipse.andworx.context.AndroidEnvironment;
@@ -71,7 +71,8 @@ public class CreateProfileFunction implements IJobFunction {
 		    	targetHashString = AndroidTargetHash.getPlatformHashString(hash);
 		    } // TODO - Report bad value
 			File pomXml = new File(tempDir, mavenServices.getPomFilename());
-	        mavenServices.createMavenModel(pomXml, androidDigest.getMavenModel());
+			Model mavenModel = androidDigest.getMavenModel();
+	        mavenServices.createMavenModel(pomXml, mavenModel);
 	        MavenProject mavenProject = mavenServices.readMavenProject(pomXml);
 			ProjectProfile projectProfile = 
 					new ProjectProfile( 
@@ -118,5 +119,4 @@ public class CreateProfileFunction implements IJobFunction {
         }
 		return Status.OK_STATUS;
 	}
-
 }

@@ -179,7 +179,7 @@
             <unit id="org.junit.vintage.engine" version="5.1.0.v20180327-1502"/>   
             -->
            <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository/"/>
-         </location>
+        </location>
         <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
             <unit id="org.eclipse.wb.core.feature.feature.group" version="1.9.1.201809061025"/>
             <unit id="org.eclipse.wb.core.java.feature.feature.group" version="1.9.1.201809061025"/>
@@ -195,20 +195,9 @@
 		 	<unit id="org.eclipse.m2e.logback.feature.feature.group" version="1.9.0.20180606-2036"/>
 		 	<repository location="http://download.eclipse.org/releases/photon"/>
 	 	</location>
-	 	<!--
 	 	<location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-		 	<unit id="au.com.cybersearch2.classy_data.feature.feature.group" version="2.3.0.201811142009"/>
-		 	<repository location="https://dl.bintray.com/cybersearch2/plugins/Classy_Data/V2.3.0/"/>
-	 	</location>
-	 	<location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-		 	<unit id="com.j256.ormlite.feature.feature.group" version="5.1.0.201811130800"/>
-		 	<repository location="file:/home/git-work/com.j256.ormlite/releng/ormlite.update/target/repository/"/>
-	 	</location>
-	 	-->
-	 	<location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-		 	<unit id="au.com.cybersearch2.classy_data.feature.feature.group" version="2.3.1.201812080021"/>
-		 	<unit id="au.com.cybersearch2.classy_data.feature.source.feature.group" version="2.3.1.201812080021"/>
-		 	<repository location="file:/home/git-work/au.com.cybersearch2.classy_data/releng/classy_data.update/target/repository/"/>
+		 	<unit id="au.com.cybersearch2.classy_data.feature.feature.group" version="2.3.1.201812190542"/>
+		 	<repository location="https://dl.bintray.com/cybersearch2/plugins/Classy_Data/V2.3.1/"/>
 	 	</location>
  	</locations>
 </target>

@@ -16,6 +16,13 @@
 package org.eclipse.andworx.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Enumeration;
 
 import org.eclipse.andworx.entity.SigningConfigBean;
 import org.eclipse.andworx.project.ProjectProfile;
@@ -24,10 +31,19 @@ import org.eclipse.andworx.project.ProjectProfile;
  * Performs control functions for security configuration: validate and persist
  */
 public class SecurityController {
+    private static final String ENCRYPTION_ERROR = "Encryption error";
+    
 	public static interface ErrorHandler {
 		void onVailidationFail(SigningConfigField field, String message);
 	}
 	
+    public static final String[] KEYSTORE_TYPES =
+    {
+            "JKS",
+            "JCEKS",
+            "PKCS12"
+    };
+
 	public ConfigContext<SigningConfigBean> configContext(ProjectProfile projectProfile, SigningConfigBean signingConfigBean) {
 		return new ConfigContext<SigningConfigBean>(projectProfile, signingConfigBean) {
 
@@ -55,8 +71,64 @@ public class SecurityController {
 				validateKeyAlias(bean.getKeyAlias(), errorHandler) &&
 				validateKeyPassword(bean.getKeyPassword(), errorHandler) &&
 				validateStoreType(bean.getStoreType(), errorHandler) &&
+				validateKey(bean, errorHandler) &&
 				validateV1SigningEnabled(bean.isV1SigningEnabled(), errorHandler) &&
 				validateV2SigningEnabled(bean.isV2SigningEnabled(), errorHandler);
+	}
+
+	private boolean validateKey(SigningConfigBean bean, ErrorHandler errorHandler) {
+        char[] keypass = bean.getKeyPassword().toCharArray();
+        String storeFile = bean.getStoreFileValue();
+        try
+        {
+            KeyStore keyStore = getKeyStore(storeFile, bean.getStoreType(), keypass);
+            boolean isAliasValid = false;
+            Enumeration<String> aliases = keyStore.aliases(); 
+            while (aliases.hasMoreElements())
+            {
+                String alias = aliases.nextElement();
+                if (alias.equals(bean.getKeyAlias())) {
+	                if (keyStore.isKeyEntry(alias)) {
+	                	isAliasValid = keyStore.getCertificateChain(alias).length > 0;
+	                }
+	                break;
+                }
+            }
+            if (!isAliasValid) {
+    			errorHandler.onVailidationFail(
+    					SigningConfigField.keyAlias, "Key alias not found or missing certificate");
+    			return false;
+            }
+
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+			errorHandler.onVailidationFail(
+					SigningConfigField.storeType, ENCRYPTION_ERROR + ": " + e.getMessage());
+			return false;
+        }
+        catch (KeyStoreException e)
+        {
+			errorHandler.onVailidationFail(
+					SigningConfigField.storeFile, 
+					String.format("Security error in \"%s\": %s", storeFile, e.getMessage()));
+			return false;
+        }
+        catch (CertificateException e)
+        {
+			errorHandler.onVailidationFail(
+					SigningConfigField.storeFile, 
+					String.format("Certificate error in \"%s\": ", storeFile, e.getMessage()));
+			return false;
+         }
+        catch (IOException e)
+        {
+			errorHandler.onVailidationFail(
+					SigningConfigField.storePassword, // Password incorrect most likely cause
+					"Error opening keystore - check password is correct");
+			return false;
+        }
+		return true;
 	}
 
 	private boolean validateV2SigningEnabled(boolean v2SigningEnabled, ErrorHandler errorHandler) {
@@ -103,5 +175,44 @@ public class SecurityController {
 					"Please enter keystore file");
 		}
 		return isValid;
+	}
+
+    /**
+     * Returns loaded keystore
+     * @param keyStoreFile The file path 
+     * @param keyStoreType The keystore type
+     * @param keypass The keystore password 
+     * @return KeyStore object
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     */
+    public KeyStore getKeyStore(String keyStoreFile, String keyStoreType, char[] keypass) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException
+    {
+        KeyStore keyStore =  KeyStore.getInstance(keyStoreType);
+        FileInputStream fileStream = null;
+        try
+        {
+             fileStream = new FileInputStream(keyStoreFile);
+             keyStore.load(fileStream, keypass);
+        }
+        finally
+        {
+            if (fileStream != null)
+                try
+                {   // Close quietly 
+                    fileStream.close();
+                }
+                catch (IOException e)
+                {
+                }
+        }
+        return keyStore;
+    }
+
+	public void persist() {
+		// TODO Auto-generated method stub
+		
 	}
 }

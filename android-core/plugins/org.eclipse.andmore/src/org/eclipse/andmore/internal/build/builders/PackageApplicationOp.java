@@ -84,8 +84,8 @@ public class PackageApplicationOp implements BuildOp<PostCompilerContext> {
         String taskName = variantScope.getTaskName("package", EXT_ANDROID_PACKAGE);
         File incrementalFolder = new File(variantScope.getIncrementalDir(taskName), "tmp");
         AndworxContext objectFactory = AndworxFactory.instance(); 
-        PackageApplicationTask packageApkTask = objectFactory.getPackageApplicationTask(variantScope);
         ProjectState projectState = objectFactory.getProjectState(context.getProject());
+        PackageApplicationTask packageApkTask = objectFactory.getPackageApplicationTask(projectState.getAndworxProject(), variantScope);
         outputFile = packageApkTask.configure(
     		    resourceFilesInputType,
                 manifests,

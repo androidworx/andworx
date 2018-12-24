@@ -46,6 +46,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.IJobFunction;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -182,6 +183,10 @@ public class ExportWizardTest {
     IJavaModel testJavaModel;
     @Mock
     ProjectProfile testProfile;
+    @Mock
+    IEclipseContext testEclipseContext;
+    @Mock
+    IEventBroker testEventBroker;
 
     AndroidManifestData testManifestData = new AndroidManifestData();
     SigningConfig signingConfig;
@@ -196,8 +201,8 @@ public class ExportWizardTest {
 
 	@BeforeClass
 	public static void initBot() throws InterruptedException {
-		Display display = Display.getDefault();
-    	shell = new Shell(display);
+		//Display display = Display.getDefault();
+    	shell = null; //new Shell(display);
     	//if (DO_SWT_TEST)
     	//	swtbot = new SWTWorkbenchBot();
 	}
@@ -271,6 +276,10 @@ public class ExportWizardTest {
     	testManifestData.debuggable = Boolean.FALSE;
     	when(testVariantConfig.getSigningConfig()).thenReturn(signingConfig);
     	when(testVariantContext.getVariantConfiguration()).thenReturn(testVariantConfig);
+    	when(testAndworxContext.getPluginResourceRegistry()).thenReturn(resourceRegistry);
+    	when(testAndworxContext.getJavaProjectHelper()).thenReturn(javaProjectHelper);
+    	when(testEclipseContext.get(IEventBroker.class.getName())).thenReturn(testEventBroker);
+    	when(testAndworxContext.getEclipseContext()).thenReturn(testEclipseContext);
     	when(testAndworxProject.parseManifest()).thenReturn(testManifestData);
     	when(testAndworxProject.getContext(RELEASE)).thenReturn(testVariantContext);
     	when(testJavaProject.getElementName()).thenReturn("Permissions");

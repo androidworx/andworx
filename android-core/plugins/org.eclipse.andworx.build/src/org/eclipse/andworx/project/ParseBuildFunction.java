@@ -42,6 +42,7 @@ public class ParseBuildFunction implements IJobFunction {
 	protected final AndroidWizardListener androidWizardListener;
 	protected final AndworxBuildParser andworxBuildParser;
 	protected File manifestFile;
+	protected ManifestData manifestData;
 
 	public ParseBuildFunction(
 			File buildFile,
@@ -56,6 +57,10 @@ public class ParseBuildFunction implements IJobFunction {
 		return manifestFile;
 	}
 
+	public ManifestData getManifestData() {
+		return manifestData;
+	}
+
 	@Override
 	public IStatus run(IProgressMonitor monitor) {
         try { 
@@ -63,7 +68,7 @@ public class ParseBuildFunction implements IJobFunction {
 			manifestFile = new File(buildFile.getParentFile(), andworxBuildParser.getAndroidDigest().getSourceFolder(CodeSource.manifest));
 			if (manifestFile.exists()) {
 	        	Path path = Paths.get(manifestFile.toURI());
-	            ManifestData manifestData = AndroidManifestParser.parse(path);
+	            manifestData = AndroidManifestParser.parse(path);
 	            androidWizardListener.onManifestParsed(manifestData);
 			} else {
 				androidWizardListener.onNoManifest(manifestFile.getAbsolutePath());

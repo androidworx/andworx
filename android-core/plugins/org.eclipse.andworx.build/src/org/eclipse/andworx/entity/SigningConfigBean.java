@@ -192,7 +192,7 @@ public class SigningConfigBean implements SigningConfig {
 
 	@Override
 	public boolean isSigningReady() {
-		return false;
+		return isSigningReady;
 	}
 
 	@Override

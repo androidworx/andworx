@@ -23,10 +23,13 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.maven.model.Model;
+import org.eclipse.andmore.base.AndworxJob;
 import org.eclipse.andworx.AndworxConstants;
 import org.eclipse.andworx.build.AndroidProjectReader;
 import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.exception.AndworxException;
 import org.eclipse.andworx.model.RepositoryUrl;
 import org.eclipse.andworx.polyglot.AndworxBuildParser;
 import org.eclipse.andworx.project.AndroidDigest;
@@ -35,6 +38,13 @@ import org.eclipse.andworx.project.AndroidWizardListener;
 import org.eclipse.andworx.project.ProjectProfile;
 import org.eclipse.andworx.record.ModelType;
 import org.eclipse.andworx.topology.entity.ModelNode.TypedElement;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.IJobFunction;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 
 import com.android.ide.common.xml.ManifestData;
 
@@ -42,11 +52,13 @@ import com.android.ide.common.xml.ManifestData;
  * Creates a project from build files 
  */
 public class ModelProjectReader implements AndroidProjectReader {
+	
+	private static String FUNCTION_NAME = "Import project";
 
 	/**
 	 * AndroidWizardListener implementation layered between Import Wizard and  Bbuild bundle
 	 */
-	private class ModelOpenListener implements AndroidWizardListener {
+	private static class ModelOpenListener implements AndroidWizardListener {
 
 		/** Import Wizard listener. Events are filtered in a multi-module scenario as only the project being imported is to be notified, excluding errors. */
 		private final AndroidWizardListener chainListener;
@@ -60,8 +72,10 @@ public class ModelProjectReader implements AndroidProjectReader {
 		private ProjectProfile projectProfile;
 		/** Flag set true if all dependencies are resolved */
 		private boolean isProfileResolved;
+		private boolean isImportProject;
 		/** Manifest file path in text format passed in manifest error event */
-		protected String manifestFile;
+		private String manifestFile;
+		private volatile boolean isSignalled;
 		
 
 		/**
@@ -77,6 +91,10 @@ public class ModelProjectReader implements AndroidProjectReader {
 			return errorFlagged;
 		}
 
+		public void setImportProject(boolean isImportProject) {
+			this.isImportProject = isImportProject;
+		}
+		
 		public ManifestData getManifestData() {
 			return manifestData;
 		}
@@ -94,7 +112,7 @@ public class ModelProjectReader implements AndroidProjectReader {
 		}
 
 		public String getManifestFile() {
-			return manifestFile;
+			return manifestFile != null ? manifestFile : "?";
 		}
 
 		public void clear() {
@@ -103,36 +121,81 @@ public class ModelProjectReader implements AndroidProjectReader {
 			isProfileResolved = false;
 			manifestFile = null;
 		}
+
+		boolean isSignalled() {
+			return isSignalled;
+		}
 		
 		@Override
 		public void onManifestParsed(ManifestData manifestData) {
 			this.manifestData = manifestData;
+			if (isImportProject)
+				chainListener.onManifestParsed(manifestData);
 		}
 
 		@Override
 		public void onConfigParsed(AndroidDigest androidDigest) {
 			this.androidDigest = androidDigest;
+			if (isImportProject)
+				chainListener.onConfigParsed(androidDigest);
 		}
 
 		@Override
 		public void onProfileResolved(ProjectProfile projectProfile, boolean isResolved, String message) {
 			this.projectProfile = projectProfile;
 			isProfileResolved = isResolved;
+			if (isImportProject)
+				chainListener.onProfileResolved(projectProfile, isResolved, message);
+			signal();
 		}
 
 		@Override
 		public void onError(String message) {
 			errorFlagged = true;
 			chainListener.onError(message);
+			signal();
 		}
 
 		@Override
 		public void onNoManifest(String manifestFile) {
 			this.manifestFile = manifestFile;
+			if (isImportProject) {
+				chainListener.onNoManifest(manifestFile);
+				errorFlagged = true;
+			}
+			signal();
 		}
 
-		
+		private void signal() {
+			synchronized(this) {
+				notifyAll();
+				isSignalled = true;
+			}
+		}
 	}
+	
+	private class ModelOpenTask implements IJobFunction {
+
+		private final File buildFile;
+		
+		public ModelOpenTask(File buildFile) {
+			this.buildFile = buildFile;
+		}
+
+		@Override
+		public IStatus run(IProgressMonitor monitor) {
+	        try { 
+	        	doOpenTask(buildFile);
+	        	return Status.OK_STATUS;
+	        } catch (Exception e) {
+	        	String message = "Error " + FUNCTION_NAME + ": " + e.getMessage();
+	        	androidWizardListener.onError(message);
+	        	AndworxFactory.getAndworxContext().getBuildConsole().logAndPrintError(e, FUNCTION_NAME, message);
+	        	return Status.CANCEL_STATUS;
+	        }		
+		}
+	}
+	
 	/** Maintains project associations in multi-module projects */
 	private final WorkspaceModeller workspaceModeller;
 	/** Interface to project import wizard page */
@@ -164,6 +227,20 @@ public class ModelProjectReader implements AndroidProjectReader {
 	 */
 	@Override
 	public void runOpenTasks(File buildFile) {
+		ModelOpenTask modelOpenTask = new ModelOpenTask(buildFile);
+		AndworxJob openTask = new AndworxJob(FUNCTION_NAME + " at " + buildFile.getParentFile().getAbsolutePath(), modelOpenTask);
+        final IJobChangeListener parserListener = new JobChangeAdapter(){
+			@Override
+			public void done(IJobChangeEvent event) {
+				if (event.getResult() != Status.OK_STATUS) {
+					throw new AndworxException("Task " + openTask.getName() + " terminated with an error.");
+				}
+			}};
+		openTask.addJobChangeListener(parserListener);
+		openTask.schedule();
+	}
+
+	private void doOpenTask(File buildFile) {
 		parserContext.reset();
 		// Deque to walk directories both forward and backward
         Deque<File> directoryDeque = new ArrayDeque<>();
@@ -176,11 +253,20 @@ public class ModelProjectReader implements AndroidProjectReader {
         try {
 	        while (directoryIterator.hasNext()) {
 	        	File segment = directoryIterator.next();
+	        	boolean isImportProject = (directoryDeque.size() == level + 1);
 	        	if (level == 0)
 	        		parserContext.setRootProject(segment);
 	        	ModelOpenListener modelOpenListener = new ModelOpenListener(androidWizardListener);
+	        	modelOpenListener.setImportProject(isImportProject); 
 	        	// If WorkspaceModeller does not have a module for this segment, then create one
-	        	if (!workspaceModeller.hasModuleForLocation(segment)) {
+	        	if (isImportProject || !workspaceModeller.hasModuleForLocation(segment)) {
+	        		if (isImportProject) {
+	        			// Apply model elements collected during directory walk
+	        			for (TypedElement element: elements) {
+	        				if (element.modelType == ModelType.allProjects)
+	        					parser.getAndroidDigest().addRepositoryUrl((RepositoryUrl)element.nodeElement);
+	        			}
+        			}
 	        		modelBuilder.reset();
 	        		// Read build.andworx, if it exists, in preference to build.gradle.
 	        		// This allows for customization without affecting Gradle build
@@ -194,19 +280,9 @@ public class ModelProjectReader implements AndroidProjectReader {
 	        			if (!parse(gradleBuildFile, parserContext, modelOpenListener))
 							return;
 	        		}
-	        		if (directoryIterator.hasNext()) {
+	        		if (!isImportProject) {
 	        			elements.addAll(modelBuilder.getElements());
-	        		} else {
-	        			// Walked back to project being opened
-	        			if (modelOpenListener.getManifestData() == null) 
-	        				// No manifest is fatal for segment being opened by the user
-	        				androidWizardListener.onNoManifest(modelOpenListener.getManifestFile());
-	        			// Apply model elements collected during directory walk
-	        			for (TypedElement element: elements) {
-	        				if (element.modelType == ModelType.allProjects)
-	        					parser.getAndroidDigest().addRepositoryUrl((RepositoryUrl)element.nodeElement);
-	        			}
-	        		}
+	        		}  	        		
 	        		workspaceModeller.createModule(segment, level, modelBuilder);
 	        	} else {
 	        		// Collect model elements previously recorded for this segment
@@ -236,6 +312,13 @@ public class ModelProjectReader implements AndroidProjectReader {
 		};
 		modelOpenListener.clear();
 		androidProjectOpener.runOpenTasks(andworxBuildFile);
+		if (!modelOpenListener.isSignalled())
+			synchronized(modelOpenListener) {
+				try {
+						modelOpenListener.wait();
+				} catch (InterruptedException e) {
+				}
+			}
 		return !modelOpenListener.isErrorFlagged();
 	}
 

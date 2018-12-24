@@ -36,6 +36,7 @@ import org.eclipse.andworx.jpa.PersistenceService;
 import org.eclipse.andworx.maven.MavenServices;
 import org.eclipse.andworx.process.java.JavaQueuedProcessor;
 import org.eclipse.andworx.project.AndroidConfiguration;
+import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.project.ProjectProfile;
 import org.eclipse.andworx.registry.ProjectRegistry;
 import org.eclipse.andworx.task.ManifestMergeHandler;
@@ -110,7 +111,7 @@ public interface BuildFactory {
     
     D8Task getD8Task(Pipeline pipeline, VariantContext variantScope);
   
-    PackageApplicationTask getPackageApplicationTask(VariantContext variantScope);
+    PackageApplicationTask getPackageApplicationTask(AndworxProject andworxProject, VariantContext variantScope);
     
 	/**
 	 * Executes given persistence work and returns object to notify result 

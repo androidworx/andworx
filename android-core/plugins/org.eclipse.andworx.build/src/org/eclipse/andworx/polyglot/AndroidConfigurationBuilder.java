@@ -218,7 +218,9 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 		androidBean.setDefaultConfig(new ProductFlavorImpl(defaultConfig.atom, defaultConfig.base));
 		mavenModel = new Model();
 		// Model version is mandatory
-		mavenModel.setVersion("4.0.0");
+		//mavenModel.setModelVersion("4.0.0");
+		// Set default artifact ID from name of directory project is located 
+		mavenModel.setArtifactId(projectLocation.getName());
 	}
 	
 	/**
@@ -244,6 +246,7 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			repository.setUrl(repositoryUrl.getUrlValue());
 			exportModel.addRepository(repository);
 		}
+		mavenModel = exportModel;
 		return exportModel;
 	}
 
@@ -286,10 +289,17 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			bean.setAndroidBean(androidBean);
 			entityList.add(bean);
 		}
+		boolean hasMainSourceSet = false;
 		for (SourceSetComposite sourceSetComposite: sourceSetMap.values()) {
 			AndroidSourceBean androidSourceBean = new AndroidSourceBean(projectBean, sourceSetComposite.getName());
+			if (!hasMainSourceSet)
+				hasMainSourceSet = SourceSet.MAIN_SOURCE_SET_NAME.equals(androidSourceBean.getName());
 			entityList.add(androidSourceBean);
 			sourceSetComposite.addAll(androidSourceBean, entityList);
+		}
+		if (!hasMainSourceSet) {
+			AndroidSourceBean androidSourceBean = new AndroidSourceBean(projectBean, SourceSet.MAIN_SOURCE_SET_NAME);
+			entityList.add(androidSourceBean);
 		}
 		for (ProductFlavorComposite composite: productFlavorMap.values()) {
 			composite.addAll(projectBean, entityList);
@@ -411,7 +421,9 @@ public class AndroidConfigurationBuilder implements AndworxBuildReceiver {
 			}
 			key = key.substring(pos + 1);
 			switch(key) {
-	        case "storeFile": bean.setStoreFile(value); break;
+	        case "storeFile": 
+	        case "storeFile/file":
+	        	bean.setStoreFile(value); break;
 	        case "storePassword": bean.setStorePassword(value); break;
 	        case "keyAlias": bean.setKeyAlias(value); break;
 	        case "keyPassword": bean.setKeyPassword(value); break;

@@ -5,7 +5,7 @@
 
 	<artifactId>org.eclipse.andworx.model</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	<name>adt</name>
+	<name>model</name>
 
 	<parent>
 		<relativePath>../../pom.xml</relativePath>
@@ -17,6 +17,28 @@
 		<os-jvm-flags>-Xms256m -Xmx1024m</os-jvm-flags>
 	</properties>
     <dependencies>
+ 	  <!-- Dagger archives are requrired for configuring annotation processing -->
+      <dependency>
+        <groupId>com.google.dagger</groupId>
+        <artifactId>dagger</artifactId>
+        <version>${dagger.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.dagger</groupId>
+        <artifactId>dagger-compiler</artifactId>
+        <version>${dagger.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
+       </dependency>
+       <dependency>
+        <groupId>com.google.dagger</groupId>
+        <artifactId>dagger-producers</artifactId>
+        <version>${dagger.version}</version>
+       </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -56,6 +78,39 @@
           </testResource>
         </testResources>
 		<plugins>
+             <plugin>
+                <!-- To apply annotation processing with Dagger2, use compiler plugin 
+                     with tycho as the adapter to the JDT compiler. -->
+	            <groupId>org.eclipse.tycho</groupId>
+	            <artifactId>tycho-compiler-plugin</artifactId>
+				<version>${tycho-version}</version>
+                <configuration>
+                    <annotationProcessors>
+                        <annotationProcessor>dagger.internal.codegen.ComponentProcessor</annotationProcessor>
+                    </annotationProcessors>
+                    <extraClasspathElements>
+                      <dependency>
+                        <groupId>com.google.dagger</groupId>
+                        <artifactId>dagger-compiler</artifactId>
+                        <version>${dagger.version}</version>
+                      </dependency>
+                    </extraClasspathElements>
+                    <source>${project.java.version}</source>
+                    <target>${project.java.version}</target>
+                    <showWarnings>false</showWarnings>
+	                <compilerArgument>-Xlint:none</compilerArgument>  
+	                <useProjectSettings>false</useProjectSettings>
+                </configuration>
+               <dependencies>
+                 <!-- This dependency provides the implementation of compiler "jdt": -->
+                 <dependency>
+                   <groupId>org.eclipse.tycho</groupId>
+                   <artifactId>tycho-compiler-jdt</artifactId>
+                   <!-- Version 1.1.0 has a dependency problem -->
+                   <version>1.2.0</version>
+                 </dependency>
+               </dependencies>
+            </plugin>			
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-source-plugin</artifactId>

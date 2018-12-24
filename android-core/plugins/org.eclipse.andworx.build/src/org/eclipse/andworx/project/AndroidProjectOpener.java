@@ -22,6 +22,7 @@ import org.eclipse.andworx.build.AndroidProjectReader;
 import org.eclipse.andworx.build.AndworxContext;
 import org.eclipse.andworx.build.AndworxFactory;
 import org.eclipse.andworx.polyglot.AndworxBuildParser;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -42,6 +43,7 @@ public abstract class AndroidProjectOpener implements AndroidProjectReader {
 	private final AndroidWizardListener androidWizardListener;
 	/** Object factory */
 	private final AndworxContext objectFactory;
+	private volatile IStatus status;
 
 	/**
 	 * Construct AndroidProjectOpener object
@@ -50,13 +52,14 @@ public abstract class AndroidProjectOpener implements AndroidProjectReader {
 	public AndroidProjectOpener(AndroidWizardListener androidWizardListener) {
 		this.androidWizardListener = androidWizardListener;
 		objectFactory = AndworxFactory.getAndworxContext();
+		status = Status.CANCEL_STATUS;
 	}
 
 	protected void parse(File buildFile, AndworxBuildParser parser) {
 		AndroidDigest androidDigest = parser.getAndroidDigest();
-		ParseBuildFunction parseFuntion = 
+		ParseBuildFunction parseFunction = 
 				new ParseBuildFunction(buildFile, androidWizardListener, parser);
-		AndworxJob manifestJob = new AndworxJob(ParseBuildFunction.FUNCTION_NAME, parseFuntion);
+		AndworxJob manifestJob = new AndworxJob(ParseBuildFunction.FUNCTION_NAME, parseFunction);
 		CreateProfileFunction createProfileFunction = 
 				new CreateProfileFunction(
 						androidDigest, 
@@ -64,18 +67,16 @@ public abstract class AndroidProjectOpener implements AndroidProjectReader {
 						objectFactory.getMavenServices(), 
 						objectFactory.getAndroidEnvironment());
 		AndworxJob profileJob = new AndworxJob(CreateProfileFunction.FUNCTION_NAME, createProfileFunction);
-		final AndroidProjectOpener self = this;
 		// Add job liseners
-        final IJobChangeListener manifestListener = new JobChangeAdapter(){
+        final IJobChangeListener parserListener = new JobChangeAdapter(){
 			@Override
 			public void done(IJobChangeEvent event) {
-				synchronized (self) {
-					if (event.getResult() == Status.OK_STATUS)
-						androidWizardListener.onConfigParsed(androidDigest);
-						profileJob.schedule();
+				if (event.getResult() == Status.OK_STATUS) {
+					androidWizardListener.onConfigParsed(androidDigest);
+					profileJob.schedule();
 				}
 			}};
-		manifestJob.addJobChangeListener(manifestListener);
+		manifestJob.addJobChangeListener(parserListener);
 		manifestJob.schedule();
 	}
 

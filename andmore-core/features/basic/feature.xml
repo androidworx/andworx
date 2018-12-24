@@ -34,7 +34,7 @@
 
    <includes
          id="au.com.cybersearch2.classy_data.feature"
-         version="2.3.0.201811142009"
+         version="2.3.1.201812190542"
          name="Classy Data"
          search-location="self"/>
 

@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class ImportTest {
-	private static final String TEST_PROJECT_ZIP = "resources/Permissions.zip";
+	private static final String TEST_PROJECT_ZIP = "resources/permissions2.zip";
 	private static final String PROJECT_NAME = "com.example.android.system.runtimepermissions.Application";
 	private static final String APK_NAME = "com.example.android.system.runtimepermissions.Application.apk";
 	
@@ -148,7 +148,7 @@ public class ImportTest {
 		swtbot.tree().getTreeItem("Android").getNode("Import Android project").select();
 		swtbot.button("Next >").click();
 		swtbot.checkBox("Copy project into workspace").click();
-		File application = new File(projectLocation, "Application");
+		File application = new File(projectLocation, "permissions/Application");
 		swtbot.textWithLabel("Project Directory:").setText(application.getAbsolutePath());
 		swtbot.button("Refresh").click();
 	    // Import may take a long time if a lot of dependencies are to be downloaded

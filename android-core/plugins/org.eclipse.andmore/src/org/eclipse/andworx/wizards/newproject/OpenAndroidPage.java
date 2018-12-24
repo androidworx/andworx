@@ -93,9 +93,6 @@ import com.google.common.io.Files;
  */
 public class OpenAndroidPage extends WizardPage implements SelectionListener, KeyListener, TraverseListener, AndroidWizardListener {
 
-	/** Default group ID if none specified or project name clash to be avoided */
-	private static final String ANDWORX_GROUP_ID = "org.eclipse.andworx";
-
 	/** Performs background tasks and notifies this page of results  throught the AndroidWizardListener interface */
 	private final AndroidProjectReader androidProjectOpener;
 	/** Image resources */
@@ -199,7 +196,12 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 	 */
 	@Override
 	public void onConfigParsed(AndroidDigest androidDigest) {
-    	setErrorMessage(null);
+		Display.getDefault().asyncExec(new Runnable() {
+
+			@Override
+			public void run() {
+   	            setErrorMessage(null);
+			}});
     	String groupId;
     	// Android config block contains compileSdkVersion
     	AndroidConfig androidConfig = androidDigest.getAndroidConfig();
@@ -210,7 +212,7 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
     	else { // This is not expected
     		groupId =  manifestData.getPackage();
     		if ((groupId == null) || groupId.isEmpty())
-    			groupId = ANDWORX_GROUP_ID;
+    			groupId = AndworxConstants.ANDWORX_GROUP_ID;
     		model.setGroupId(groupId);
     	}
     	// Find first available source of a project name
@@ -238,10 +240,10 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
 	    	String trialName = groupId + "." + projectName;
 	    	int index = 1;
 	    	if (existingProjectNames.contains(trialName)) {
-	    		trialName = ANDWORX_GROUP_ID + "." + projectName;
+	    		trialName = AndworxConstants.ANDWORX_GROUP_ID + "." + projectName;
 	    		if (existingProjectNames.contains(trialName))
 		    		do {
-		    			trialName = ANDWORX_GROUP_ID + "." + projectName + ".v" + Integer.toString(++index);
+		    			trialName = AndworxConstants.ANDWORX_GROUP_ID + "." + projectName + ".v" + Integer.toString(++index);
 		    		} while (existingProjectNames.contains(trialName));
 	    	}
 	    	projectName = trialName;
@@ -584,12 +586,14 @@ public class OpenAndroidPage extends WizardPage implements SelectionListener, Ke
      * @param folder
      */
     private void onDirectorySet(File folder) {
-    	File andworxBuildFile = new File(folder, AndworxConstants.FN_BUILD_ANDWORX);
-    	if (!andworxBuildFile.exists())
-    		setErrorMessage("Project file \"" + AndworxConstants.FN_BUILD_ANDWORX + "\" not found");
+    	File buildFile = new File(folder, AndworxConstants.FN_BUILD_GRADLE);
+    	if (!buildFile.exists())
+   	        buildFile = new File(folder, AndworxConstants.FN_BUILD_ANDWORX);
+    	if (!buildFile.exists())
+    		setErrorMessage("No project build file found in selected directory");
     	else {
     		location = folder;
-    		androidProjectOpener.runOpenTasks(andworxBuildFile);
+    		androidProjectOpener.runOpenTasks(buildFile);
         	setErrorMessage(null);
     	}
 	}

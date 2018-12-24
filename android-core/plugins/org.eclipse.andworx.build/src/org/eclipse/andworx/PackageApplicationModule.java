@@ -20,6 +20,7 @@ import org.eclipse.andworx.context.PackagingScope;
 import org.eclipse.andworx.context.VariantContext;
 import org.eclipse.andworx.helper.BuildElementFactory;
 import org.eclipse.andworx.helper.BuildHelper;
+import org.eclipse.andworx.project.AndworxProject;
 import org.eclipse.andworx.task.TaskFactory;
 
 import dagger.Module;
@@ -28,15 +29,17 @@ import dagger.Provides;
 @Module
 public class PackageApplicationModule {
 
+	private final AndworxProject andworxProject;
 	private final VariantContext variantScope;
 
-	public PackageApplicationModule(VariantContext variantScope) {
+	public PackageApplicationModule(AndworxProject andworxProject, VariantContext variantScope) {
+		this.andworxProject = andworxProject;
 		this.variantScope = variantScope;
 	}
 	
 	@Provides 
 	PackageApplicationTask providePackageApplicationTask(BuildHelper buildHelper, BuildElementFactory buildElementFactory, TaskFactory taskFactory) {
-        PackagingScope packagingScope = new PackagingScope(variantScope);
+        PackagingScope packagingScope = new PackagingScope(andworxProject, variantScope);
 		return new PackageApplicationTask(packagingScope, buildHelper, buildElementFactory, taskFactory);
 	}
 }

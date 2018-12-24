@@ -389,8 +389,9 @@ public class AndroidConfiguration {
 				mainSourceProvider = sourceSet;	
 			sourceProviders.add(sourceSet);
 		}
-		if (mainSourceProvider == null)
-			mainSourceProvider = new DefaultAndroidSourceSet(new AndroidSourceSet(null, projectLocation));
+		if (mainSourceProvider == null) {
+			throw new AndworxException("Default source set named \"" + SourceSet.MAIN_SOURCE_SET_NAME + "\" not found");
+		}
 		Collection<BuildTypeContainer> buildTypeContainers = new ArrayList<>();
 		boolean hasDebugBuildType = false;
 		boolean hasReleaseBuildType = false;

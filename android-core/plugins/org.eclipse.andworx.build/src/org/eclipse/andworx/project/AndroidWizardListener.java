@@ -31,6 +31,7 @@ public interface AndroidWizardListener extends ErrorListener {
 	/**
 	 * Handle configuration file parsed
 	 * @param androidDigest Configuration content extracted by a Groovy AST parser into JPA entity beans and then persists them
+	 * @return Maven model 
 	 */
 	void onConfigParsed(AndroidDigest androidDigest);
 	/**

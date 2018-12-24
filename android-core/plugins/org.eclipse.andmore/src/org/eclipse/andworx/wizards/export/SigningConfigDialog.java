@@ -48,13 +48,6 @@ import com.android.sdkuilib.ui.GridLayoutBuilder;
 
 public class SigningConfigDialog extends Dialog {
 	
-    public static final String[] KEYSTORE_TYPES =
-    {
-            "JKS",
-            "JCEKS",
-            "PKCS12"
-    };
-
     public class FileSelectionControl
 	{
 	    /** File filter */
@@ -249,7 +242,8 @@ public class SigningConfigDialog extends Dialog {
 	    SigningConfigBean toValidate = new SigningConfigBean(signingConfig.getName());
     	if (validate(toValidate))  {
     		signingConfigContext.update(toValidate);
-    		return true;
+    		securityController.persist();
+   		    return true;
     	}
     	return false;
 	}
@@ -280,6 +274,7 @@ public class SigningConfigDialog extends Dialog {
         keystoreLabel.setText("File:");
         keystoreLabel.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
         keystoreText = new Text(keystoreGroup, SWT.BORDER);
+        keystoreText.setText(signingConfig.getStoreFileValue());
         keystoreText.addKeyListener(changeListener);
         GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, false);
         FontMetrics fontMetrics = getFontMetrics(parent);
@@ -301,7 +296,7 @@ public class SigningConfigDialog extends Dialog {
         keystoreTypeList.setLayoutData(gridData3);
         int index = -1, select = -1;
         String defaultStoreType = signingConfig.getStoreType().toUpperCase();
-        for (String type: KEYSTORE_TYPES) {
+        for (String type: SecurityController.KEYSTORE_TYPES) {
             keystoreTypeList.add(type);
             ++index;
            if (type.equals(defaultStoreType))

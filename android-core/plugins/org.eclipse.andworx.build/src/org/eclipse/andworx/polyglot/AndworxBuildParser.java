@@ -127,6 +127,10 @@ public class AndworxBuildParser {
 		return receiver;
 	}
 
+	public AndworxParserContext getContext() {
+		return context;
+	}
+
 	public void setChainSyntaxItemReceiver(SyntaxItemReceiver chainSyntaxItemReceiver) {
 		this.chainSyntaxItemReceiver = chainSyntaxItemReceiver;
 	}
