@@ -2,7 +2,7 @@ package org.eclipse.andworx.export;
 
 import static com.android.builder.core.BuilderConstants.RELEASE;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,11 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
@@ -44,7 +40,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.IJobFunction;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jdt.core.IJavaModel;
@@ -54,7 +49,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 //import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 //import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -81,10 +75,10 @@ public class ExportWizardTest {
     	}
     	
     	@Override
-    	public ConfigContext<SigningConfigBean> configContext(ProjectProfile projectProfile, SigningConfigBean signingConfigBean) {
-    		return new ConfigContext<SigningConfigBean>(projectProfile, signingConfigBean) {
-    			ConfigContext<SigningConfigBean> superConfigContext =
-    					TestSecurityController.super.configContext(projectProfile, signingConfigBean);
+    	public ConfigContext configContext(ProjectState projectState, SigningConfigBean signingConfigBean) {
+    		return new ConfigContext(projectState, signingConfigBean) {
+    			ConfigContext superConfigContext =
+    					TestSecurityController.super.configContext(projectState, signingConfigBean);
 				@Override
 				public void update(SigningConfigBean updateBean) {
 					superConfigContext.update(updateBean);

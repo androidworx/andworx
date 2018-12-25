@@ -15,43 +15,48 @@
  */
 package org.eclipse.andworx.config;
 
+import static com.android.builder.core.BuilderConstants.RELEASE;
+
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.andworx.build.AndworxFactory;
+import org.eclipse.andworx.entity.SigningConfigBean;
 import org.eclipse.andworx.event.AndworxEvents;
 import org.eclipse.andworx.project.ProjectProfile;
+import org.eclipse.andworx.registry.ProjectState;
 
 /**
  * Context for persisting an entity bean
  * @param <T>
  */
-public abstract class ConfigContext<T> {
-	protected ProjectProfile projectProfile;
-	protected T bean;
+public abstract class ConfigContext {
+	protected ProjectState projectState;
+	protected SigningConfigBean bean;
 	private IEventBroker eventBroker;
 	
-	public ConfigContext(ProjectProfile projectProfile, T bean) {
-		this.projectProfile = projectProfile;
+	public ConfigContext(ProjectState projectState, SigningConfigBean bean) {
+		this.projectState = projectState;
 		this.bean = bean;
 	}
 
 	public ProjectProfile getProjectProfile() {
-		return projectProfile;
+		return projectState.getProfile();
 	}
 
-	public T getBean() {
+	public SigningConfigBean getBean() {
 		return bean;
 	}
 
-	protected void post(T updateBean) {
+	protected void post(SigningConfigBean updateBean) {
 		if (eventBroker == null) {
 	        IEclipseContext eclipseContext = AndworxFactory.instance().getEclipseContext(); 
 	    	eventBroker = (IEventBroker) eclipseContext.get(IEventBroker.class.getName());
 		}
+		projectState.getContext().getVariantConfiguration(RELEASE).getBuildType().setSigningConfig(updateBean);
 		eventBroker.post(AndworxEvents.UPDATE_ENTITY_BEAN, updateBean);
 	}
 	
-	abstract public void update(T updateBean);
+	abstract public void update(SigningConfigBean updateBean);
 	
 	abstract public void persist();
 }

@@ -140,8 +140,8 @@ public class AndroidConfiguration {
 		@Override
 		public void handleEvent(Event event) {
 			Object eventData = event.getProperty(IEventBroker.DATA);
-			if ((eventData != null) && (eventData instanceof ConfigContext))
-				handleUpdate((ConfigContext<?>)eventData);
+			if ((eventData != null) && (eventData instanceof SigningConfigBean))
+				handleUpdate((SigningConfigBean)eventData);
 		}};
 
 	/**
@@ -333,7 +333,7 @@ public class AndroidConfiguration {
 	 * @param projectLocation Project absolute location
 	 * @param androidEnvironment References a single Android SDK installation and resources in the Android environment
 	 * @return ProjectConfiguration object
-	 * @throws InterruptedException
+	 * @throws InterruptedExceptionSigningConfigBean
 	 */
 	public ProjectConfiguration getProjectConfiguration(
 			ProjectProfile profile,
@@ -427,25 +427,21 @@ public class AndroidConfiguration {
 				sourceProviders);
 	}
 
-	protected void handleUpdate(ConfigContext<?> configContext) {
-		Object entityObject = configContext.getBean();
-		if (entityObject instanceof SigningConfigBean) {
-			SigningConfigBean bean = (SigningConfigBean)entityObject;
-			Job job = new Job("Update " + bean.getName() + " Signing Config for project " + configContext.getProjectProfile().getIdentity().toString()) {
+	protected void handleUpdate(SigningConfigBean bean) {
+		Job job = new Job("Update " + bean.getName() + " signing Config") {
 
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					try {
-						doPersistenceTask(getName(), entityOp.update(entityObject));
-					} catch (Exception e) {
-						logger.error(e, "Error running job \"%\"", getName());
-						return Status.CANCEL_STATUS;
-					}
-					return Status.OK_STATUS;
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					doPersistenceTask(getName(), entityOp.update(bean));
+				} catch (Exception e) {
+					logger.error(e, "Error running job \"%\"", getName());
+					return Status.CANCEL_STATUS;
 				}
-			};
-            job.schedule();
-		}
+				return Status.OK_STATUS;
+			}
+		};
+        job.schedule();
 	}
 
 	/**

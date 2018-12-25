@@ -97,7 +97,7 @@ public class SigningConfigDialog extends Dialog {
     /** Dialog title */
 	private final String title;
     /** Signing Config Bean persistence context */
-    private final ConfigContext<SigningConfigBean> signingConfigContext;
+    private final ConfigContext signingConfigContext;
     private SigningConfigBean signingConfig;
     private final SecurityController securityController;
 	private FileSelectionControl fileSelectionControl;
@@ -181,7 +181,7 @@ public class SigningConfigDialog extends Dialog {
         }};
 
 
-	public SigningConfigDialog(IShellProvider parentShell, String title, ConfigContext<SigningConfigBean> signingConfigContext, SecurityController securityController) {
+	public SigningConfigDialog(IShellProvider parentShell, String title, ConfigContext signingConfigContext, SecurityController securityController) {
 		super(parentShell);
 		this.title = title;
 		this.signingConfigContext = signingConfigContext;

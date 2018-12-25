@@ -305,8 +305,7 @@ public class ExportAndroidPage extends WizardPage {
 				}};
 			SigningConfigBean dialogSigningConfig = new SigningConfigBean(signingConfig);
 	    	ProjectState projectState = projectRegistry.getProjectState(project);
-	    	ProjectProfile profile = projectState.getProfile();
-			ConfigContext<SigningConfigBean> signingConfigContext = securityController.configContext(profile, dialogSigningConfig);
+			ConfigContext signingConfigContext = securityController.configContext(projectState, dialogSigningConfig);
 			SigningConfigDialog signingConfigDialog = new SigningConfigDialog(shellProvider, title, signingConfigContext, securityController);
 			if (signingConfigDialog.open() == IDialogConstants.OK_ID) {
 				if (!signingConfig.equals(dialogSigningConfig)) {

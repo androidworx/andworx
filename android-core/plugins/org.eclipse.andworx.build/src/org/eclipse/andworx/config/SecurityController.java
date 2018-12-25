@@ -25,7 +25,7 @@ import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
 import org.eclipse.andworx.entity.SigningConfigBean;
-import org.eclipse.andworx.project.ProjectProfile;
+import org.eclipse.andworx.registry.ProjectState;
 
 /**
  * Performs control functions for security configuration: validate and persist
@@ -44,8 +44,8 @@ public class SecurityController {
             "PKCS12"
     };
 
-	public ConfigContext<SigningConfigBean> configContext(ProjectProfile projectProfile, SigningConfigBean signingConfigBean) {
-		return new ConfigContext<SigningConfigBean>(projectProfile, signingConfigBean) {
+	public ConfigContext configContext(ProjectState projectState, SigningConfigBean signingConfigBean) {
+		return new ConfigContext(projectState, signingConfigBean) {
 
 			@Override
 			public synchronized void update(SigningConfigBean updateBean) {

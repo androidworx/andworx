@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.andworx.entity.SigningConfigBean;
+
 import com.android.annotations.Nullable;
 import com.android.builder.model.BaseConfig;
 import com.android.builder.model.BuildType;
@@ -65,6 +67,10 @@ public class BuildTypeImpl implements BuildType {
      */
 	public boolean isShrinkResources() {
 		return buildTypeAtom.isShrinkResources();
+	}
+
+	public void setSigningConfig(SigningConfigBean signingConfigBean) {
+		buildTypeAtom.setSigningConfig(signingConfigBean);
 	}
 
 	@Override
@@ -176,5 +182,6 @@ public class BuildTypeImpl implements BuildType {
 	public SigningConfig getSigningConfig() {
 		return buildTypeAtom.getSigningConfig();
 	}
+
 
 }

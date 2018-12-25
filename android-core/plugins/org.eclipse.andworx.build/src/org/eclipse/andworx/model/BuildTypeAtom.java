@@ -46,7 +46,9 @@ public interface BuildTypeAtom {
         OLD_DSL,
     }
 
-    /**
+	void setSigningConfig(SigningConfig signingConfig);
+
+	/**
      * Returns the name of the build type.
      *
      * @return the name of the build type.
@@ -154,4 +156,5 @@ public interface BuildTypeAtom {
      * @return boolean
      */
 	boolean isShrinkResources();
+
 }
