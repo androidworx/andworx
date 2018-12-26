@@ -9,7 +9,7 @@ debugging and finally releasing applications. This focus could only be achieved 
 So Andworx goes back to the original ADT in it's scope. It also adds a new build plug-in, equivalent to the Android Gradle Plugin.
 
 Andworx has been under wraps while it's design was being establish but has now matured to the point where it is on a steady course and and developers
-are now invited to contribute to the project.  In order to access Andworx, a [sample project](http://cybersearch2.com.au/andworx/downloads/Permissions.zip) has been set up to to demonstrate Andworx in action:
+are now invited to contribute to the project.  In order to access Andworx, a [zipped demonstration project](https://androidworx.github.io/android-samples/permissions.zip) has been set up to to show Andworx in action:
 
 * import an Android project into Eclipse, 
 * launch the project application on a device
@@ -82,7 +82,7 @@ you should accept. Once this installation is complete it is possible there will 
 Eclipse Photon has quirks around when to clean projects:
 
 * Some bug in Photon causes some projects to unexpectedly needing to be cleaned. This can be triggered by an automated build or cleaning a single project. The symptom is clean one project leads to several projects needing cleaning. The symptom Description is
-"API analysis aborted for 'org.eclipse.andworx.android' since its build path is incomplete". To get out of this state requires you to clean each of the other projects in error, one by one, until the problem clears.
+"API analysis aborted for 'org.eclipse.andworx.android' since its build path is incomplete". To get out of this state requires you to clean each of the other phttprojects in error, one by one, until the problem clears.
 If you are lucky, only one additional clean is needed.
 
 * The project org.eclipse.andworx.build uses Dagger annotation processing for dependency injection. Sometimes a prject clean is required to regenerate Dagger sources. A Maven build can trigger this situation.
