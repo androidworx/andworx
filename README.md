@@ -46,9 +46,6 @@ To more information, have a look at AndNowAndworx.pdf](http://cybersearch2.com.a
 * Set up Maven toolchains configuration to point to your Java 8 JDK installation. 
 Refer [Guide to Using Toolchains](https://maven.apache.org/guides/mini/guide-using-toolchains.html) and [JDK Toolchain](http://maven.apache.org/plugins/maven-toolchains-plugin/toolchains/jdk.html)
 
-You should also ensure your Git [username](https://help.github.com/articles/setting-your-username-in-git/) and 
-[commit email address](https://help.github.com/articles/setting-your-commit-email-address-in-git/) are configured.
-
 ### Maven Build Steps
 
 1. Clone [this repository](https://github.com/androidworx/andworx.git). The project will be placed is a directory named "andworx". 
@@ -70,8 +67,6 @@ To get Eclipse to read this file, you need to add a line to the eclipse.ini file
 
 
 One good suggestion when setting up Eclipse is to clear all errors and warnings that appear in the error log at start up. This is achievable and makes anything new coming up more obvious. 
-Hence beware of another potential Photon issue. That is the egit version may need updating. The clue is the warning in the error log "Builtin LFS support not present/detected". LFS stands for Large File Support.
-To update egit, add the following update site in the Eclipse preferences: http://download.eclipse.org/egit/updates and then go to the Help menu "Check for Updates" to perform an update.
 
 ## Andworx
 
@@ -105,5 +100,5 @@ An online reposistory will be available shortly. In the meantime, you can build 
 On the Eclipse Platform to receive Andworx, go to Windows -> Preferences -> Install/Upddate -> Available Software Sites and add....  You will then be able to select the Andworx repository in a file browser dialog. 
 The repository will be in project directory andmore-core/site/target/repository/ following a successful build. There is both an Andworx feature and Andworx SDK feature to select, the latter is optional and contains the sources.
 
-To see Andworx in action, you will need to download the [zipped demonstration project](http://cybersearch2.com.au/andworx/downloads/Permissions.zip) and unzip it in a convenient location.
-For instructions, download the document [AndNowAndworx.pdf](http://cybersearch2.com.au/docs/AndNowAndworx.pdf).
+To see Andworx in action, you will need to download the [zipped demonstration project](https://androidworx.github.io/android-samples/permissions.zip) and unzip it in a convenient location.
+For instructions, download the document [AndworxGuide.pdf](https://androidworx.github.io/documents/AndworxGuide.pdf).
