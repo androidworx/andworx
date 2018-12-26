@@ -96,9 +96,7 @@ This test will use the current display on which to lauch the test workbench unle
 
 ## Installation
 
-An online reposistory will be available shortly. In the meantime, you can build Andworx to produce a local repository.
-On the Eclipse Platform to receive Andworx, go to Windows -> Preferences -> Install/Upddate -> Available Software Sites and add....  You will then be able to select the Andworx repository in a file browser dialog. 
-The repository will be in project directory andmore-core/site/target/repository/ following a successful build. There is both an Andworx feature and Andworx SDK feature to select, the latter is optional and contains the sources.
+The Andworx update site is located at https://dl.bintray.com/cybersearch2/plugins/Andworx/V0.0.3. There is both an Andworx feature and Andworx SDK feature to select, the latter is optional and contains the sources.
 
 To see Andworx in action, you will need to download the [zipped demonstration project](https://androidworx.github.io/android-samples/permissions.zip) and unzip it in a convenient location.
 For instructions, download the document [AndworxGuide.pdf](https://androidworx.github.io/documents/AndworxGuide.pdf).
